@@ -63,8 +63,9 @@ namespace Sein
 			void Present();
 
 		private:
-			ID3D12Device*		device;		///< デバイス
-			IDXGISwapChain3*	swapChain;	///< スワップチェイン
+			ID3D12Device*		device;			///< デバイス
+			IDXGISwapChain3*	swapChain;		///< スワップチェイン
+			ID3D12CommandQueue*	commandQueue;	///< コマンドキュー
 		};
 	};
 };

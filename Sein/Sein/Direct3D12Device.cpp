@@ -107,7 +107,14 @@ namespace Sein
 			// 順次実行する
 			// つまり特定のアダプター(GPU)に関連付けられている
 			{
+				D3D12_COMMAND_QUEUE_DESC queueDesc = {};
+				queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;	// タイムアウト処理を有効にする
+				queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;	// レンダリング関連のコマンドリスト
 
+				if (FAILED(device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&commandQueue))))
+				{
+					throw "コマンドキューの生成に失敗しました。";
+				}
 			}
 
 			// スワップチェインの作成

@@ -30,7 +30,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
 	// TODO:メモリリークテスト
 	Sein::Direct3D12::Device* pDevice = new Sein::Direct3D12::Device();
 
-	pDevice->Create();
+	// pDevice->Create();
 
 	// HelloFrameBuffering sample(1280, 720, L"HelloWindow");
 	// return Win32Frame::Run(&sample, hInstance, nCmdShow);

@@ -49,8 +49,11 @@ namespace Sein
 
 			/**
 			 *	@brief	デバイスを生成する
+			 *	@param	handle:ウィンドウハンドル
+			 *	@param	width:横幅
+			 *	@param	height:縦幅
 			 */
-			void Create();
+			void Create(HWND handle, unsigned int width, unsigned int height);
 
 			/**
 			 *	@brief	デバイスを開放する

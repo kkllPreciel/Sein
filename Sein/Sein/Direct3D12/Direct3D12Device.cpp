@@ -30,7 +30,7 @@ namespace Sein
 			device(nullptr), swapChain(nullptr), commandQueue(nullptr), commandAllocator(nullptr),
 			commandList(nullptr), descriptorHeap(nullptr), descriptorSize(0), bufferIndex(0),
 			rootSignature(nullptr), pipelineState(nullptr), cbvSrvHeap(nullptr), cbvBuffer(nullptr),
-			depthStencilView(nullptr), fence(nullptr), srBuffer(nullptr)
+			depthStencilView(nullptr), fence(nullptr), srBuffer(nullptr), texBuffer(nullptr)
 		{
 			for (auto i = 0; i < FrameCount; ++i)
 			{
@@ -290,6 +290,11 @@ namespace Sein
 				fence = nullptr;
 			}
 
+			// テクスチャバッファの削除
+			{
+				texBuffer.release()->Release();
+			}
+
 			// インスタンスバッファの削除
 			{
 				srBuffer->Release();
@@ -427,6 +432,11 @@ namespace Sein
 			// インスタンスバッファの生成
 			{
 				CreateInstanceBuffer();
+			}
+
+			// テクスチャバッファの生成
+			{
+				CreateTextureBuffer();
 			}
 
 			// ルートシグネチャの作成
@@ -805,6 +815,109 @@ namespace Sein
 				DirectX::XMStoreFloat4x4(&(instanceBufferData[3].world), DirectX::XMMatrixTranslation(-1.0f, -1.0f, -1.0f));
 				DirectX::XMStoreFloat4x4(&(instanceBufferData[4].world), DirectX::XMMatrixTranslation(-2.0f, -2.0f, -2.0f));
 				srBuffer->Map(&instanceBufferData[0], sizeof(InstanceBuffer) * instanceBufferData.size());
+			}
+		}
+#pragma endregion
+
+		// 後々別クラスへ移動する
+#pragma region Texture
+		/**
+		 *	@brief	テクスチャバッファを生成する
+		 */
+		void Device::CreateTextureBuffer()
+		{
+			// リソースの作成
+			{
+				D3D12_HEAP_PROPERTIES properties;
+				properties.Type = D3D12_HEAP_TYPE_DEFAULT;
+				properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+				properties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+				properties.CreationNodeMask = 1;
+				properties.VisibleNodeMask = 1;
+
+				D3D12_RESOURCE_DESC textureDesc = {};
+				textureDesc.MipLevels = 1;
+				textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+				textureDesc.Width = 600;
+				textureDesc.Height = 400;
+				textureDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+				textureDesc.DepthOrArraySize = 1;
+				textureDesc.SampleDesc.Count = 1;
+				textureDesc.SampleDesc.Quality = 0;
+				textureDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+
+				ID3D12Resource* resource = nullptr;
+				if (FAILED(device->CreateCommittedResource(
+					&properties,
+					D3D12_HEAP_FLAG_NONE,
+					&textureDesc,
+					D3D12_RESOURCE_STATE_COPY_DEST,
+					nullptr,
+					IID_PPV_ARGS(&resource))))
+				{
+					throw "テクスチャ用リソースの作成に失敗しました。";
+				}
+				texBuffer.reset(resource);
+			}
+
+			// ダミーデータ作成
+			std::vector<UINT8> data;
+			{
+				const UINT rowPitch = 600 * 4;
+				const UINT cellPitch = rowPitch >> 3;
+				const UINT cellHeight = 600 >> 3;
+				const UINT textureSize = rowPitch * 400;
+
+				data.resize(textureSize);
+				UINT8* pData = &data[0];
+				for (UINT n = 0; n < textureSize; n += 4)
+				{
+					UINT x = n % rowPitch;
+					UINT y = n / rowPitch;
+					UINT i = x / cellPitch;
+					UINT j = y / cellHeight;
+
+					if (i % 2 == j % 2)
+					{
+						pData[n] = 0x00;		// R
+						pData[n + 1] = 0x00;	// G
+						pData[n + 2] = 0x00;	// B
+						pData[n + 3] = 0xff;	// A
+					}
+					else
+					{
+						pData[n] = 0xff;		// R
+						pData[n + 1] = 0xff;	// G
+						pData[n + 2] = 0xff;	// B
+						pData[n + 3] = 0xff;	// A
+					}
+				}
+			}
+
+			// シェーダーリソースビューの作成
+			{
+				// マップ。Releaseが呼ばれるまでアンマップしない
+				void* resource_pointer = nullptr;
+				if (FAILED(texBuffer->Map(
+					0,						// サブリソースのインデックス番号
+					nullptr,				// CPUからアクセスするメモリの範囲(nullptrは全領域にアクセスする)
+					&resource_pointer)))	// リソースデータへのポインタ
+				{
+					throw "シェーダーリソースビュー用リソースへのポインタの取得に失敗しました。";
+				}
+				std::memcpy(resource_pointer, &data[0], data.size());
+				texBuffer->Unmap(0, nullptr);
+
+				// Describe and create a SRV for the texture.
+				D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+				srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+				srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+				srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+				srvDesc.Texture2D.MipLevels = 1;
+
+				auto handle = cbvSrvHeap->GetCPUDescriptorHandleForHeapStart();
+				handle.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * 2;
+				device->CreateShaderResourceView(texBuffer.get(), &srvDesc, handle);
 			}
 		}
 #pragma endregion

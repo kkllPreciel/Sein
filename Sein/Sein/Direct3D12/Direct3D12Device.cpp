@@ -860,6 +860,51 @@ namespace Sein
 				texBuffer.reset(resource);
 			}
 
+			// 中間リソースの作成
+			{
+				Microsoft::WRL::ComPtr<ID3D12Resource> uploadHeap;
+
+				D3D12_RESOURCE_DESC Desc = texBuffer->GetDesc();
+				UINT64 RequiredSize = 0;
+
+				ID3D12Device* pDevice;
+				texBuffer->GetDevice(__uuidof(*pDevice), reinterpret_cast<void**>(&pDevice));
+				pDevice->GetCopyableFootprints(&Desc, 0, 1, 0, nullptr, nullptr, nullptr, &RequiredSize);
+				pDevice->Release();
+
+				D3D12_HEAP_PROPERTIES properties;
+				properties.Type = D3D12_HEAP_TYPE_UPLOAD;
+				properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+				properties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+				properties.CreationNodeMask = 1;
+				properties.VisibleNodeMask = 1;
+
+				D3D12_RESOURCE_DESC resource_desc;
+				resource_desc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+				resource_desc.Alignment = 0;
+				resource_desc.Width = RequiredSize;
+				resource_desc.Height = 1;
+				resource_desc.DepthOrArraySize = 1;
+				resource_desc.MipLevels = 1;
+				resource_desc.Format = DXGI_FORMAT_UNKNOWN;
+				resource_desc.SampleDesc.Count = 1;
+				resource_desc.SampleDesc.Quality = 0;
+				resource_desc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+				resource_desc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+				// Create the GPU upload buffer.
+				if (FAILED(device->CreateCommittedResource(
+					&properties,
+					D3D12_HEAP_FLAG_NONE,
+					&resource_desc,
+					D3D12_RESOURCE_STATE_GENERIC_READ,
+					nullptr,
+					IID_PPV_ARGS(&uploadHeap))))
+				{
+					throw "テクスチャ用中間リソースの作成に失敗しました。";
+				}
+			}
+
 			// ダミーデータ作成
 			std::vector<UINT8> data;
 			{

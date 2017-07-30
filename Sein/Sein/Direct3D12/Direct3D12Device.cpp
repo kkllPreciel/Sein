@@ -860,6 +860,40 @@ namespace Sein
 				texBuffer.reset(resource);
 			}
 
+			// ダミーデータ作成
+			std::vector<UINT8> data;
+			{
+				const UINT rowPitch = 600 * 4;
+				const UINT cellPitch = rowPitch >> 3;
+				const UINT cellHeight = 600 >> 3;
+				const UINT textureSize = rowPitch * 400;
+
+				data.resize(textureSize);
+				UINT8* pData = &data[0];
+				for (UINT n = 0; n < textureSize; n += 4)
+				{
+					UINT x = n % rowPitch;
+					UINT y = n / rowPitch;
+					UINT i = x / cellPitch;
+					UINT j = y / cellHeight;
+
+					if (i % 2 == j % 2)
+					{
+						pData[n] = 0x00;		// R
+						pData[n + 1] = 0x00;	// G
+						pData[n + 2] = 0x00;	// B
+						pData[n + 3] = 0xff;	// A
+					}
+					else
+					{
+						pData[n] = 0xff;		// R
+						pData[n + 1] = 0xff;	// G
+						pData[n + 2] = 0xff;	// B
+						pData[n + 3] = 0xff;	// A
+					}
+				}
+			}
+
 			// 中間リソースの作成
 			{
 				Microsoft::WRL::ComPtr<ID3D12Resource> uploadHeap;
@@ -903,56 +937,47 @@ namespace Sein
 				{
 					throw "テクスチャ用中間リソースの作成に失敗しました。";
 				}
-			}
 
-			// ダミーデータ作成
-			std::vector<UINT8> data;
-			{
-				const UINT rowPitch = 600 * 4;
-				const UINT cellPitch = rowPitch >> 3;
-				const UINT cellHeight = 600 >> 3;
-				const UINT textureSize = rowPitch * 400;
-
-				data.resize(textureSize);
-				UINT8* pData = &data[0];
-				for (UINT n = 0; n < textureSize; n += 4)
+				// データのコピー
 				{
-					UINT x = n % rowPitch;
-					UINT y = n / rowPitch;
-					UINT i = x / cellPitch;
-					UINT j = y / cellHeight;
+					D3D12_SUBRESOURCE_DATA textureData = {};
+					textureData.pData = &data[0];
+					textureData.RowPitch = 600 * 4;
+					textureData.SlicePitch = textureData.RowPitch * 400;
 
-					if (i % 2 == j % 2)
+					unsigned char* pData;
+
+					if (FAILED(uploadHeap->Map(0, nullptr, reinterpret_cast<void**>(&pData))))
 					{
-						pData[n] = 0x00;		// R
-						pData[n + 1] = 0x00;	// G
-						pData[n + 2] = 0x00;	// B
-						pData[n + 3] = 0xff;	// A
+						throw "テクスチャ用中間リソースへのポインタの取得に失敗しました。";
 					}
-					else
-					{
-						pData[n] = 0xff;		// R
-						pData[n + 1] = 0xff;	// G
-						pData[n + 2] = 0xff;	// B
-						pData[n + 3] = 0xff;	// A
-					}
+					std::memcpy(pData, &data[0], sizeof(UINT8) * data.size());
+					uploadHeap->Unmap(0, nullptr);
+				}
+
+				// テクスチャ用リソースへコピー
+				{
+					auto size = static_cast<UINT64>(sizeof(D3D12_PLACED_SUBRESOURCE_FOOTPRINT) + sizeof(UINT) + sizeof(UINT64)) * 1;
+					auto buffer = HeapAlloc(GetProcessHeap(), 0, static_cast<SIZE_T>(size));
+					auto pLayouts = reinterpret_cast<D3D12_PLACED_SUBRESOURCE_FOOTPRINT*>(buffer);
+
+					D3D12_TEXTURE_COPY_LOCATION Dst;
+					Dst.pResource = texBuffer.get();
+					Dst.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+					Dst.SubresourceIndex = 0;
+
+					D3D12_TEXTURE_COPY_LOCATION Src;
+					Src.pResource = uploadHeap.Get();
+					Src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+					Src.PlacedFootprint = *pLayouts;
+					commandList->CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
+
+					HeapFree(GetProcessHeap(), 0, buffer);
 				}
 			}
 
 			// シェーダーリソースビューの作成
 			{
-				// マップ。Releaseが呼ばれるまでアンマップしない
-				void* resource_pointer = nullptr;
-				if (FAILED(texBuffer->Map(
-					0,						// サブリソースのインデックス番号
-					nullptr,				// CPUからアクセスするメモリの範囲(nullptrは全領域にアクセスする)
-					&resource_pointer)))	// リソースデータへのポインタ
-				{
-					throw "シェーダーリソースビュー用リソースへのポインタの取得に失敗しました。";
-				}
-				std::memcpy(resource_pointer, &data[0], data.size());
-				texBuffer->Unmap(0, nullptr);
-
 				// Describe and create a SRV for the texture.
 				D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 				srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;

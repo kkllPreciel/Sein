@@ -742,7 +742,7 @@ namespace Sein
 			// 定数バッファビュー、シェーダーリソースビュー用ディスクリプターヒープを生成
 			{
 				D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDesc = {};
-				cbvHeapDesc.NumDescriptors = 2;									// ディスクリプターヒープ内のディスクリプター数(定数バッファ、シェーダーリソース)
+				cbvHeapDesc.NumDescriptors = 3;									// ディスクリプターヒープ内のディスクリプター数(定数バッファ、シェーダーリソース)
 				cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;		// 定数バッファ or シェーダーリソース(テクスチャ) or ランダムアクセス のどれかのヒープ
 				cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;	// シェーダーからアクセス可
 
@@ -957,9 +957,12 @@ namespace Sein
 
 				// テクスチャ用リソースへコピー
 				{
-					auto size = static_cast<UINT64>(sizeof(D3D12_PLACED_SUBRESOURCE_FOOTPRINT) + sizeof(UINT) + sizeof(UINT64)) * 1;
-					auto buffer = HeapAlloc(GetProcessHeap(), 0, static_cast<SIZE_T>(size));
-					auto pLayouts = reinterpret_cast<D3D12_PLACED_SUBRESOURCE_FOOTPRINT*>(buffer);
+					HRESULT hr = commandAllocator->Reset();
+					hr = commandList->Reset(commandAllocator, nullptr);
+
+					D3D12_RESOURCE_DESC Desc = texBuffer->GetDesc();
+					D3D12_PLACED_SUBRESOURCE_FOOTPRINT footPrint;
+					device->GetCopyableFootprints(&Desc, 0, 1, 0, &footPrint, nullptr, nullptr, nullptr);
 
 					D3D12_TEXTURE_COPY_LOCATION Dst;
 					Dst.pResource = texBuffer.get();
@@ -969,10 +972,26 @@ namespace Sein
 					D3D12_TEXTURE_COPY_LOCATION Src;
 					Src.pResource = uploadHeap.Get();
 					Src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
-					Src.PlacedFootprint = *pLayouts;
+					Src.PlacedFootprint = footPrint;
 					commandList->CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
 
-					HeapFree(GetProcessHeap(), 0, buffer);
+					// リソースバリア
+					D3D12_RESOURCE_BARRIER barrier;
+					barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+					barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+					barrier.Transition.pResource = texBuffer.get();
+					barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+					barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+					barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+					commandList->ResourceBarrier(1, &barrier);
+
+					// コマンドリストをクローズする
+					// コマンドリストの実行
+					hr = commandList->Close();
+					ID3D12CommandList* ppCommandLists[] = { commandList };
+					commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+
+					WaitForGpu();
 				}
 			}
 

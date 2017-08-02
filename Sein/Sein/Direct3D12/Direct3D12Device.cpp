@@ -441,43 +441,73 @@ namespace Sein
 
 			// ルートシグネチャの作成
 			{
-				// ディスクリプターレンジの設定(定数バッファとシェーダーリソース)
-				D3D12_DESCRIPTOR_RANGE descriptorRanges[2];
-				descriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;								// ディスクリプターの種別(定数バッファビュー)
-				descriptorRanges[0].NumDescriptors = 1;															// ディスクリプターの数
-				descriptorRanges[0].BaseShaderRegister = 0;														// 範囲内のベースシェーダレジスタ
-				descriptorRanges[0].RegisterSpace = 0;															// レジスタ空間(TODO:調べる)
-				descriptorRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;	// ルートシグネチャ開始からのディスクリプタのオフセット?
+				// ディスクリプターレンジの設定(定数バッファとシェーダーリソース(頂点シェーダーのみで使用可)とシェーダーリソース(ピクセルシェーダーのみで使用可))
+				D3D12_DESCRIPTOR_RANGE descriptorRanges[3];
+				{
+					descriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;								// ディスクリプターの種別(定数バッファビュー)
+					descriptorRanges[0].NumDescriptors = 1;															// ディスクリプターの数
+					descriptorRanges[0].BaseShaderRegister = 0;														// 範囲内のベースシェーダレジスタ
+					descriptorRanges[0].RegisterSpace = 0;															// レジスタ空間(TODO:調べる)
+					descriptorRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;	// ルートシグネチャ開始からのディスクリプタのオフセット?
 
-				descriptorRanges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;								// ディスクリプターの種別(シェーダーリソースビュー)
-				descriptorRanges[1].NumDescriptors = 1;															// ディスクリプターの数
-				descriptorRanges[1].BaseShaderRegister = 0;														// 範囲内のベースシェーダレジスタ
-				descriptorRanges[1].RegisterSpace = 0;															// レジスタ空間(TODO:調べる)
-				descriptorRanges[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;	// ルートシグネチャ開始からのディスクリプタのオフセット?
+					descriptorRanges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;								// ディスクリプターの種別(シェーダーリソースビュー)
+					descriptorRanges[1].NumDescriptors = 1;															// ディスクリプターの数
+					descriptorRanges[1].BaseShaderRegister = 0;														// 範囲内のベースシェーダレジスタ
+					descriptorRanges[1].RegisterSpace = 0;															// レジスタ空間(TODO:調べる)
+					descriptorRanges[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;	// ルートシグネチャ開始からのディスクリプタのオフセット?
+
+					descriptorRanges[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;								// ディスクリプターの種別(シェーダーリソースビュー)
+					descriptorRanges[2].NumDescriptors = 1;															// ディスクリプターの数
+					descriptorRanges[2].BaseShaderRegister = 0;														// 範囲内のベースシェーダレジスタ
+					descriptorRanges[2].RegisterSpace = 0;															// レジスタ空間(TODO:調べる)
+					descriptorRanges[2].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;	// ルートシグネチャ開始からのディスクリプタのオフセット?
+				}
 
 				// ルートパラメータの設定
-				D3D12_ROOT_PARAMETER rootParameters[2];
-				rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;				// ルートシグネチャのスロットの種別(ディスクリプタテーブル)
-				rootParameters[0].DescriptorTable.NumDescriptorRanges = 1;									// ディスクリプターレンジの数
-				rootParameters[0].DescriptorTable.pDescriptorRanges = &descriptorRanges[0];					// ディスクリプターレンジのポインタ(数が1超なら配列の先頭ポインタ)
-				rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;						// ルートシグネチャのスロットの内容にアクセスできるシェーダの種別(頂点シェーダのみ)
+				D3D12_ROOT_PARAMETER rootParameters[3];
+				{
+					rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;				// ルートシグネチャのスロットの種別(ディスクリプタテーブル)
+					rootParameters[0].DescriptorTable.NumDescriptorRanges = 1;									// ディスクリプターレンジの数
+					rootParameters[0].DescriptorTable.pDescriptorRanges = &descriptorRanges[0];					// ディスクリプターレンジのポインタ(数が1超なら配列の先頭ポインタ)
+					rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;						// ルートシグネチャのスロットの内容にアクセスできるシェーダの種別(頂点シェーダのみ)
 
-				rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;				// ルートシグネチャのスロットの種別(ディスクリプタテーブル)
-				rootParameters[1].DescriptorTable.NumDescriptorRanges = 1;									// ディスクリプターレンジの数
-				rootParameters[1].DescriptorTable.pDescriptorRanges = &descriptorRanges[1];					// ディスクリプターレンジのポインタ(数が1超なら配列の先頭ポインタ)
-				rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;						// ルートシグネチャのスロットの内容にアクセスできるシェーダの種別(頂点シェーダのみ)
+					rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;				// ルートシグネチャのスロットの種別(ディスクリプタテーブル)
+					rootParameters[1].DescriptorTable.NumDescriptorRanges = 1;									// ディスクリプターレンジの数
+					rootParameters[1].DescriptorTable.pDescriptorRanges = &descriptorRanges[1];					// ディスクリプターレンジのポインタ(数が1超なら配列の先頭ポインタ)
+					rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;						// ルートシグネチャのスロットの内容にアクセスできるシェーダの種別(頂点シェーダのみ)
+
+					rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;				// ルートシグネチャのスロットの種別(ディスクリプタテーブル)
+					rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;									// ディスクリプターレンジの数
+					rootParameters[2].DescriptorTable.pDescriptorRanges = &descriptorRanges[1];					// ディスクリプターレンジのポインタ(数が1超なら配列の先頭ポインタ)
+					rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;							// ルートシグネチャのスロットの内容にアクセスできるシェーダの種別(ピクセルシェーダのみ)
+				}
+
+				// サンプラーの設定
+				D3D12_STATIC_SAMPLER_DESC sampler = {};
+				sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;					// フィルタリング方法(ポイントサンプリング)
+				sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;				// 範囲外にあるU座標の解決方法(境界線の色を使用)
+				sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;				// 範囲外にあるV座標の解決方法(境界線の色を使用)
+				sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;				// 範囲外にあるW座標の解決方法(境界線の色を使用)
+				sampler.MipLODBias = 0;												// ミップマップ レベルからのオフセット
+				sampler.MaxAnisotropy = 0;											// D3D12_FILTER_ANISOTROPICかD3D12_FILTER_COMPARISON_ANISOTROPICをフィルタとして指定した場合のクランプ値
+				sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;				// 既存のサンプリングデータに対してデータを比較する関数(比較しない)
+				sampler.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;	// 範囲外座標の解決方法に対してD3D12_TEXTURE_ADDRESS_MODE_BORDERが指定されている場合に使用される境界の色
+				sampler.MinLOD = 0.0f;												// クランプするミップマップ範囲の下限
+				sampler.MaxLOD = D3D12_FLOAT32_MAX;									// クランプするミップマップ範囲の上限(上限がない場合はD3D12_FLOAT32_MAX等の大きいサイズを指定する)
+				sampler.ShaderRegister = 0;											// レジスター番号(「register(s2, space3)」のs2の番号指定用)
+				sampler.RegisterSpace = 0;											// レジスタースペース(「register(s2, space3)」のspace3の番号指定用)
+				sampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;			// ピクセルシェーダーからアクセス可能
 
 				// ルートシグネチャの設定
 				D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-				rootSignatureDesc.NumParameters = 2;													// ルートシグネチャのスロット数
-				rootSignatureDesc.pParameters = rootParameters;										// スロットの構造?
-				rootSignatureDesc.NumStaticSamplers = 0;												// 静的サンプラー数
-				rootSignatureDesc.pStaticSamplers = nullptr;											// 静的サンプラー設定データのポインタ
+				rootSignatureDesc.NumParameters = 3;													// ルートシグネチャのスロット数
+				rootSignatureDesc.pParameters = rootParameters;											// スロットの構造?
+				rootSignatureDesc.NumStaticSamplers = 1;												// 静的サンプラー数
+				rootSignatureDesc.pStaticSamplers = &sampler;											// 静的サンプラー設定データのポインタ
 				rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT	// オプション(描画に使用する)
 					| D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS							// ハルシェーダからルートシグネチャへのアクセス禁止
 					| D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS							// ドメインシェーダからルートシグネチャへのアクセス禁止
-					| D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS						// ジオメトリシェーダからルートシグネチャへのアクセス禁止
-					| D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;							// ピクセルシェーダからルートシグネチャへのアクセス禁止
+					| D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;						// ジオメトリシェーダからルートシグネチャへのアクセス禁止
 				
 
 				// ルートシグネチャのシリアル化
@@ -632,6 +662,7 @@ namespace Sein
 				psoDesc.SampleDesc = sampleDesc;											// サンプリング状態の構造
 
 				// グラフィックスパイプラインステートの生成
+				HRESULT hr = device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState));
 				if (FAILED(device->CreateGraphicsPipelineState(
 					&psoDesc,
 					IID_PPV_ARGS(&pipelineState))))
@@ -714,9 +745,12 @@ namespace Sein
 			// ディスクリプータヒープテーブルを設定
 			auto handleCbv = cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();
 			auto handleSrv = cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();
+			auto handleTrv = cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();
 			handleSrv.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			handleTrv.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * 2;
 			commandList->SetGraphicsRootDescriptorTable(0, handleCbv);
 			commandList->SetGraphicsRootDescriptorTable(1, handleSrv);
+			commandList->SetGraphicsRootDescriptorTable(2, handleTrv);
 
 			// 描画コマンドの生成
 			commandList->DrawIndexedInstanced(321567, INSTANCE_NUM, 0, 0, 0);

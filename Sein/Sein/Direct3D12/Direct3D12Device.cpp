@@ -662,7 +662,6 @@ namespace Sein
 				psoDesc.SampleDesc = sampleDesc;											// サンプリング状態の構造
 
 				// グラフィックスパイプラインステートの生成
-				HRESULT hr = device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState));
 				if (FAILED(device->CreateGraphicsPipelineState(
 					&psoDesc,
 					IID_PPV_ARGS(&pipelineState))))

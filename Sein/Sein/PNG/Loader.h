@@ -8,10 +8,8 @@
 
 #pragma once
 
-namespace std
-{
-	class string;
-}
+// include
+#include <string>
 
 namespace Sein
 {

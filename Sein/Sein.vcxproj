@@ -157,6 +157,7 @@
     <ClInclude Include="Sein\Direct3D12\ShaderResourceBuffer.h" />
     <ClInclude Include="Sein\Direct3D12\VertexBuffer.h" />
     <ClInclude Include="Sein\PMX\Loader.h" />
+    <ClInclude Include="Sein\PNG\Loader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

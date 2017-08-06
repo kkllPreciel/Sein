@@ -204,6 +204,17 @@ namespace Sein
 			void CreateInstanceBuffer();
 
 #pragma endregion
+
+			// テクスチャ関連
+			// 後々別クラスへ移動
+#pragma region Texture
+			std::unique_ptr<ID3D12Resource> texBuffer;	///<テクスチャバッファ
+
+			/**
+			 *	@brief	テクスチャバッファを生成する
+			 */
+			void CreateTextureBuffer();
+#pragma endregion
 		};
 	};
 };

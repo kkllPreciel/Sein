@@ -30,7 +30,7 @@ namespace Sein
 			device(nullptr), swapChain(nullptr), commandQueue(nullptr), commandAllocator(nullptr),
 			commandList(nullptr), descriptorHeap(nullptr), descriptorSize(0), bufferIndex(0),
 			rootSignature(nullptr), pipelineState(nullptr), cbvSrvHeap(nullptr), cbvBuffer(nullptr),
-			depthStencilView(nullptr), fence(nullptr), srBuffer(nullptr)
+			depthStencilView(nullptr), fence(nullptr), srBuffer(nullptr), texBuffer(nullptr)
 		{
 			for (auto i = 0; i < FrameCount; ++i)
 			{
@@ -290,6 +290,11 @@ namespace Sein
 				fence = nullptr;
 			}
 
+			// テクスチャバッファの削除
+			{
+				texBuffer.release()->Release();
+			}
+
 			// インスタンスバッファの削除
 			{
 				srBuffer->Release();
@@ -429,45 +434,80 @@ namespace Sein
 				CreateInstanceBuffer();
 			}
 
+			// テクスチャバッファの生成
+			{
+				CreateTextureBuffer();
+			}
+
 			// ルートシグネチャの作成
 			{
-				// ディスクリプターレンジの設定(定数バッファとシェーダーリソース)
-				D3D12_DESCRIPTOR_RANGE descriptorRanges[2];
-				descriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;								// ディスクリプターの種別(定数バッファビュー)
-				descriptorRanges[0].NumDescriptors = 1;															// ディスクリプターの数
-				descriptorRanges[0].BaseShaderRegister = 0;														// 範囲内のベースシェーダレジスタ
-				descriptorRanges[0].RegisterSpace = 0;															// レジスタ空間(TODO:調べる)
-				descriptorRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;	// ルートシグネチャ開始からのディスクリプタのオフセット?
+				// ディスクリプターレンジの設定(定数バッファとシェーダーリソース(頂点シェーダーのみで使用可)とシェーダーリソース(ピクセルシェーダーのみで使用可))
+				D3D12_DESCRIPTOR_RANGE descriptorRanges[3];
+				{
+					descriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;								// ディスクリプターの種別(定数バッファビュー)
+					descriptorRanges[0].NumDescriptors = 1;															// ディスクリプターの数
+					descriptorRanges[0].BaseShaderRegister = 0;														// 範囲内のベースシェーダレジスタ
+					descriptorRanges[0].RegisterSpace = 0;															// レジスタ空間(TODO:調べる)
+					descriptorRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;	// ルートシグネチャ開始からのディスクリプタのオフセット?
 
-				descriptorRanges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;								// ディスクリプターの種別(シェーダーリソースビュー)
-				descriptorRanges[1].NumDescriptors = 1;															// ディスクリプターの数
-				descriptorRanges[1].BaseShaderRegister = 0;														// 範囲内のベースシェーダレジスタ
-				descriptorRanges[1].RegisterSpace = 0;															// レジスタ空間(TODO:調べる)
-				descriptorRanges[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;	// ルートシグネチャ開始からのディスクリプタのオフセット?
+					descriptorRanges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;								// ディスクリプターの種別(シェーダーリソースビュー)
+					descriptorRanges[1].NumDescriptors = 1;															// ディスクリプターの数
+					descriptorRanges[1].BaseShaderRegister = 0;														// 範囲内のベースシェーダレジスタ
+					descriptorRanges[1].RegisterSpace = 0;															// レジスタ空間(TODO:調べる)
+					descriptorRanges[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;	// ルートシグネチャ開始からのディスクリプタのオフセット?
+
+					descriptorRanges[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;								// ディスクリプターの種別(シェーダーリソースビュー)
+					descriptorRanges[2].NumDescriptors = 1;															// ディスクリプターの数
+					descriptorRanges[2].BaseShaderRegister = 0;														// 範囲内のベースシェーダレジスタ
+					descriptorRanges[2].RegisterSpace = 0;															// レジスタ空間(TODO:調べる)
+					descriptorRanges[2].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;	// ルートシグネチャ開始からのディスクリプタのオフセット?
+				}
 
 				// ルートパラメータの設定
-				D3D12_ROOT_PARAMETER rootParameters[2];
-				rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;				// ルートシグネチャのスロットの種別(ディスクリプタテーブル)
-				rootParameters[0].DescriptorTable.NumDescriptorRanges = 1;									// ディスクリプターレンジの数
-				rootParameters[0].DescriptorTable.pDescriptorRanges = &descriptorRanges[0];					// ディスクリプターレンジのポインタ(数が1超なら配列の先頭ポインタ)
-				rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;						// ルートシグネチャのスロットの内容にアクセスできるシェーダの種別(頂点シェーダのみ)
+				D3D12_ROOT_PARAMETER rootParameters[3];
+				{
+					rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;				// ルートシグネチャのスロットの種別(ディスクリプタテーブル)
+					rootParameters[0].DescriptorTable.NumDescriptorRanges = 1;									// ディスクリプターレンジの数
+					rootParameters[0].DescriptorTable.pDescriptorRanges = &descriptorRanges[0];					// ディスクリプターレンジのポインタ(数が1超なら配列の先頭ポインタ)
+					rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;						// ルートシグネチャのスロットの内容にアクセスできるシェーダの種別(頂点シェーダのみ)
 
-				rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;				// ルートシグネチャのスロットの種別(ディスクリプタテーブル)
-				rootParameters[1].DescriptorTable.NumDescriptorRanges = 1;									// ディスクリプターレンジの数
-				rootParameters[1].DescriptorTable.pDescriptorRanges = &descriptorRanges[1];					// ディスクリプターレンジのポインタ(数が1超なら配列の先頭ポインタ)
-				rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;						// ルートシグネチャのスロットの内容にアクセスできるシェーダの種別(頂点シェーダのみ)
+					rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;				// ルートシグネチャのスロットの種別(ディスクリプタテーブル)
+					rootParameters[1].DescriptorTable.NumDescriptorRanges = 1;									// ディスクリプターレンジの数
+					rootParameters[1].DescriptorTable.pDescriptorRanges = &descriptorRanges[1];					// ディスクリプターレンジのポインタ(数が1超なら配列の先頭ポインタ)
+					rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;						// ルートシグネチャのスロットの内容にアクセスできるシェーダの種別(頂点シェーダのみ)
+
+					rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;				// ルートシグネチャのスロットの種別(ディスクリプタテーブル)
+					rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;									// ディスクリプターレンジの数
+					rootParameters[2].DescriptorTable.pDescriptorRanges = &descriptorRanges[1];					// ディスクリプターレンジのポインタ(数が1超なら配列の先頭ポインタ)
+					rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;							// ルートシグネチャのスロットの内容にアクセスできるシェーダの種別(ピクセルシェーダのみ)
+				}
+
+				// サンプラーの設定
+				D3D12_STATIC_SAMPLER_DESC sampler = {};
+				sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;					// フィルタリング方法(ポイントサンプリング)
+				sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;				// 範囲外にあるU座標の解決方法(境界線の色を使用)
+				sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;				// 範囲外にあるV座標の解決方法(境界線の色を使用)
+				sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;				// 範囲外にあるW座標の解決方法(境界線の色を使用)
+				sampler.MipLODBias = 0;												// ミップマップ レベルからのオフセット
+				sampler.MaxAnisotropy = 0;											// D3D12_FILTER_ANISOTROPICかD3D12_FILTER_COMPARISON_ANISOTROPICをフィルタとして指定した場合のクランプ値
+				sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;				// 既存のサンプリングデータに対してデータを比較する関数(比較しない)
+				sampler.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;	// 範囲外座標の解決方法に対してD3D12_TEXTURE_ADDRESS_MODE_BORDERが指定されている場合に使用される境界の色
+				sampler.MinLOD = 0.0f;												// クランプするミップマップ範囲の下限
+				sampler.MaxLOD = D3D12_FLOAT32_MAX;									// クランプするミップマップ範囲の上限(上限がない場合はD3D12_FLOAT32_MAX等の大きいサイズを指定する)
+				sampler.ShaderRegister = 0;											// レジスター番号(「register(s2, space3)」のs2の番号指定用)
+				sampler.RegisterSpace = 0;											// レジスタースペース(「register(s2, space3)」のspace3の番号指定用)
+				sampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;			// ピクセルシェーダーからアクセス可能
 
 				// ルートシグネチャの設定
 				D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-				rootSignatureDesc.NumParameters = 2;													// ルートシグネチャのスロット数
-				rootSignatureDesc.pParameters = rootParameters;										// スロットの構造?
-				rootSignatureDesc.NumStaticSamplers = 0;												// 静的サンプラー数
-				rootSignatureDesc.pStaticSamplers = nullptr;											// 静的サンプラー設定データのポインタ
+				rootSignatureDesc.NumParameters = 3;													// ルートシグネチャのスロット数
+				rootSignatureDesc.pParameters = rootParameters;											// スロットの構造?
+				rootSignatureDesc.NumStaticSamplers = 1;												// 静的サンプラー数
+				rootSignatureDesc.pStaticSamplers = &sampler;											// 静的サンプラー設定データのポインタ
 				rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT	// オプション(描画に使用する)
 					| D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS							// ハルシェーダからルートシグネチャへのアクセス禁止
 					| D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS							// ドメインシェーダからルートシグネチャへのアクセス禁止
-					| D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS						// ジオメトリシェーダからルートシグネチャへのアクセス禁止
-					| D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;							// ピクセルシェーダからルートシグネチャへのアクセス禁止
+					| D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;						// ジオメトリシェーダからルートシグネチャへのアクセス禁止
 				
 
 				// ルートシグネチャのシリアル化
@@ -626,6 +666,13 @@ namespace Sein
 					&psoDesc,
 					IID_PPV_ARGS(&pipelineState))))
 				{
+					ID3D12DebugDevice* debugInterface;
+					if (SUCCEEDED(device->QueryInterface(&debugInterface)))
+					{
+						debugInterface->ReportLiveDeviceObjects(D3D12_RLDO_DETAIL | D3D12_RLDO_IGNORE_INTERNAL);
+						debugInterface->Release();
+					}
+
 					throw "パイプラインステートの生成に失敗しました。";
 				}
 			}
@@ -704,9 +751,12 @@ namespace Sein
 			// ディスクリプータヒープテーブルを設定
 			auto handleCbv = cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();
 			auto handleSrv = cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();
+			auto handleTrv = cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();
 			handleSrv.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			handleTrv.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * 2;
 			commandList->SetGraphicsRootDescriptorTable(0, handleCbv);
 			commandList->SetGraphicsRootDescriptorTable(1, handleSrv);
+			commandList->SetGraphicsRootDescriptorTable(2, handleTrv);
 
 			// 描画コマンドの生成
 			commandList->DrawIndexedInstanced(321567, INSTANCE_NUM, 0, 0, 0);
@@ -732,7 +782,7 @@ namespace Sein
 			// 定数バッファビュー、シェーダーリソースビュー用ディスクリプターヒープを生成
 			{
 				D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDesc = {};
-				cbvHeapDesc.NumDescriptors = 2;									// ディスクリプターヒープ内のディスクリプター数(定数バッファ、シェーダーリソース)
+				cbvHeapDesc.NumDescriptors = 3;									// ディスクリプターヒープ内のディスクリプター数(定数バッファ、シェーダーリソース)
 				cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;		// 定数バッファ or シェーダーリソース(テクスチャ) or ランダムアクセス のどれかのヒープ
 				cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;	// シェーダーからアクセス可
 
@@ -805,6 +855,198 @@ namespace Sein
 				DirectX::XMStoreFloat4x4(&(instanceBufferData[3].world), DirectX::XMMatrixTranslation(-1.0f, -1.0f, -1.0f));
 				DirectX::XMStoreFloat4x4(&(instanceBufferData[4].world), DirectX::XMMatrixTranslation(-2.0f, -2.0f, -2.0f));
 				srBuffer->Map(&instanceBufferData[0], sizeof(InstanceBuffer) * instanceBufferData.size());
+			}
+		}
+#pragma endregion
+
+		// 後々別クラスへ移動する
+#pragma region Texture
+		/**
+		 *	@brief	テクスチャバッファを生成する
+		 */
+		void Device::CreateTextureBuffer()
+		{
+			// リソースの作成
+			{
+				D3D12_HEAP_PROPERTIES properties;
+				properties.Type = D3D12_HEAP_TYPE_DEFAULT;
+				properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+				properties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+				properties.CreationNodeMask = 1;
+				properties.VisibleNodeMask = 1;
+
+				D3D12_RESOURCE_DESC textureDesc = {};
+				textureDesc.MipLevels = 1;
+				textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+				textureDesc.Width = 600;
+				textureDesc.Height = 400;
+				textureDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+				textureDesc.DepthOrArraySize = 1;
+				textureDesc.SampleDesc.Count = 1;
+				textureDesc.SampleDesc.Quality = 0;
+				textureDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+
+				ID3D12Resource* resource = nullptr;
+				if (FAILED(device->CreateCommittedResource(
+					&properties,
+					D3D12_HEAP_FLAG_NONE,
+					&textureDesc,
+					D3D12_RESOURCE_STATE_COPY_DEST,
+					nullptr,
+					IID_PPV_ARGS(&resource))))
+				{
+					throw "テクスチャ用リソースの作成に失敗しました。";
+				}
+				texBuffer.reset(resource);
+			}
+
+			// ダミーデータ作成
+			std::vector<UINT8> data;
+			{
+				const UINT rowPitch = 600 * 4;
+				const UINT cellPitch = rowPitch >> 3;
+				const UINT cellHeight = 600 >> 3;
+				const UINT textureSize = rowPitch * 400;
+
+				data.resize(textureSize);
+				UINT8* pData = &data[0];
+				for (UINT n = 0; n < textureSize; n += 4)
+				{
+					UINT x = n % rowPitch;
+					UINT y = n / rowPitch;
+					UINT i = x / cellPitch;
+					UINT j = y / cellHeight;
+
+					if (i % 2 == j % 2)
+					{
+						pData[n] = 0x00;		// R
+						pData[n + 1] = 0x00;	// G
+						pData[n + 2] = 0x00;	// B
+						pData[n + 3] = 0xff;	// A
+					}
+					else
+					{
+						pData[n] = 0xff;		// R
+						pData[n + 1] = 0xff;	// G
+						pData[n + 2] = 0xff;	// B
+						pData[n + 3] = 0xff;	// A
+					}
+				}
+			}
+
+			// 中間リソースの作成
+			{
+				Microsoft::WRL::ComPtr<ID3D12Resource> uploadHeap;
+
+				D3D12_RESOURCE_DESC Desc = texBuffer->GetDesc();
+				UINT64 RequiredSize = 0;
+
+				ID3D12Device* pDevice;
+				texBuffer->GetDevice(__uuidof(*pDevice), reinterpret_cast<void**>(&pDevice));
+				pDevice->GetCopyableFootprints(&Desc, 0, 1, 0, nullptr, nullptr, nullptr, &RequiredSize);
+				pDevice->Release();
+
+				D3D12_HEAP_PROPERTIES properties;
+				properties.Type = D3D12_HEAP_TYPE_UPLOAD;
+				properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+				properties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+				properties.CreationNodeMask = 1;
+				properties.VisibleNodeMask = 1;
+
+				D3D12_RESOURCE_DESC resource_desc;
+				resource_desc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+				resource_desc.Alignment = 0;
+				resource_desc.Width = RequiredSize;
+				resource_desc.Height = 1;
+				resource_desc.DepthOrArraySize = 1;
+				resource_desc.MipLevels = 1;
+				resource_desc.Format = DXGI_FORMAT_UNKNOWN;
+				resource_desc.SampleDesc.Count = 1;
+				resource_desc.SampleDesc.Quality = 0;
+				resource_desc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+				resource_desc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+				// Create the GPU upload buffer.
+				if (FAILED(device->CreateCommittedResource(
+					&properties,
+					D3D12_HEAP_FLAG_NONE,
+					&resource_desc,
+					D3D12_RESOURCE_STATE_GENERIC_READ,
+					nullptr,
+					IID_PPV_ARGS(&uploadHeap))))
+				{
+					throw "テクスチャ用中間リソースの作成に失敗しました。";
+				}
+
+				// データのコピー
+				{
+					D3D12_SUBRESOURCE_DATA textureData = {};
+					textureData.pData = &data[0];
+					textureData.RowPitch = 600 * 4;
+					textureData.SlicePitch = textureData.RowPitch * 400;
+
+					unsigned char* pData;
+
+					if (FAILED(uploadHeap->Map(0, nullptr, reinterpret_cast<void**>(&pData))))
+					{
+						throw "テクスチャ用中間リソースへのポインタの取得に失敗しました。";
+					}
+					std::memcpy(pData, &data[0], sizeof(UINT8) * data.size());
+					uploadHeap->Unmap(0, nullptr);
+				}
+
+				// テクスチャ用リソースへコピー
+				{
+					HRESULT hr = commandAllocator->Reset();
+					hr = commandList->Reset(commandAllocator, nullptr);
+
+					D3D12_RESOURCE_DESC Desc = texBuffer->GetDesc();
+					D3D12_PLACED_SUBRESOURCE_FOOTPRINT footPrint;
+					device->GetCopyableFootprints(&Desc, 0, 1, 0, &footPrint, nullptr, nullptr, nullptr);
+
+					D3D12_TEXTURE_COPY_LOCATION Dst;
+					Dst.pResource = texBuffer.get();
+					Dst.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+					Dst.SubresourceIndex = 0;
+
+					D3D12_TEXTURE_COPY_LOCATION Src;
+					Src.pResource = uploadHeap.Get();
+					Src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+					Src.PlacedFootprint = footPrint;
+					commandList->CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
+
+					// リソースバリア
+					D3D12_RESOURCE_BARRIER barrier;
+					barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+					barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+					barrier.Transition.pResource = texBuffer.get();
+					barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+					barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+					barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+					commandList->ResourceBarrier(1, &barrier);
+
+					// コマンドリストをクローズする
+					// コマンドリストの実行
+					hr = commandList->Close();
+					ID3D12CommandList* ppCommandLists[] = { commandList };
+					commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+
+					WaitForGpu();
+				}
+			}
+
+			// シェーダーリソースビューの作成
+			{
+				// Describe and create a SRV for the texture.
+				D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+				srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+				srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+				srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+				srvDesc.Texture2D.MipLevels = 1;
+
+				auto handle = cbvSrvHeap->GetCPUDescriptorHandleForHeapStart();
+				handle.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * 2;
+				device->CreateShaderResourceView(texBuffer.get(), &srvDesc, handle);
 			}
 		}
 #pragma endregion

@@ -150,6 +150,7 @@
     <ClInclude Include="Sein\Direct3D12\buffer.h" />
     <ClInclude Include="Sein\Direct3D12\constant_buffer.h" />
     <ClInclude Include="Sein\Direct3D12\depth_stencil_view.h" />
+    <ClInclude Include="Sein\Direct3D12\descriptor_heap.h" />
     <ClInclude Include="Sein\Direct3D12\direct3d12_device.h" />
     <ClInclude Include="Sein\Direct3D12\fence.h" />
     <ClInclude Include="Sein\Direct3D12\index_buffer.h" />

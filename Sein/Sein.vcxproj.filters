@@ -80,5 +80,8 @@
     <ClInclude Include="Sein\Direct3D12\buffer.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="Sein\Direct3D12\descriptor_heap.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

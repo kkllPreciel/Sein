@@ -65,19 +65,19 @@
     <ClInclude Include="Sein\Direct3D12\vertex_buffer.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Sein\Direct3D12\buffer.h">
+    <ClInclude Include="Sein\PMX\loader.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Sein\Direct3D12\fence.h">
+    <ClInclude Include="Sein\PNG\loader.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Sein\Direct3D12\mesh.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Sein\PMX\loader.h">
+    <ClInclude Include="Sein\Direct3D12\fence.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Sein\PNG\loader.h">
+    <ClInclude Include="Sein\Direct3D12\buffer.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

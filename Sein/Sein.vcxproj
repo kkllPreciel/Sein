@@ -135,29 +135,29 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Sein\Direct3D12\Buffer.cpp" />
-    <ClCompile Include="Sein\Direct3D12\ConstantBuffer.cpp" />
-    <ClCompile Include="Sein\Direct3D12\DepthStencilView.cpp" />
-    <ClCompile Include="Sein\Direct3D12\Direct3D12Device.cpp" />
-    <ClCompile Include="Sein\Direct3D12\Fence.cpp" />
-    <ClCompile Include="Sein\Direct3D12\IndexBuffer.cpp" />
-    <ClCompile Include="Sein\Direct3D12\Mesh.cpp" />
-    <ClCompile Include="Sein\Direct3D12\ShaderResourceBuffer.cpp" />
-    <ClCompile Include="Sein\Direct3D12\VertexBuffer.cpp" />
-    <ClCompile Include="Sein\PMX\Loader.cpp" />
+    <ClCompile Include="Sein\Direct3D12\buffer.cc" />
+    <ClCompile Include="Sein\Direct3D12\constant_buffer.cc" />
+    <ClCompile Include="Sein\Direct3D12\depth_stencil_view.cc" />
+    <ClCompile Include="Sein\Direct3D12\direct3d12_device.cc" />
+    <ClCompile Include="Sein\Direct3D12\fence.cc" />
+    <ClCompile Include="Sein\Direct3D12\index_buffer.cc" />
+    <ClCompile Include="Sein\Direct3D12\mesh.cc" />
+    <ClCompile Include="Sein\Direct3D12\shader_resource_buffer.cc" />
+    <ClCompile Include="Sein\Direct3D12\vertex_buffer.cc" />
+    <ClCompile Include="Sein\PMX\loader.cc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Sein\Direct3D12\Buffer.h" />
-    <ClInclude Include="Sein\Direct3D12\ConstantBuffer.h" />
-    <ClInclude Include="Sein\Direct3D12\DepthStencilView.h" />
-    <ClInclude Include="Sein\Direct3D12\Direct3D12Device.h" />
-    <ClInclude Include="Sein\Direct3D12\Fence.h" />
-    <ClInclude Include="Sein\Direct3D12\IndexBuffer.h" />
-    <ClInclude Include="Sein\Direct3D12\Mesh.h" />
-    <ClInclude Include="Sein\Direct3D12\ShaderResourceBuffer.h" />
-    <ClInclude Include="Sein\Direct3D12\VertexBuffer.h" />
-    <ClInclude Include="Sein\PMX\Loader.h" />
-    <ClInclude Include="Sein\PNG\Loader.h" />
+    <ClInclude Include="Sein\Direct3D12\buffer.h" />
+    <ClInclude Include="Sein\Direct3D12\constant_buffer.h" />
+    <ClInclude Include="Sein\Direct3D12\depth_stencil_view.h" />
+    <ClInclude Include="Sein\Direct3D12\direct3d12_device.h" />
+    <ClInclude Include="Sein\Direct3D12\fence.h" />
+    <ClInclude Include="Sein\Direct3D12\index_buffer.h" />
+    <ClInclude Include="Sein\Direct3D12\mesh.h" />
+    <ClInclude Include="Sein\Direct3D12\shader_resource_buffer.h" />
+    <ClInclude Include="Sein\Direct3D12\vertex_buffer.h" />
+    <ClInclude Include="Sein\PMX\loader.h" />
+    <ClInclude Include="Sein\PNG\loader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

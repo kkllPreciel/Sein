@@ -10,6 +10,7 @@
 
 // include
 #include <d3d12.h>
+#include <memory>
 
 namespace Sein
 {
@@ -61,6 +62,65 @@ namespace Sein
        *  @return 生成可能なディスクリプター数
        */
       virtual unsigned short GetAvailableCount() const = 0;
+    };
+
+    /**
+     *  @brief  ディスクリプターヒープ用クラス
+     */
+    class DescriptorHeap final : public IDescriptorHeap
+    {
+    public:
+      /**
+       *  @brief  コンストラクタ
+       */
+      DescriptorHeap();
+
+      /**
+       *  @brief  デストラクタ
+       */
+      ~DescriptorHeap() override;
+
+      /**
+       *  @brief  ディスクリプターヒープを生成する
+       *  @param  device:Direct3D12のデバイス
+       *  @param  desc:ディスクリプターヒープの設定情報
+       */
+      void Create(ID3D12Device* const device, const D3D12_DESCRIPTOR_HEAP_DESC& desc) override;
+
+      /**
+       *  @brief  リソースを開放する
+       */
+      void Release() override;
+
+      /**
+       *  @brief  ディスクリプターヒープを取得する
+       *  @return ディスクリプターヒープへのポインタ
+       */
+      ID3D12DescriptorHeap* Get() const override;
+
+      /**
+       *  @brief  ディスクリプターを生成する
+       *  @return ディスクリプターハンドル
+       */
+      D3D12_CPU_DESCRIPTOR_HANDLE CreateDescriptor() override;
+
+      /**
+       *  @brief  生成したディスクリプター数を取得する
+       *  @return 生成したディスクリプター数
+       */
+      unsigned short GetCreatedCount() const override;
+
+      /**
+       *  @brief  生成可能なディスクリプター数を取得する
+       *  @return 生成可能なディスクリプター数
+       */
+      unsigned short GetAvailableCount() const override;
+
+    private:
+      std::unique_ptr<ID3D12DescriptorHeap> heap; ///< ディスクリプターヒープ
+      unsigned int incrementSize;                 ///< インクリメントサイズ
+      unsigned int createdCount;                  ///< 生成したディスクリプター数
+      unsigned int availableCount;                ///< 生成可能なディスクリプター数
     };
   };
 };

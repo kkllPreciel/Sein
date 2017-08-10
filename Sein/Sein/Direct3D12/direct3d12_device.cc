@@ -30,7 +30,7 @@ namespace Sein
       device(nullptr), swapChain(nullptr), commandQueue(nullptr), commandAllocator(nullptr),
       commandList(nullptr), descriptorHeap(nullptr), descriptorSize(0), bufferIndex(0),
       rootSignature(nullptr), pipelineState(nullptr), cbvSrvHeap(nullptr), cbvBuffer(nullptr),
-      depthStencilView(nullptr), fence(nullptr), srBuffer(nullptr), texBuffer(nullptr)
+      depthStencilView(nullptr), fence(nullptr), srBuffer(nullptr), texBuffer(nullptr, [](IUnknown* p) { p->Release(); })
     {
       for (auto i = 0; i < FrameCount; ++i)
       {
@@ -288,11 +288,6 @@ namespace Sein
         fence->Release();
         delete fence;
         fence = nullptr;
-      }
-
-      // テクスチャバッファの削除
-      {
-        texBuffer.release()->Release();
       }
 
       // インスタンスバッファの削除

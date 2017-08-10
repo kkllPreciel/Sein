@@ -16,7 +16,7 @@ namespace Sein
     /**
      *  @brief  コンストラクタ
      */
-    DescriptorHeap::DescriptorHeap() : heap(nullptr), incrementSize(0), createdCount(0), availableCount(0)
+    DescriptorHeap::DescriptorHeap() : heap(nullptr, [](IUnknown* p) {p->Release();}), incrementSize(0), createdCount(0), availableCount(0)
     {
 
     }
@@ -57,7 +57,7 @@ namespace Sein
     {
       if (heap)
       {
-        heap.release()->Release();
+        heap.reset(nullptr);
       }
     }
     

@@ -117,10 +117,10 @@ namespace Sein
       unsigned short GetAvailableCount() const override;
 
     private:
-      std::unique_ptr<ID3D12DescriptorHeap> heap; ///< ディスクリプターヒープ
-      unsigned int incrementSize;                 ///< インクリメントサイズ
-      unsigned int createdCount;                  ///< 生成したディスクリプター数
-      unsigned int availableCount;                ///< 生成可能なディスクリプター数
+      std::unique_ptr<ID3D12DescriptorHeap, void(*)(IUnknown*)> heap; ///< ディスクリプターヒープ
+      unsigned int incrementSize;   ///< インクリメントサイズ
+      unsigned int createdCount;    ///< 生成したディスクリプター数
+      unsigned int availableCount;  ///< 生成可能なディスクリプター数
     };
   };
 };

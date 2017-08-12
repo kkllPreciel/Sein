@@ -26,6 +26,7 @@ namespace Sein
     class Fence;
     class ConstantBuffer;
     class ShaderResourceBuffer;
+    class DescriptorHeap;
 
     /**
      *  @brief  Direct3D12用デバイスクラス(スワップチェインも一緒)
@@ -91,13 +92,12 @@ namespace Sein
       ID3D12Device& GetDevice() const;
 
     private:
-      ID3D12Device*               device;           ///< デバイス
-      IDXGISwapChain3*            swapChain;        ///< スワップチェイン
-      ID3D12CommandQueue*         commandQueue;     ///< コマンドキュー
-      ID3D12CommandAllocator*     commandAllocator; ///< コマンドアロケーター
-      ID3D12GraphicsCommandList*  commandList;      ///< コマンドリスト
-      ID3D12DescriptorHeap*       descriptorHeap;   ///< ディスクリプターヒープ
-      unsigned int                descriptorSize;   ///< ディスクリプターのサイズ
+      ID3D12Device*               device;             ///< デバイス
+      IDXGISwapChain3*            swapChain;          ///< スワップチェイン
+      ID3D12CommandQueue*         commandQueue;       ///< コマンドキュー
+      ID3D12CommandAllocator*     commandAllocator;   ///< コマンドアロケーター
+      ID3D12GraphicsCommandList*  commandList;        ///< コマンドリスト
+      std::unique_ptr<DescriptorHeap> descriptorHeap; ///< ディスクリプターヒープ
 
       // 後々ダブルバッファクラスへ移動
       static const unsigned int FrameCount = 2;               ///< フレーム数(ダブルバッファ)

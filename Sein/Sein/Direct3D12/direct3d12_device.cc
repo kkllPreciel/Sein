@@ -18,6 +18,7 @@
 #include "index_buffer.h"
 #include "constant_buffer.h"
 #include "shader_resource_buffer.h"
+#include "descriptor_heap.h"
 
 namespace Sein
 {
@@ -28,7 +29,7 @@ namespace Sein
      */
     Device::Device() :
       device(nullptr), swapChain(nullptr), commandQueue(nullptr), commandAllocator(nullptr),
-      commandList(nullptr), descriptorHeap(nullptr), descriptorSize(0), bufferIndex(0),
+      commandList(nullptr), descriptorHeap(nullptr), bufferIndex(0),
       rootSignature(nullptr), pipelineState(nullptr), cbvSrvHeap(nullptr), cbvBuffer(nullptr),
       depthStencilView(nullptr), fence(nullptr), srBuffer(nullptr), texBuffer(nullptr, [](IUnknown* p) { p->Release(); })
     {
@@ -213,30 +214,20 @@ namespace Sein
       // Alt + Enterでフルスクリーン化の機能を無効に設定
       factory->MakeWindowAssociation(handle, DXGI_MWA_NO_ALT_ENTER);
 
-      // ディスクリプターヒープの作成
+      // レンダーターゲットビュー用ディスクリプターヒープの作成
       // ディスクリプターはバッファの情報データ(テクスチャバッファ、頂点バッファ等)
       {
         D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
-        rtvHeapDesc.NumDescriptors = FrameCount;				// ディスクリプターヒープ内のディスクリプター数(フロントバッファ、バックバッファ)
-        rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;		// 種別はレンダーターゲットビュー
-        rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;	// シェーダーから参照しない
+        rtvHeapDesc.NumDescriptors = FrameCount;              // ディスクリプターヒープ内のディスクリプター数(フロントバッファ、バックバッファ)
+        rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;    // 種別はレンダーターゲットビュー
+        rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;  // シェーダーから参照しない
 
-        if (FAILED(device->CreateDescriptorHeap(
-          &rtvHeapDesc,	// ディスクリプターヒープの設定情報
-          IID_PPV_ARGS(&descriptorHeap
-          ))))
-        {
-          throw "ディスクリプターヒープの生成に失敗しました。";
-        }
-
-        // レンダーターゲット分のディスクリプターのサイズを取得する
-        descriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+        descriptorHeap = std::make_unique<DescriptorHeap>();
+        descriptorHeap->Create(device, rtvHeapDesc);
       }
 
       // ディスクリプターの登録
       {
-        D3D12_CPU_DESCRIPTOR_HANDLE renderTargetViewHandle(descriptorHeap->GetCPUDescriptorHandleForHeapStart());
-
         // フレームバッファ数文登録する
         for (auto i = 0; i < FrameCount; ++i)
         {
@@ -245,15 +236,15 @@ namespace Sein
             throw "バックバッファの取得に失敗しました。";
           }
 
+          auto renderTargetViewHandle = descriptorHeap->CreateDescriptor();
+
           // レンダーターゲットビュー用のディスクリプターを作成する
           // ディスクリプターヒープの領域に作成される
           device->CreateRenderTargetView(
-            renderTargetList[i],	// レンダー ターゲットを表すID3D12Resourceへのポインタ
-            nullptr,				// D3D12_RENDER_TARGET_VIEW_DESCへのポインタ
+            renderTargetList[i],  // レンダー ターゲットを表すID3D12Resourceへのポインタ
+            nullptr,              // D3D12_RENDER_TARGET_VIEW_DESCへのポインタ
             renderTargetViewHandle
           );
-
-          renderTargetViewHandle.ptr += descriptorSize;
         }
       }
 
@@ -308,7 +299,6 @@ namespace Sein
       }
 
       cbvSrvHeap.release()->Release();
-      descriptorHeap->Release();
       commandList->Release();
       commandAllocator->Release();
       commandQueue->Release();
@@ -345,9 +335,8 @@ namespace Sein
 
       // バックバッファを描画ターゲットとして設定する
       // デバイスへ深度ステンシルビューをバインドする
-      D3D12_CPU_DESCRIPTOR_HANDLE handle = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
-      handle.ptr += bufferIndex * descriptorSize;
-      D3D12_CPU_DESCRIPTOR_HANDLE depthHandle = depthStencilView->GetDescriptorHandle();
+      const auto handle = descriptorHeap->GetDescriptor(bufferIndex);
+      const auto depthHandle = depthStencilView->GetDescriptorHandle();
       commandList->OMSetRenderTargets(1, &handle, false, &depthHandle);
 
       // バックバッファをクリアする

@@ -86,6 +86,23 @@ namespace Sein
       ++createdCount;
       return handle;
     }
+
+    /**
+     *  @brief  ディスクリプターを取得する
+     *  @param  index:ディスクリプター番号
+     *  @return ディスクリプターハンドル
+     */
+    D3D12_CPU_DESCRIPTOR_HANDLE DescriptorHeap::GetDescriptor(const unsigned int index)
+    {
+      if (createdCount <= index)
+      {
+        throw "指定されたインデックスが生成済みのディスクリプターヒープ数を超えています";
+      }
+
+      auto handle = heap->GetCPUDescriptorHandleForHeapStart();
+      handle.ptr += incrementSize * index;
+      return handle;
+    }
     
     /**
      *  @brief  生成したディスクリプター数を取得する

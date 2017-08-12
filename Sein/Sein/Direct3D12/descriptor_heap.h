@@ -52,6 +52,13 @@ namespace Sein
       virtual D3D12_CPU_DESCRIPTOR_HANDLE CreateDescriptor() = 0;
 
       /**
+       *  @brief  ディスクリプターを取得する
+       *  @param  index:ディスクリプター番号
+       *  @return ディスクリプターハンドル
+       */
+      virtual D3D12_CPU_DESCRIPTOR_HANDLE GetDescriptor(const unsigned int index) = 0;
+
+      /**
        *  @brief  生成したディスクリプター数を取得する
        *  @return 生成したディスクリプター数
        */
@@ -103,6 +110,13 @@ namespace Sein
        *  @return ディスクリプターハンドル
        */
       D3D12_CPU_DESCRIPTOR_HANDLE CreateDescriptor() override;
+
+      /**
+       *  @brief  ディスクリプターを取得する
+       *  @param  index:ディスクリプター番号
+       *  @return ディスクリプターハンドル
+       */
+      D3D12_CPU_DESCRIPTOR_HANDLE GetDescriptor(const unsigned int index) override;
 
       /**
        *  @brief  生成したディスクリプター数を取得する

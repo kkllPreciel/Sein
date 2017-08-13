@@ -28,7 +28,7 @@ namespace Sein
       /**
        *  @brief  デストラクタ
        */
-      virtual ~IDescriptorHeap() {};
+      virtual ~IDescriptorHeap() = default;
 
       /**
        *  @brief  ディスクリプターヒープを生成する

@@ -24,7 +24,7 @@ namespace Sein
       /**
        *  @brief  デストラクタ
        */
-      virtual ~IDescriptor() {};
+      virtual ~IDescriptor() = default;
 
       /**
        *  @brief  CPUディスクリプターハンドルを取得する

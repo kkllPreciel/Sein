@@ -11,11 +11,14 @@
 // include
 #include <d3d12.h>
 #include <memory>
+#include <vector>
 
 namespace Sein
 {
   namespace Direct3D12
   {
+    class IDescriptor;
+
     /**
      *  @brief  ディスクリプターヒープ用interface
      */
@@ -49,14 +52,14 @@ namespace Sein
        *  @brief  ディスクリプターを生成する
        *  @return ディスクリプターハンドル
        */
-      virtual D3D12_CPU_DESCRIPTOR_HANDLE CreateDescriptor() = 0;
+      virtual const IDescriptor& CreateDescriptor() = 0;
 
       /**
        *  @brief  ディスクリプターを取得する
        *  @param  index:ディスクリプター番号
        *  @return ディスクリプターハンドル
        */
-      virtual D3D12_CPU_DESCRIPTOR_HANDLE GetDescriptor(const unsigned int index) = 0;
+      virtual const IDescriptor& GetDescriptor(const unsigned int index) = 0;
 
       /**
        *  @brief  生成したディスクリプター数を取得する
@@ -109,14 +112,14 @@ namespace Sein
        *  @brief  ディスクリプターを生成する
        *  @return ディスクリプターハンドル
        */
-      D3D12_CPU_DESCRIPTOR_HANDLE CreateDescriptor() override;
+      const IDescriptor& CreateDescriptor() override;
 
       /**
        *  @brief  ディスクリプターを取得する
        *  @param  index:ディスクリプター番号
        *  @return ディスクリプターハンドル
        */
-      D3D12_CPU_DESCRIPTOR_HANDLE GetDescriptor(const unsigned int index) override;
+      const IDescriptor& GetDescriptor(const unsigned int index) override;
 
       /**
        *  @brief  生成したディスクリプター数を取得する
@@ -146,9 +149,9 @@ namespace Sein
 
     private:
       std::unique_ptr<ID3D12DescriptorHeap, void(*)(IUnknown*)> heap; ///< ディスクリプターヒープ
-      unsigned int incrementSize;   ///< インクリメントサイズ
-      unsigned int createdCount;    ///< 生成したディスクリプター数
-      unsigned int availableCount;  ///< 生成可能なディスクリプター数
+      std::vector<IDescriptor*> descriptors;                          ///< ディスクリプター配列
+      unsigned int incrementSize;                                     ///< インクリメントサイズ
+      unsigned int availableCount;                                    ///< 生成可能なディスクリプター数
     };
   };
 };

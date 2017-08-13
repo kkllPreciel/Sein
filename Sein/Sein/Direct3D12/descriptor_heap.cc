@@ -8,6 +8,7 @@
 
  // include
 #include "descriptor_heap.h"
+#include "descriptor.h"
 
 namespace Sein
 {
@@ -16,7 +17,7 @@ namespace Sein
     /**
      *  @brief  コンストラクタ
      */
-    DescriptorHeap::DescriptorHeap() : heap(nullptr, [](IUnknown* p) {p->Release();}), incrementSize(0), createdCount(0), availableCount(0)
+    DescriptorHeap::DescriptorHeap() : heap(nullptr, [](IUnknown* p) {p->Release();}), incrementSize(0), availableCount(0)
     {
 
     }
@@ -46,8 +47,8 @@ namespace Sein
       }
       heap.reset(descriptor_heap);
       incrementSize = device->GetDescriptorHandleIncrementSize(desc.Type);
-      createdCount = 0;
       availableCount = desc.NumDescriptors;
+      descriptors.reserve(desc.NumDescriptors);
     }
     
     /**
@@ -59,6 +60,8 @@ namespace Sein
       {
         heap.reset(nullptr);
       }
+
+      descriptors.clear();
     }
     
     /**
@@ -69,39 +72,41 @@ namespace Sein
     {
       return heap.get();
     }
-    
+
     /**
      *  @brief  ディスクリプターを生成する
      *  @return ディスクリプターハンドル
      */
-    D3D12_CPU_DESCRIPTOR_HANDLE DescriptorHeap::CreateDescriptor()
+    const IDescriptor& DescriptorHeap::CreateDescriptor()
     {
+      auto createdCount = descriptors.size();
       if (availableCount <= createdCount)
       {
-        throw "生成可能なディスクリプターヒープ数を超えています";
+        throw "生成可能なディスクリプター数を超えています";
       }
 
-      auto handle = heap->GetCPUDescriptorHandleForHeapStart();
-      handle.ptr += incrementSize * createdCount;
-      ++createdCount;
-      return handle;
+      auto handleForCPU = heap->GetCPUDescriptorHandleForHeapStart();
+      auto handleForGPU = heap->GetGPUDescriptorHandleForHeapStart();
+      handleForCPU.ptr += incrementSize * createdCount;
+      handleForGPU.ptr += incrementSize * createdCount;
+      descriptors.push_back(new Descriptor(handleForCPU, handleForGPU));
+      return *(descriptors.at(createdCount));
     }
-
+    
     /**
      *  @brief  ディスクリプターを取得する
      *  @param  index:ディスクリプター番号
      *  @return ディスクリプターハンドル
      */
-    D3D12_CPU_DESCRIPTOR_HANDLE DescriptorHeap::GetDescriptor(const unsigned int index)
+    const IDescriptor& DescriptorHeap::GetDescriptor(const unsigned int index)
     {
+      auto createdCount = descriptors.size();
       if (createdCount <= index)
       {
-        throw "指定されたインデックスが生成済みのディスクリプターヒープ数を超えています";
+        throw "指定されたインデックスが生成済みのディスクリプター数を超えています";
       }
 
-      auto handle = heap->GetCPUDescriptorHandleForHeapStart();
-      handle.ptr += incrementSize * index;
-      return handle;
+      return *(descriptors.at(index));
     }
     
     /**
@@ -110,7 +115,7 @@ namespace Sein
      */
     unsigned short DescriptorHeap::GetCreatedCount() const
     {
-      return createdCount;
+      return static_cast<unsigned short>(descriptors.size());
     }
     
     /**
@@ -119,7 +124,7 @@ namespace Sein
      */
     unsigned short DescriptorHeap::GetAvailableCount() const
     {
-      return availableCount - createdCount;
+      return availableCount - static_cast<unsigned int>(descriptors.size());
     }
   };
 };

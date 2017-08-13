@@ -19,6 +19,7 @@
 #include "constant_buffer.h"
 #include "shader_resource_buffer.h"
 #include "descriptor_heap.h"
+#include "descriptor.h"
 
 namespace Sein
 {
@@ -236,14 +237,14 @@ namespace Sein
             throw "バックバッファの取得に失敗しました。";
           }
 
-          auto renderTargetViewHandle = descriptorHeap->CreateDescriptor();
+          const auto& descriptor = descriptorHeap->CreateDescriptor();
 
           // レンダーターゲットビュー用のディスクリプターを作成する
           // ディスクリプターヒープの領域に作成される
           device->CreateRenderTargetView(
             renderTargetList[i],  // レンダー ターゲットを表すID3D12Resourceへのポインタ
             nullptr,              // D3D12_RENDER_TARGET_VIEW_DESCへのポインタ
-            renderTargetViewHandle
+            descriptor.GetHandleForCPU()
           );
         }
       }
@@ -335,13 +336,13 @@ namespace Sein
 
       // バックバッファを描画ターゲットとして設定する
       // デバイスへ深度ステンシルビューをバインドする
-      const auto handle = descriptorHeap->GetDescriptor(bufferIndex);
+      const auto& descriptor = descriptorHeap->GetDescriptor(bufferIndex);
       const auto depthHandle = depthStencilView->GetDescriptorHandle();
-      commandList->OMSetRenderTargets(1, &handle, false, &depthHandle);
+      commandList->OMSetRenderTargets(1, &descriptor.GetHandleForCPU(), false, &depthHandle);
 
       // バックバッファをクリアする
       const float Color[] = { 0.0f, 0.0f, 0.6f, 1.0f };
-      commandList->ClearRenderTargetView(handle, Color, 0, nullptr);
+      commandList->ClearRenderTargetView(descriptor.GetHandleForCPU(), Color, 0, nullptr);
 
       // 深度ステンシルビューをクリアする(深度バッファのみ)
       commandList->ClearDepthStencilView(depthHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);

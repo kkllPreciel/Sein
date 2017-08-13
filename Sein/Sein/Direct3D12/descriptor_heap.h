@@ -131,6 +131,20 @@ namespace Sein
       unsigned short GetAvailableCount() const override;
 
     private:
+      /**
+       *  @brief  コピーコンストラクタ
+       *  @param  other:コピー元のインスタンス
+       */
+      DescriptorHeap(const DescriptorHeap& other) = delete;
+
+      /**
+       *  @brief  代入演算子オペレータ
+       *  @param  other:代入元のインスタンス
+       *  @return 代入後のインスタンス
+       */
+      DescriptorHeap& operator = (const DescriptorHeap& other) = delete;
+
+    private:
       std::unique_ptr<ID3D12DescriptorHeap, void(*)(IUnknown*)> heap; ///< ディスクリプターヒープ
       unsigned int incrementSize;   ///< インクリメントサイズ
       unsigned int createdCount;    ///< 生成したディスクリプター数

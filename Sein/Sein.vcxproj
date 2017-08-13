@@ -138,6 +138,7 @@
     <ClCompile Include="Sein\Direct3D12\buffer.cc" />
     <ClCompile Include="Sein\Direct3D12\constant_buffer.cc" />
     <ClCompile Include="Sein\Direct3D12\depth_stencil_view.cc" />
+    <ClCompile Include="Sein\Direct3D12\descriptor.cc" />
     <ClCompile Include="Sein\Direct3D12\descriptor_heap.cc" />
     <ClCompile Include="Sein\Direct3D12\direct3d12_device.cc" />
     <ClCompile Include="Sein\Direct3D12\fence.cc" />
@@ -151,6 +152,7 @@
     <ClInclude Include="Sein\Direct3D12\buffer.h" />
     <ClInclude Include="Sein\Direct3D12\constant_buffer.h" />
     <ClInclude Include="Sein\Direct3D12\depth_stencil_view.h" />
+    <ClInclude Include="Sein\Direct3D12\descriptor.h" />
     <ClInclude Include="Sein\Direct3D12\descriptor_heap.h" />
     <ClInclude Include="Sein\Direct3D12\direct3d12_device.h" />
     <ClInclude Include="Sein\Direct3D12\fence.h" />

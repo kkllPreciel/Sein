@@ -14,11 +14,9 @@ namespace Sein
   namespace Direct3D12
   {
     /**
-     *  @brief  引数付きコンストラクタ
-     *  @param  handleForCPU:CPUハンドル
-     *  @param  handleForGPU:GPUハンドル
+     *  @brief  コンストラクタ
      */
-    Descriptor::Descriptor(const D3D12_CPU_DESCRIPTOR_HANDLE& handleForCPU, const D3D12_GPU_DESCRIPTOR_HANDLE& handleForGPU) : handleCPU(handleForCPU), handleGPU(handleForGPU)
+    Descriptor::Descriptor() : handleCPU({}), handleGPU({})
     {
 
     }
@@ -29,6 +27,17 @@ namespace Sein
     Descriptor::~Descriptor()
     {
 
+    }
+
+    /**
+     *  @brief  ディスクリプターを生成する
+     *  @param  handleForCPU:CPUハンドル
+     *  @param  handleForGPU:GPUハンドル
+     */
+    void Descriptor::Create(const D3D12_CPU_DESCRIPTOR_HANDLE& handleForCPU, const D3D12_GPU_DESCRIPTOR_HANDLE& handleForGPU)
+    {
+      handleCPU = handleForCPU;
+      handleGPU = handleForGPU;
     }
     
     /**

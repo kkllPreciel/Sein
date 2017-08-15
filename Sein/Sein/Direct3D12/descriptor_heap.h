@@ -11,13 +11,13 @@
 // include
 #include <d3d12.h>
 #include <memory>
-#include <vector>
 
 namespace Sein
 {
   namespace Direct3D12
   {
     class IDescriptor;
+    class Descriptor;
 
     /**
      *  @brief  ディスクリプターヒープ用interface
@@ -149,9 +149,10 @@ namespace Sein
 
     private:
       std::unique_ptr<ID3D12DescriptorHeap, void(*)(IUnknown*)> heap; ///< ディスクリプターヒープ
-      std::vector<IDescriptor*> descriptors;                          ///< ディスクリプター配列
+      std::unique_ptr<Descriptor[]> descriptors;                      ///< ディスクリプター配列
       unsigned int incrementSize;                                     ///< インクリメントサイズ
       unsigned int availableCount;                                    ///< 生成可能なディスクリプター数
+      unsigned int createdCount;                                      ///< 生成したディスクリプター数
     };
   };
 };

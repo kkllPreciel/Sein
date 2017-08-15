@@ -46,16 +46,21 @@ namespace Sein
     {
     public:
       /**
-       *  @brief  引数付きコンストラクタ
-       *  @param  handleForCPU:CPUハンドル
-       *  @param  handleForGPU:GPUハンドル
+       *  @brief  コンストラクタ
        */
-      Descriptor(const D3D12_CPU_DESCRIPTOR_HANDLE& handleForCPU, const D3D12_GPU_DESCRIPTOR_HANDLE& handleForGPU);
+      Descriptor();
 
       /**
        *  @brief  デストラクタ
        */
       ~Descriptor() override;
+
+      /**
+       *  @brief  ディスクリプターを生成する
+       *  @param  handleForCPU:CPUハンドル
+       *  @param  handleForGPU:GPUハンドル
+       */
+      void Create(const D3D12_CPU_DESCRIPTOR_HANDLE& handleForCPU, const D3D12_GPU_DESCRIPTOR_HANDLE& handleForGPU);
 
       /**
        *  @brief  CPUディスクリプターハンドルを取得する
@@ -70,11 +75,6 @@ namespace Sein
       D3D12_GPU_DESCRIPTOR_HANDLE GetHandleForGPU() const override;
 
     private:
-      /**
-       *  @brief  コンストラクタ
-       */
-      Descriptor() = delete;
-
       /**
        *  @brief  コピーコンストラクタ
        *  @param  other:コピー元のインスタンス

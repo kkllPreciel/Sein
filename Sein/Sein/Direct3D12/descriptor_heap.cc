@@ -17,7 +17,7 @@ namespace Sein
     /**
      *  @brief  コンストラクタ
      */
-    DescriptorHeap::DescriptorHeap() : heap(nullptr, [](IUnknown* p) {p->Release();}), incrementSize(0), availableCount(0)
+    DescriptorHeap::DescriptorHeap() : heap(nullptr, [](IUnknown* p) {p->Release();}), descriptors(nullptr), incrementSize(0), availableCount(0), createdCount(0)
     {
 
     }
@@ -47,8 +47,9 @@ namespace Sein
       }
       heap.reset(descriptor_heap);
       incrementSize = device->GetDescriptorHandleIncrementSize(desc.Type);
+      descriptors = std::make_unique<Descriptor[]>(desc.NumDescriptors);
       availableCount = desc.NumDescriptors;
-      descriptors.reserve(desc.NumDescriptors);
+      createdCount = 0;
     }
     
     /**
@@ -56,12 +57,8 @@ namespace Sein
      */
     void DescriptorHeap::Release()
     {
-      if (heap)
-      {
-        heap.reset(nullptr);
-      }
-
-      descriptors.clear();
+      heap.reset(nullptr);
+      descriptors.reset(nullptr);
     }
     
     /**
@@ -79,7 +76,6 @@ namespace Sein
      */
     const IDescriptor& DescriptorHeap::CreateDescriptor()
     {
-      auto createdCount = descriptors.size();
       if (availableCount <= createdCount)
       {
         throw "生成可能なディスクリプター数を超えています";
@@ -89,8 +85,8 @@ namespace Sein
       auto handleForGPU = heap->GetGPUDescriptorHandleForHeapStart();
       handleForCPU.ptr += incrementSize * createdCount;
       handleForGPU.ptr += incrementSize * createdCount;
-      descriptors.push_back(new Descriptor(handleForCPU, handleForGPU));
-      return *(descriptors.at(createdCount));
+      descriptors[createdCount].Create(handleForCPU, handleForGPU);
+      return descriptors[createdCount++];
     }
     
     /**
@@ -100,13 +96,12 @@ namespace Sein
      */
     const IDescriptor& DescriptorHeap::GetDescriptor(const unsigned int index)
     {
-      auto createdCount = descriptors.size();
       if (createdCount <= index)
       {
         throw "指定されたインデックスが生成済みのディスクリプター数を超えています";
       }
 
-      return *(descriptors.at(index));
+      return descriptors[index];
     }
     
     /**
@@ -115,7 +110,7 @@ namespace Sein
      */
     unsigned short DescriptorHeap::GetCreatedCount() const
     {
-      return static_cast<unsigned short>(descriptors.size());
+      return static_cast<unsigned short>(createdCount);
     }
     
     /**
@@ -124,7 +119,7 @@ namespace Sein
      */
     unsigned short DescriptorHeap::GetAvailableCount() const
     {
-      return availableCount - static_cast<unsigned int>(descriptors.size());
+      return availableCount - static_cast<unsigned int>(createdCount);
     }
   };
 };

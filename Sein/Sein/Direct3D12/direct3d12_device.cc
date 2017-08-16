@@ -452,12 +452,6 @@ namespace Sein
           descriptorRanges[1].BaseShaderRegister = 0;														// 範囲内のベースシェーダレジスタ
           descriptorRanges[1].RegisterSpace = 0;															// レジスタ空間(TODO:調べる)
           descriptorRanges[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;	// ルートシグネチャ開始からのディスクリプタのオフセット?
-
-          descriptorRanges[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;								// ディスクリプターの種別(シェーダーリソースビュー)
-          descriptorRanges[2].NumDescriptors = 1;															// ディスクリプターの数
-          descriptorRanges[2].BaseShaderRegister = 0;														// 範囲内のベースシェーダレジスタ
-          descriptorRanges[2].RegisterSpace = 0;															// レジスタ空間(TODO:調べる)
-          descriptorRanges[2].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;	// ルートシグネチャ開始からのディスクリプタのオフセット?
         }
 
         // ルートパラメータの設定
@@ -728,8 +722,8 @@ namespace Sein
       auto handleCbv = cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();
       auto handleSrv = cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();
       auto handleTrv = cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();
-      handleSrv.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-      handleTrv.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * 2;
+      handleTrv.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+      handleCbv.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * 2;
       commandList->SetGraphicsRootDescriptorTable(0, handleCbv);
       commandList->SetGraphicsRootDescriptorTable(1, handleSrv);
       commandList->SetGraphicsRootDescriptorTable(2, handleTrv);

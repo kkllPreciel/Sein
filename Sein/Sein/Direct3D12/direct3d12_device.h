@@ -86,18 +86,25 @@ namespace Sein
       void Present();
 
       /**
+       *  @brief  定数バッファを作成する
+       *  @param  size:定数バッファのサイズ
+       *  @return 定数バッファへのポインタ
+       */
+      ConstantBuffer* CreateConstantBuffer(const unsigned int size);
+
+      /**
        *  @brief  デバイスを取得する
        *  @return デバイスへの参照
        */
       ID3D12Device& GetDevice() const;
 
     private:
-      ID3D12Device*               device;             ///< デバイス
-      IDXGISwapChain3*            swapChain;          ///< スワップチェイン
-      ID3D12CommandQueue*         commandQueue;       ///< コマンドキュー
-      ID3D12CommandAllocator*     commandAllocator;   ///< コマンドアロケーター
-      ID3D12GraphicsCommandList*  commandList;        ///< コマンドリスト
-      std::unique_ptr<DescriptorHeap> descriptorHeap; ///< ディスクリプターヒープ
+      ID3D12Device*               device;                 ///< デバイス
+      IDXGISwapChain3*            swapChain;              ///< スワップチェイン
+      ID3D12CommandQueue*         commandQueue;           ///< コマンドキュー
+      ID3D12CommandAllocator*     commandAllocator;       ///< コマンドアロケーター
+      ID3D12GraphicsCommandList*  commandList;            ///< コマンドリスト
+      std::unique_ptr<DescriptorHeap[]> descriptorHeaps;  ///< ディスクリプターヒープ配列
 
       // 後々ダブルバッファクラスへ移動
       static const unsigned int FrameCount = 2;               ///< フレーム数(ダブルバッファ)
@@ -138,32 +145,6 @@ namespace Sein
        *  @param  indexBuffer:頂点インデックスバッファ
        */
       void Render(const VertexBuffer& vertebBuffer, const IndexBuffer& indexBuffer);
-#pragma endregion
-
-      // 定数バッファ関連
-      // 後々別クラスへ移動
-#pragma region ConstantBuffer
-
-      /**
-       *  @brief  定数バッファ用構造体
-       */
-      struct ConstantBufferType
-      {
-        DirectX::XMFLOAT4X4 world;      ///< ワールド行列(世界空間)
-        DirectX::XMFLOAT4X4 view;       ///< ビュー行列(視線空間)
-        DirectX::XMFLOAT4X4 projection; ///< プロジェクション行列(射影空間)
-      };
-
-      std::unique_ptr<ID3D12DescriptorHeap> cbvSrvHeap;         ///< 定数バッファビュー、シェーダーリソースビュー用ディスクリプターヒープ
-      std::unique_ptr<ConstantBuffer>       cbvBuffer;          ///< 定数バッファ
-      ConstantBufferType                    constantBufferData; ///< 定数バッファ用のデータ
-
-    private:
-      /**
-       *  @brief  定数バッファを作成する
-       */
-      void CreateConstantBuffer();
-
 #pragma endregion
 
       // 深度ステンシルビュー関連

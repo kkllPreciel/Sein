@@ -30,8 +30,8 @@ namespace Sein
      */
     Device::Device() :
       device(nullptr), swapChain(nullptr), commandQueue(nullptr), commandAllocator(nullptr),
-      commandList(nullptr), descriptorHeap(nullptr), bufferIndex(0),
-      rootSignature(nullptr), pipelineState(nullptr), cbvSrvHeap(nullptr), cbvBuffer(nullptr),
+      commandList(nullptr), descriptorHeaps(nullptr), bufferIndex(0),
+      rootSignature(nullptr), pipelineState(nullptr),
       depthStencilView(nullptr), fence(nullptr), srBuffer(nullptr), texBuffer(nullptr, [](IUnknown* p) { p->Release(); })
     {
       for (auto i = 0; i < FrameCount; ++i)
@@ -215,37 +215,55 @@ namespace Sein
       // Alt + Enterでフルスクリーン化の機能を無効に設定
       factory->MakeWindowAssociation(handle, DXGI_MWA_NO_ALT_ENTER);
 
-      // レンダーターゲットビュー用ディスクリプターヒープの作成
-      // ディスクリプターはバッファの情報データ(テクスチャバッファ、頂点バッファ等)
+      // ディスクリプターヒープ用メモリ領域の確保
       {
-        D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
-        rtvHeapDesc.NumDescriptors = FrameCount;              // ディスクリプターヒープ内のディスクリプター数(フロントバッファ、バックバッファ)
-        rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;    // 種別はレンダーターゲットビュー
-        rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;  // シェーダーから参照しない
-
-        descriptorHeap = std::make_unique<DescriptorHeap>();
-        descriptorHeap->Create(device, rtvHeapDesc);
+        descriptorHeaps = std::make_unique<DescriptorHeap[]>(D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES);
       }
 
-      // ディスクリプターの登録
+      // 定数バッファビュー、シェーダーリソースビュー用ディスクリプターヒープを生成
       {
-        // フレームバッファ数文登録する
-        for (auto i = 0; i < FrameCount; ++i)
+        auto& cbvSrvHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV];
+        D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDesc = {};
+        cbvHeapDesc.NumDescriptors = 3;                                 // ディスクリプターヒープ内のディスクリプター数(定数バッファ、シェーダーリソース)
+        cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;      // 定数バッファ or シェーダーリソース(テクスチャ) or ランダムアクセス のどれかのヒープ
+        cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;  // シェーダーからアクセス可
+        cbvSrvHeap.Create(device, cbvHeapDesc);
+      }
+
+      // レンダーターゲット
+      {
+        auto& rtvDescriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_RTV];
+
+        // レンダーターゲットビュー用ディスクリプターヒープの作成
+        // ディスクリプターはバッファの情報データ(テクスチャバッファ、頂点バッファ等)
         {
-          if (FAILED(swapChain->GetBuffer(i, IID_PPV_ARGS(&renderTargetList[i]))))
+          D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
+          rtvHeapDesc.NumDescriptors = FrameCount;              // ディスクリプターヒープ内のディスクリプター数(フロントバッファ、バックバッファ)
+          rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;    // 種別はレンダーターゲットビュー
+          rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;  // シェーダーから参照しない
+          rtvDescriptorHeap.Create(device, rtvHeapDesc);
+        }
+
+        // ディスクリプターの登録
+        {
+          // フレームバッファ数文登録する
+          for (auto i = 0; i < FrameCount; ++i)
           {
-            throw "バックバッファの取得に失敗しました。";
+            if (FAILED(swapChain->GetBuffer(i, IID_PPV_ARGS(&renderTargetList[i]))))
+            {
+              throw "バックバッファの取得に失敗しました。";
+            }
+
+            const auto& descriptor = rtvDescriptorHeap.CreateDescriptor();
+
+            // レンダーターゲットビュー用のディスクリプターを作成する
+            // ディスクリプターヒープの領域に作成される
+            device->CreateRenderTargetView(
+              renderTargetList[i],  // レンダー ターゲットを表すID3D12Resourceへのポインタ
+              nullptr,              // D3D12_RENDER_TARGET_VIEW_DESCへのポインタ
+              descriptor.GetHandleForCPU()
+            );
           }
-
-          const auto& descriptor = descriptorHeap->CreateDescriptor();
-
-          // レンダーターゲットビュー用のディスクリプターを作成する
-          // ディスクリプターヒープの領域に作成される
-          device->CreateRenderTargetView(
-            renderTargetList[i],  // レンダー ターゲットを表すID3D12Resourceへのポインタ
-            nullptr,              // D3D12_RENDER_TARGET_VIEW_DESCへのポインタ
-            descriptor.GetHandleForCPU()
-          );
         }
       }
 
@@ -291,7 +309,6 @@ namespace Sein
       depthStencilView->Release();
       delete depthStencilView;
       depthStencilView = nullptr;
-      cbvBuffer->Release();
       rootSignature->Release();
 
       for (auto i = 0; i < FrameCount; ++i)
@@ -299,7 +316,6 @@ namespace Sein
         renderTargetList[i]->Release();
       }
 
-      cbvSrvHeap.release()->Release();
       commandList->Release();
       commandAllocator->Release();
       commandQueue->Release();
@@ -336,7 +352,8 @@ namespace Sein
 
       // バックバッファを描画ターゲットとして設定する
       // デバイスへ深度ステンシルビューをバインドする
-      const auto& descriptor = descriptorHeap->GetDescriptor(bufferIndex);
+      auto& rtvDescriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_RTV];
+      const auto& descriptor = rtvDescriptorHeap.GetDescriptor(bufferIndex);
       const auto depthHandle = depthStencilView->GetDescriptorHandle();
       commandList->OMSetRenderTargets(1, &descriptor.GetHandleForCPU(), false, &depthHandle);
 
@@ -404,11 +421,6 @@ namespace Sein
      */
     void Device::LoadAssets(unsigned int width, unsigned int height)
     {
-      // 定数バッファの生成
-      {
-        CreateConstantBuffer();
-      }
-
       // 深度ステンシルビューの作成
       {
         CreateDepthStencilView(width, height);
@@ -670,27 +682,6 @@ namespace Sein
      */
     void Device::Render(const VertexBuffer& vertebBuffer, const IndexBuffer& indexBuffer)
     {
-      static float now = 0.0f;
-      static float angle = DirectX::XM_PI / 180.0f;
-
-      // 回転
-      now += angle;
-
-      // ワールド行列を更新
-      DirectX::XMStoreFloat4x4(&(constantBufferData.world), DirectX::XMMatrixRotationY(now));
-
-      // ビュー行列を作成
-      DirectX::XMVECTORF32 eye = { 0.0f, 10.0f, -30.5f, 0.0f };
-      DirectX::XMVECTORF32 at = { 0.0f, 10.0f, 0.0f, 0.0f };
-      DirectX::XMVECTORF32 up = { 0.0f, 1.0f, 0.0f, 0.0f };
-      DirectX::XMStoreFloat4x4(&(constantBufferData.view), DirectX::XMMatrixLookAtLH(eye, at, up));
-
-      // プロジェクション行列を作成
-      DirectX::XMStoreFloat4x4(&(constantBufferData.projection), DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PI / 3.0f, 600.0f / 400.0f, 0.1f, 1000.0f));
-
-      // 定数バッファを更新
-      cbvBuffer->Map(&constantBufferData, sizeof(ConstantBufferType));
-
       // ビューポートの作成
       D3D12_VIEWPORT viewport;
       viewport.TopLeftX = 0;
@@ -714,8 +705,8 @@ namespace Sein
       commandList->SetGraphicsRootSignature(rootSignature);
 
       // 描画に使用するディスクリプターヒープを設定
-      ID3D12DescriptorHeap *heap = cbvSrvHeap.get();
-      commandList->SetDescriptorHeaps(1, &heap);
+      auto cbvSrvHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV].Get();
+      commandList->SetDescriptorHeaps(1, &cbvSrvHeap);
 
       // ビューポートの設定
       commandList->RSSetViewports(1, &viewport);
@@ -748,6 +739,21 @@ namespace Sein
     }
 
     /**
+     *  @brief  定数バッファを作成する
+     *  @param  size:定数バッファのサイズ
+     *  @return 定数バッファへのポインタ
+     */
+    ConstantBuffer* Device::CreateConstantBuffer(const unsigned int size)
+    {
+      auto constantBuffer = new ConstantBuffer();
+      auto& descriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV];
+      auto& descriptor = descriptorHeap.CreateDescriptor();
+      constantBuffer->Create(device, descriptor.GetHandleForCPU(), size);
+
+      return constantBuffer;
+    }
+
+    /**
      *  @brief  デバイスを取得する
      *  @return デバイスへの参照
      */
@@ -755,43 +761,6 @@ namespace Sein
     {
       return *device;
     }
-
-    // 後々別クラスへ移動する
-#pragma region ConstantBuffer
-
-    /**
-     *  @brief  定数バッファを作成する
-     */
-    void Device::CreateConstantBuffer()
-    {
-      // 定数バッファビュー、シェーダーリソースビュー用ディスクリプターヒープを生成
-      {
-        D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDesc = {};
-        cbvHeapDesc.NumDescriptors = 3;                                 // ディスクリプターヒープ内のディスクリプター数(定数バッファ、シェーダーリソース)
-        cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;      // 定数バッファ or シェーダーリソース(テクスチャ) or ランダムアクセス のどれかのヒープ
-        cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;  // シェーダーからアクセス可
-
-        ID3D12DescriptorHeap* heap = nullptr;
-        if (device->CreateDescriptorHeap(&cbvHeapDesc, IID_PPV_ARGS(&heap)))
-        {
-          throw "定数バッファ用ディスクリプターヒープの生成に失敗しました。";
-        }
-        cbvSrvHeap.reset(heap);
-      }
-
-      // 定数バッファを生成
-      {
-        cbvBuffer.reset(new ConstantBuffer());
-        cbvBuffer->Create(device, cbvSrvHeap.get()->GetCPUDescriptorHandleForHeapStart(), sizeof(ConstantBufferType));
-
-        // 定数バッファデータの初期化
-        DirectX::XMStoreFloat4x4(&(constantBufferData.world), DirectX::XMMatrixIdentity());
-        DirectX::XMStoreFloat4x4(&(constantBufferData.view), DirectX::XMMatrixIdentity());
-        DirectX::XMStoreFloat4x4(&(constantBufferData.projection), DirectX::XMMatrixIdentity());
-        cbvBuffer->Map(&constantBufferData, sizeof(ConstantBufferType));
-      }
-    }
-#pragma endregion
 
     // 深度ステンシルビュー関連
 #pragma region DepthStencliView
@@ -823,10 +792,10 @@ namespace Sein
         properties.CreationNodeMask = 1;                              // 恐らくヒープが生成されるアダプター(GPU)の番号
         properties.VisibleNodeMask = 1;                               // 恐らくヒープが表示されるアダプター(GPU)の番号
 
-        auto handle = cbvSrvHeap->GetCPUDescriptorHandleForHeapStart();
-        handle.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        auto& descriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV];
+        auto& descriptor = descriptorHeap.CreateDescriptor();
         srBuffer.reset(new ShaderResourceBuffer());
-        srBuffer->Create(device, handle, INSTANCE_NUM, sizeof(InstanceBuffer));
+        srBuffer->Create(device, descriptor.GetHandleForCPU(), INSTANCE_NUM, sizeof(InstanceBuffer));
 
         // インスタンス個別のデータを初期化
         instanceBufferData.resize(INSTANCE_NUM);
@@ -1029,9 +998,9 @@ namespace Sein
         srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
         srvDesc.Texture2D.MipLevels = 1;
 
-        auto handle = cbvSrvHeap->GetCPUDescriptorHandleForHeapStart();
-        handle.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * 2;
-        device->CreateShaderResourceView(texBuffer.get(), &srvDesc, handle);
+        auto& descriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV];
+        auto& descriptor = descriptorHeap.CreateDescriptor();
+        device->CreateShaderResourceView(texBuffer.get(), &srvDesc, descriptor.GetHandleForCPU());
       }
     }
 #pragma endregion

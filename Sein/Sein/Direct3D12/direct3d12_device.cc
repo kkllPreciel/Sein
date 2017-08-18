@@ -32,7 +32,7 @@ namespace Sein
       device(nullptr), swapChain(nullptr), commandQueue(nullptr), commandAllocator(nullptr),
       commandList(nullptr), descriptorHeaps(nullptr), bufferIndex(0),
       rootSignature(nullptr), pipelineState(nullptr),
-      depthStencilView(nullptr), fence(nullptr), srBuffer(nullptr), texBuffer(nullptr, [](IUnknown* p) { p->Release(); })
+      depthStencilView(nullptr), fence(nullptr), texBuffer(nullptr, [](IUnknown* p) { p->Release(); })
     {
       for (auto i = 0; i < FrameCount; ++i)
       {
@@ -300,11 +300,6 @@ namespace Sein
         fence = nullptr;
       }
 
-      // インスタンスバッファの削除
-      {
-        srBuffer->Release();
-      }
-
       pipelineState->Release();
       depthStencilView->Release();
       delete depthStencilView;
@@ -424,11 +419,6 @@ namespace Sein
       // 深度ステンシルビューの作成
       {
         CreateDepthStencilView(width, height);
-      }
-
-      // インスタンスバッファの生成
-      {
-        CreateInstanceBuffer();
       }
 
       // テクスチャバッファの生成
@@ -673,8 +663,9 @@ namespace Sein
      *  @brief  描画する
      *  @param  vertexBuffer:頂点バッファ
      *  @param  indexBuffer:頂点インデックスバッファ
+     *  @param  instanceCount:インスタンス数
      */
-    void Device::Render(const VertexBuffer& vertebBuffer, const IndexBuffer& indexBuffer)
+    void Device::Render(const VertexBuffer& vertebBuffer, const IndexBuffer& indexBuffer, const unsigned int instanceCount)
     {
       // ビューポートの作成
       D3D12_VIEWPORT viewport;
@@ -722,14 +713,14 @@ namespace Sein
       auto handleCbv = cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();
       auto handleSrv = cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();
       auto handleTrv = cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();
-      handleTrv.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-      handleCbv.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * 2;
+      handleCbv.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+      handleSrv.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * 2;
       commandList->SetGraphicsRootDescriptorTable(0, handleCbv);
       commandList->SetGraphicsRootDescriptorTable(1, handleSrv);
       commandList->SetGraphicsRootDescriptorTable(2, handleTrv);
 
       // 描画コマンドの生成
-      commandList->DrawIndexedInstanced(321567, INSTANCE_NUM, 0, 0, 0);
+      commandList->DrawIndexedInstanced(321567, instanceCount, 0, 0, 0);
     }
 
     /**
@@ -745,6 +736,30 @@ namespace Sein
       constantBuffer->Create(device, descriptor.GetHandleForCPU(), size);
 
       return constantBuffer;
+    }
+
+    /**
+     *  @brief  シェーダーリソースバッファを作成する
+     *  @param  num:リソース内の要素数
+     *  @param  size:リソース内の1要素のサイズ
+     *  @return シェーダーリソースバッファへのポインタ
+     */
+    ShaderResourceBuffer* Device::CreateShaderResourceBuffer(const unsigned int num, const unsigned int size)
+    {
+      // ヒープの設定
+      D3D12_HEAP_PROPERTIES properties;
+      properties.Type = D3D12_HEAP_TYPE_UPLOAD;                     // ヒープの種類(今回はCPU、GPUからアクセス可能なヒープに設定)
+      properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN; // CPUページプロパティ(不明に設定)
+      properties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;  // ヒープのメモリプール(不明に設定)
+      properties.CreationNodeMask = 1;                              // 恐らくヒープが生成されるアダプター(GPU)の番号
+      properties.VisibleNodeMask = 1;                               // 恐らくヒープが表示されるアダプター(GPU)の番号
+
+      auto shaderResourceBuffer = new ShaderResourceBuffer();
+      auto& descriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV];
+      auto& descriptor = descriptorHeap.CreateDescriptor();
+      shaderResourceBuffer->Create(device, descriptor.GetHandleForCPU(), num, size);
+
+      return shaderResourceBuffer;
     }
 
     /**
@@ -767,43 +782,6 @@ namespace Sein
     {
       depthStencilView = new DepthStencilView();
       depthStencilView->Create(device, width, height);
-    }
-#pragma endregion
-
-#pragma region InstanceBuffer
-    /**
-     *  @brief  インスタンスバッファを作成する
-     */
-    void Device::CreateInstanceBuffer()
-    {
-      // インスタンスバッファを生成
-      {
-        // ヒープの設定
-        D3D12_HEAP_PROPERTIES properties;
-        properties.Type = D3D12_HEAP_TYPE_UPLOAD;                     // ヒープの種類(今回はCPU、GPUからアクセス可能なヒープに設定)
-        properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN; // CPUページプロパティ(不明に設定)
-        properties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;  // ヒープのメモリプール(不明に設定)
-        properties.CreationNodeMask = 1;                              // 恐らくヒープが生成されるアダプター(GPU)の番号
-        properties.VisibleNodeMask = 1;                               // 恐らくヒープが表示されるアダプター(GPU)の番号
-
-        auto& descriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV];
-        auto& descriptor = descriptorHeap.CreateDescriptor();
-        srBuffer.reset(new ShaderResourceBuffer());
-        srBuffer->Create(device, descriptor.GetHandleForCPU(), INSTANCE_NUM, sizeof(InstanceBuffer));
-
-        // インスタンス個別のデータを初期化
-        instanceBufferData.resize(INSTANCE_NUM);
-        for (auto& instanceData : instanceBufferData)
-        {
-          DirectX::XMStoreFloat4x4(&(instanceData.world), DirectX::XMMatrixIdentity());
-        }
-        DirectX::XMStoreFloat4x4(&(instanceBufferData[0].world), DirectX::XMMatrixIdentity());
-        DirectX::XMStoreFloat4x4(&(instanceBufferData[1].world), DirectX::XMMatrixTranslation(1.0f, 1.0f, 1.0f));
-        DirectX::XMStoreFloat4x4(&(instanceBufferData[2].world), DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationZ(DirectX::XM_PI), DirectX::XMMatrixTranslation(2.0f, 2.0f, 2.0f)));
-        DirectX::XMStoreFloat4x4(&(instanceBufferData[3].world), DirectX::XMMatrixTranslation(-1.0f, -1.0f, -1.0f));
-        DirectX::XMStoreFloat4x4(&(instanceBufferData[4].world), DirectX::XMMatrixTranslation(-2.0f, -2.0f, -2.0f));
-        srBuffer->Map(&instanceBufferData[0], sizeof(InstanceBuffer) * instanceBufferData.size());
-      }
     }
 #pragma endregion
 

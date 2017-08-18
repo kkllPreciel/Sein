@@ -93,6 +93,14 @@ namespace Sein
       ConstantBuffer* CreateConstantBuffer(const unsigned int size);
 
       /**
+       *  @brief  シェーダーリソースバッファを作成する
+       *  @param  num:リソース内の要素数
+       *  @param  size:リソース内の1要素のサイズ
+       *  @return シェーダーリソースバッファへのポインタ
+       */
+      ShaderResourceBuffer* CreateShaderResourceBuffer(const unsigned int num, const unsigned int size);
+
+      /**
        *  @brief  デバイスを取得する
        *  @return デバイスへの参照
        */
@@ -143,8 +151,9 @@ namespace Sein
        *  @brief  描画する
        *  @param  vertexBuffer:頂点バッファ
        *  @param  indexBuffer:頂点インデックスバッファ
+       *  @param  instanceCount:インスタンス数
        */
-      void Render(const VertexBuffer& vertebBuffer, const IndexBuffer& indexBuffer);
+      void Render(const VertexBuffer& vertebBuffer, const IndexBuffer& indexBuffer, const unsigned int instanceCount);
 #pragma endregion
 
       // 深度ステンシルビュー関連
@@ -159,30 +168,6 @@ namespace Sein
        */
       void CreateDepthStencilView(unsigned int width, unsigned int height);
 
-
-#pragma endregion
-
-      // インスタンシング関連
-      // 後々別クラスへ移動
-#pragma region Instancing
-    private:
-      /**
-       *  @brief  インスタンシング用構造体
-       */
-      struct InstanceBuffer
-      {
-        DirectX::XMFLOAT4X4 world;  ///< ワールド行列(世界空間)
-      };
-
-      const unsigned int                    INSTANCE_NUM = 5;   ///< インスタンスの数
-      std::vector<InstanceBuffer>           instanceBufferData; ///< 各インスタンス毎のデータリスト
-      std::unique_ptr<ShaderResourceBuffer> srBuffer;           ///< シェーダーリソースバッファ
-
-    private:
-      /**
-       *  @brief  インスタンスバッファを作成する
-       */
-      void CreateInstanceBuffer();
 
 #pragma endregion
 

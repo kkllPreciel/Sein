@@ -119,6 +119,9 @@ namespace Sein
       ID3D12Resource*           renderTargetList[FrameCount]; ///< レンダーターゲットのリスト
       unsigned int              bufferIndex;                  ///< 現在のバッファ番号
 
+      // 深度ステンシル後々外部へ移動
+      std::unique_ptr<DepthStencilView> depthStencilView; ///< 深度ステンシルビュー
+
       Fence*  fence;  ///< フェンス
 
       /**
@@ -154,21 +157,6 @@ namespace Sein
        *  @param  instanceCount:インスタンス数
        */
       void Render(const VertexBuffer& vertebBuffer, const IndexBuffer& indexBuffer, const unsigned int instanceCount);
-#pragma endregion
-
-      // 深度ステンシルビュー関連
-#pragma region DepthStencilView
-    private:
-      DepthStencilView* depthStencilView; ///< 深度ステンシルビュー
-
-      /**
-       *  @brief  深度ステンシルビューを作成する
-       *  @param  width:ウィンドウ横幅
-       *  @param  height:ウィンドウ縦幅
-       */
-      void CreateDepthStencilView(unsigned int width, unsigned int height);
-
-
 #pragma endregion
 
       // テクスチャ関連

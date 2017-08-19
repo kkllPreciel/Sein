@@ -30,9 +30,8 @@ namespace Sein
      */
     Device::Device() :
       device(nullptr), swapChain(nullptr), commandQueue(nullptr), commandAllocator(nullptr),
-      commandList(nullptr), descriptorHeaps(nullptr), bufferIndex(0),
-      rootSignature(nullptr), pipelineState(nullptr),
-      depthStencilView(nullptr), fence(nullptr), texBuffer(nullptr, [](IUnknown* p) { p->Release(); })
+      commandList(nullptr), descriptorHeaps(nullptr), bufferIndex(0), rootSignature(nullptr),
+      pipelineState(nullptr), depthStencilView(nullptr), fence(nullptr), texBuffer(nullptr, [](IUnknown* p) { p->Release(); })
     {
       for (auto i = 0; i < FrameCount; ++i)
       {
@@ -230,6 +229,16 @@ namespace Sein
         cbvSrvHeap.Create(device, cbvHeapDesc);
       }
 
+      // 深度ステンシルビュー用ディスクリプターヒープを生成
+      {
+        auto& dsvDescriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_DSV];
+        D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
+        heapDesc.NumDescriptors = 1;                      // ディスクリプターヒープ内のディスクリプター数(深度ステンシルビュー)
+        heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;   // 深度ステンシルビューのヒープ
+        heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE; // シェーダーからアクセス不可
+        dsvDescriptorHeap.Create(device, heapDesc);
+      }
+
       // レンダーターゲット
       {
         auto& rtvDescriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_RTV];
@@ -301,9 +310,6 @@ namespace Sein
       }
 
       pipelineState->Release();
-      depthStencilView->Release();
-      delete depthStencilView;
-      depthStencilView = nullptr;
       rootSignature->Release();
 
       for (auto i = 0; i < FrameCount; ++i)
@@ -348,16 +354,17 @@ namespace Sein
       // バックバッファを描画ターゲットとして設定する
       // デバイスへ深度ステンシルビューをバインドする
       auto& rtvDescriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_RTV];
-      const auto& descriptor = rtvDescriptorHeap.GetDescriptor(bufferIndex);
-      const auto depthHandle = depthStencilView->GetDescriptorHandle();
-      commandList->OMSetRenderTargets(1, &descriptor.GetHandleForCPU(), false, &depthHandle);
+      const auto& rtvDescriptor = rtvDescriptorHeap.GetDescriptor(bufferIndex);
+      auto& dsvDescriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_DSV];
+      const auto& dsvDescriptor = dsvDescriptorHeap.GetDescriptor(0); // TODO:マジックナンバーを消す
+      commandList->OMSetRenderTargets(1, &rtvDescriptor.GetHandleForCPU(), false, &dsvDescriptor.GetHandleForCPU());
 
       // バックバッファをクリアする
       const float Color[] = { 0.0f, 0.0f, 0.6f, 1.0f };
-      commandList->ClearRenderTargetView(descriptor.GetHandleForCPU(), Color, 0, nullptr);
+      commandList->ClearRenderTargetView(rtvDescriptor.GetHandleForCPU(), Color, 0, nullptr);
 
       // 深度ステンシルビューをクリアする(深度バッファのみ)
-      commandList->ClearDepthStencilView(depthHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+      commandList->ClearDepthStencilView(dsvDescriptor.GetHandleForCPU(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
     }
 
     /**
@@ -418,7 +425,10 @@ namespace Sein
     {
       // 深度ステンシルビューの作成
       {
-        CreateDepthStencilView(width, height);
+        depthStencilView = std::make_unique<DepthStencilView>();
+        auto& descriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_DSV];
+        auto& descriptor = descriptorHeap.CreateDescriptor();
+        depthStencilView->Create(device, descriptor.GetHandleForCPU(), width, height);
       }
 
       // テクスチャバッファの生成
@@ -770,20 +780,6 @@ namespace Sein
     {
       return *device;
     }
-
-    // 深度ステンシルビュー関連
-#pragma region DepthStencliView
-    /**
-     *  @brief  深度ステンシルビューを作成する
-     *  @param  width:ウィンドウ横幅
-     *  @param  height:ウィンドウ縦幅
-     */
-    void Device::CreateDepthStencilView(unsigned int width, unsigned int height)
-    {
-      depthStencilView = new DepthStencilView();
-      depthStencilView->Create(device, width, height);
-    }
-#pragma endregion
 
     // 後々別クラスへ移動する
 #pragma region Texture

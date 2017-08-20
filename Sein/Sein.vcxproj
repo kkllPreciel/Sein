@@ -158,6 +158,7 @@
     <ClInclude Include="Sein\Direct3D12\fence.h" />
     <ClInclude Include="Sein\Direct3D12\index_buffer.h" />
     <ClInclude Include="Sein\Direct3D12\mesh.h" />
+    <ClInclude Include="Sein\Direct3D12\resource.h" />
     <ClInclude Include="Sein\Direct3D12\shader_resource_buffer.h" />
     <ClInclude Include="Sein\Direct3D12\vertex_buffer.h" />
     <ClInclude Include="Sein\PMX\loader.h" />

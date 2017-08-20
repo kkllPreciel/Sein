@@ -16,7 +16,7 @@ namespace Sein
     /**
      *  @brief  コンストラクタ
      */
-    Buffer::Buffer() : buffer(nullptr)
+    Buffer::Buffer() : buffer(nullptr, [](IUnknown* p) {p->Release(); })
     {
 
     }
@@ -74,10 +74,7 @@ namespace Sein
      */
     void Buffer::Release() noexcept
     {
-      if (buffer)
-      {
-        buffer.release()->Release();
-      }
+      buffer.reset(nullptr);
     }
 
     /**

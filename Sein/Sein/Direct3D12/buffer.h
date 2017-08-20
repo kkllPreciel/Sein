@@ -68,8 +68,7 @@ namespace Sein
       Buffer& operator = (const Buffer& other) = delete;
 
     private:
-      // TODO:deleterを使用する
-      std::unique_ptr<ID3D12Resource> buffer; ///< バッファ
+      std::unique_ptr<ID3D12Resource, void(*)(IUnknown*)> buffer; ///< バッファ
     };
   };
 };

@@ -11,6 +11,7 @@
  // include
 #include <d3d12.h>
 #include <memory>
+#include "resource.h"
 
 namespace Sein
 {
@@ -19,7 +20,7 @@ namespace Sein
     /**
      *  @brief  バッファクラス
      */
-    class Buffer
+    class Buffer final : public IResource
     {
     public:
       /**
@@ -42,15 +43,15 @@ namespace Sein
       void Create(ID3D12Device* const device, const D3D12_HEAP_PROPERTIES& properties, const UINT64 width, const D3D12_RESOURCE_FLAGS flag = D3D12_RESOURCE_FLAG_NONE) noexcept(false);
 
       /**
-       *  @brief  リソース(バッファ)を開放する
+       *  @brief  リソースを開放する
        */
-      void Release() noexcept;
+      void Release() noexcept override;
 
       /**
-       *  @brief  リソース(バッファ)を取得する
+       *  @brief  リソースを取得する
        *  @return リソースの参照
        */
-      ID3D12Resource& Get() const noexcept;
+      ID3D12Resource& Get() const noexcept override;
 
     private:
       /**

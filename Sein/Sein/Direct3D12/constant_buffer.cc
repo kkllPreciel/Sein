@@ -51,7 +51,10 @@ namespace Sein
       try
       {
         buffer.reset(new Buffer());
-        buffer->Create(device, properties, size, D3D12_RESOURCE_FLAG_NONE);
+        // 定数バッファのサイズは256バイトでアラインメントされていなければならない為
+        // 引数「size」で生成したバッファサイズだと領域が足りない可能性がある。
+        // なので、256の倍数に変更する = (size + 255) & ~255
+        buffer->Create(device, properties, (size + 255) & ~255, D3D12_RESOURCE_FLAG_NONE);
       }
       catch (const char*)
       {

@@ -95,5 +95,8 @@
     <ClInclude Include="Sein\Direct3D12\resource.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="Sein\Direct3D12\command_list.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

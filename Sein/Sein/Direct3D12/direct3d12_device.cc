@@ -703,9 +703,9 @@ namespace Sein
      *  @param  size:定数バッファのサイズ
      *  @return 定数バッファへのポインタ
      */
-    ConstantBuffer* Device::CreateConstantBuffer(const unsigned int size)
+    std::unique_ptr<ConstantBuffer> Device::CreateConstantBuffer(const unsigned int size)
     {
-      auto constantBuffer = new ConstantBuffer();
+      auto constantBuffer = std::make_unique<ConstantBuffer>();
       auto& descriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV];
       auto& descriptor = descriptorHeap.CreateDescriptor();
       constantBuffer->Create(device, descriptor.GetHandleForCPU(), size);
@@ -719,7 +719,7 @@ namespace Sein
      *  @param  size:リソース内の1要素のサイズ
      *  @return シェーダーリソースバッファへのポインタ
      */
-    ShaderResourceBuffer* Device::CreateShaderResourceBuffer(const unsigned int num, const unsigned int size)
+    std::unique_ptr<ShaderResourceBuffer> Device::CreateShaderResourceBuffer(const unsigned int num, const unsigned int size)
     {
       // ヒープの設定
       D3D12_HEAP_PROPERTIES properties;
@@ -729,7 +729,7 @@ namespace Sein
       properties.CreationNodeMask = 1;                              // 恐らくヒープが生成されるアダプター(GPU)の番号
       properties.VisibleNodeMask = 1;                               // 恐らくヒープが表示されるアダプター(GPU)の番号
 
-      auto shaderResourceBuffer = new ShaderResourceBuffer();
+      auto shaderResourceBuffer = std::make_unique<ShaderResourceBuffer>();
       auto& descriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV];
       auto& descriptor = descriptorHeap.CreateDescriptor();
       shaderResourceBuffer->Create(device, descriptor.GetHandleForCPU(), num, size);

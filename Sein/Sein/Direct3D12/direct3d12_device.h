@@ -89,17 +89,17 @@ namespace Sein
       /**
        *  @brief  定数バッファを作成する
        *  @param  size:定数バッファのサイズ
-       *  @return 定数バッファへのポインタ
+       *  @return 定数バッファのユニークポインタ
        */
-      ConstantBuffer* CreateConstantBuffer(const unsigned int size);
+      std::unique_ptr<ConstantBuffer> CreateConstantBuffer(const unsigned int size);
 
       /**
        *  @brief  シェーダーリソースバッファを作成する
        *  @param  num:リソース内の要素数
        *  @param  size:リソース内の1要素のサイズ
-       *  @return シェーダーリソースバッファへのポインタ
+       *  @return シェーダーリソースバッファのユニークポインタ
        */
-      ShaderResourceBuffer* CreateShaderResourceBuffer(const unsigned int num, const unsigned int size);
+      std::unique_ptr<ShaderResourceBuffer> CreateShaderResourceBuffer(const unsigned int num, const unsigned int size);
 
       /**
        *  @brief  デバイスを取得する

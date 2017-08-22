@@ -136,6 +136,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Sein\Direct3D12\buffer.cc" />
+    <ClCompile Include="Sein\Direct3D12\command_list.cc" />
     <ClCompile Include="Sein\Direct3D12\constant_buffer.cc" />
     <ClCompile Include="Sein\Direct3D12\depth_stencil_view.cc" />
     <ClCompile Include="Sein\Direct3D12\descriptor.cc" />

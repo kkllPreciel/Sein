@@ -20,6 +20,7 @@
 #include "shader_resource_buffer.h"
 #include "descriptor_heap.h"
 #include "descriptor.h"
+#include "command_list.h"
 
 namespace Sein
 {
@@ -29,9 +30,9 @@ namespace Sein
      *  @brief  コンストラクタ
      */
     Device::Device() :
-      device(nullptr), swapChain(nullptr), commandQueue(nullptr), commandAllocator(nullptr),
-      commandList(nullptr), descriptorHeaps(nullptr), bufferIndex(0), rootSignature(nullptr),
-      pipelineState(nullptr), depthStencilView(nullptr), fence(nullptr), texBuffer(nullptr, [](IUnknown* p) { p->Release(); })
+      device(nullptr), swapChain(nullptr), commandQueue(nullptr),commandList(nullptr),
+      descriptorHeaps(nullptr), bufferIndex(0), rootSignature(nullptr), pipelineState(nullptr),
+      depthStencilView(nullptr), fence(nullptr), texBuffer(nullptr, [](IUnknown* p) { p->Release(); })
     {
       for (auto i = 0; i < FrameCount; ++i)
       {
@@ -183,33 +184,9 @@ namespace Sein
         bufferIndex = swapChain->GetCurrentBackBufferIndex();
       }
 
-      // コマンドアロケーターの生成
-      // コマンドに使用するバッファ領域を確保する物
-      {
-        if (FAILED(device->CreateCommandAllocator(
-          D3D12_COMMAND_LIST_TYPE_DIRECT,	// コマンドアロケーターの種別(レンダリング関連のコマンドリストを設定)
-          IID_PPV_ARGS(&commandAllocator))))
-        {
-          throw "コマンドアロケーターの生成に失敗しました。";
-        }
-      }
-
       // コマンドリストの生成
-      // コマンドキューに渡すコマンドのリスト
-      {
-        if (FAILED(device->CreateCommandList(
-          0,									// マルチアダプター(マルチGPU)の場合に使用するアダプター(GPU)の識別子(単一なので0)
-          D3D12_COMMAND_LIST_TYPE_DIRECT,		// コマンドリストの種別(レンダリング関連のコマンドリスト)
-          commandAllocator,					// このコマンドリストで使用するコマンドアロケーター
-          nullptr,							// コマンドリストの初期パイプライン状態(ダミーの初期パイプラインを指定)
-          IID_PPV_ARGS(&commandList))))
-        {
-          throw "コマンドリストの生成に失敗しました。";
-        }
-
-        // 記録を終了する
-        commandList->Close();
-      }
+      commandList = std::make_unique<CommandList>();
+      commandList->Create(device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 
       // Alt + Enterでフルスクリーン化の機能を無効に設定
       factory->MakeWindowAssociation(handle, DXGI_MWA_NO_ALT_ENTER);
@@ -317,8 +294,6 @@ namespace Sein
         renderTargetList[i]->Release();
       }
 
-      commandList->Release();
-      commandAllocator->Release();
       commandQueue->Release();
       swapChain->Release();
       device->Release();
@@ -329,17 +304,7 @@ namespace Sein
      */
     void Device::BeginScene()
     {
-      // コマンドアロケーターをリセット
-      if (FAILED(commandAllocator->Reset()))
-      {
-        throw "コマンドアロケーターのリセットに失敗しました。";
-      }
-
-      // コマンドリストをリセット
-      if (FAILED(commandList->Reset(commandAllocator, nullptr)))
-      {
-        throw "コマンドリストのリセットに失敗しました。";
-      }
+      commandList->Begin();
 
       // バックバッファが描画ターゲットとして使用できるようになるまで待つ
       D3D12_RESOURCE_BARRIER barrier;
@@ -349,7 +314,7 @@ namespace Sein
       barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;			// 遷移前はPresent
       barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;		// 遷移後は描画ターゲット
       barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-      commandList->ResourceBarrier(1, &barrier);
+      commandList->Get().ResourceBarrier(1, &barrier);
 
       // バックバッファを描画ターゲットとして設定する
       // デバイスへ深度ステンシルビューをバインドする
@@ -357,14 +322,14 @@ namespace Sein
       const auto& rtvDescriptor = rtvDescriptorHeap.GetDescriptor(bufferIndex);
       auto& dsvDescriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_DSV];
       const auto& dsvDescriptor = dsvDescriptorHeap.GetDescriptor(0); // TODO:マジックナンバーを消す
-      commandList->OMSetRenderTargets(1, &rtvDescriptor.GetHandleForCPU(), false, &dsvDescriptor.GetHandleForCPU());
+      commandList->Get().OMSetRenderTargets(1, &rtvDescriptor.GetHandleForCPU(), false, &dsvDescriptor.GetHandleForCPU());
 
       // バックバッファをクリアする
       const float Color[] = { 0.0f, 0.0f, 0.6f, 1.0f };
-      commandList->ClearRenderTargetView(rtvDescriptor.GetHandleForCPU(), Color, 0, nullptr);
+      commandList->Get().ClearRenderTargetView(rtvDescriptor.GetHandleForCPU(), Color, 0, nullptr);
 
       // 深度ステンシルビューをクリアする(深度バッファのみ)
-      commandList->ClearDepthStencilView(dsvDescriptor.GetHandleForCPU(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+      commandList->Get().ClearDepthStencilView(dsvDescriptor.GetHandleForCPU(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
     }
 
     /**
@@ -380,10 +345,10 @@ namespace Sein
       barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;	// 遷移前は描画ターゲット
       barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;			// 遷移後はPresent
       barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-      commandList->ResourceBarrier(1, &barrier);
+      commandList->Get().ResourceBarrier(1, &barrier);
 
       // コマンドリストをクローズする
-      commandList->Close();
+      commandList->End();
     }
 
     /**
@@ -392,7 +357,7 @@ namespace Sein
     void Device::Present()
     {
       // コマンドリストの実行
-      ID3D12CommandList* ppCommandLists[] = { commandList };
+      ID3D12CommandList* ppCommandLists[] = { &(commandList->Get()) };
       commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
       // 描画終了待ちを行う
@@ -694,30 +659,30 @@ namespace Sein
       scissor.bottom = 400;
 
       // パイプラインステートの設定(切り替えない場合は、コマンドリストリセット時に設定可能)
-      commandList->SetPipelineState(pipelineState);
+      commandList->Get().SetPipelineState(pipelineState);
 
       // グラフィックスパイプラインのルートシグネチャを設定する
-      commandList->SetGraphicsRootSignature(rootSignature);
+      commandList->Get().SetGraphicsRootSignature(rootSignature);
 
       // 描画に使用するディスクリプターヒープを設定
       auto cbvSrvHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV].Get();
-      commandList->SetDescriptorHeaps(1, &cbvSrvHeap);
+      commandList->Get().SetDescriptorHeaps(1, &cbvSrvHeap);
 
       // ビューポートの設定
-      commandList->RSSetViewports(1, &viewport);
+      commandList->Get().RSSetViewports(1, &viewport);
 
       // シザー矩形(シザーテスト)の設定
-      commandList->RSSetScissorRects(1, &scissor);
+      commandList->Get().RSSetScissorRects(1, &scissor);
 
       // プリミティブトポロジーの設定
       //commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
-      commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+      commandList->Get().IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
       // 頂点バッファビューの設定
-      commandList->IASetVertexBuffers(0, 1, &(vertebBuffer.GetView()));
+      commandList->Get().IASetVertexBuffers(0, 1, &(vertebBuffer.GetView()));
 
       // 頂点インデックスビューの設定
-      commandList->IASetIndexBuffer(&(indexBuffer.GetView()));
+      commandList->Get().IASetIndexBuffer(&(indexBuffer.GetView()));
 
       // ディスクリプータヒープテーブルを設定
       auto handleCbv = cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();
@@ -725,12 +690,12 @@ namespace Sein
       auto handleTrv = cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();
       handleCbv.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
       handleSrv.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * 2;
-      commandList->SetGraphicsRootDescriptorTable(0, handleCbv);
-      commandList->SetGraphicsRootDescriptorTable(1, handleSrv);
-      commandList->SetGraphicsRootDescriptorTable(2, handleTrv);
+      commandList->Get().SetGraphicsRootDescriptorTable(0, handleCbv);
+      commandList->Get().SetGraphicsRootDescriptorTable(1, handleSrv);
+      commandList->Get().SetGraphicsRootDescriptorTable(2, handleTrv);
 
       // 描画コマンドの生成
-      commandList->DrawIndexedInstanced(321567, instanceCount, 0, 0, 0);
+      commandList->Get().DrawIndexedInstanced(321567, instanceCount, 0, 0, 0);
     }
 
     /**
@@ -919,8 +884,7 @@ namespace Sein
 
         // テクスチャ用リソースへコピー
         {
-          HRESULT hr = commandAllocator->Reset();
-          hr = commandList->Reset(commandAllocator, nullptr);
+          commandList->Begin();
 
           D3D12_RESOURCE_DESC Desc = texBuffer->GetDesc();
           D3D12_PLACED_SUBRESOURCE_FOOTPRINT footPrint;
@@ -935,7 +899,7 @@ namespace Sein
           Src.pResource = uploadHeap.Get();
           Src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
           Src.PlacedFootprint = footPrint;
-          commandList->CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
+          commandList->Get().CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
 
           // リソースバリア
           D3D12_RESOURCE_BARRIER barrier;
@@ -945,12 +909,12 @@ namespace Sein
           barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
           barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
           barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-          commandList->ResourceBarrier(1, &barrier);
+          commandList->Get().ResourceBarrier(1, &barrier);
 
           // コマンドリストをクローズする
           // コマンドリストの実行
-          hr = commandList->Close();
-          ID3D12CommandList* ppCommandLists[] = { commandList };
+          commandList->End();
+          ID3D12CommandList* ppCommandLists[] = { &(commandList->Get()) };
           commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
           WaitForGpu();

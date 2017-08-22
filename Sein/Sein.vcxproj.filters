@@ -51,6 +51,9 @@
     <ClCompile Include="Sein\Direct3D12\descriptor.cc">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Sein\Direct3D12\command_list.cc">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sein\Direct3D12\constant_buffer.h">

@@ -27,6 +27,7 @@ namespace Sein
     class ConstantBuffer;
     class ShaderResourceBuffer;
     class DescriptorHeap;
+    class CommandList;
 
     /**
      *  @brief  Direct3D12用デバイスクラス(スワップチェインも一緒)
@@ -110,8 +111,7 @@ namespace Sein
       ID3D12Device*               device;                 ///< デバイス
       IDXGISwapChain3*            swapChain;              ///< スワップチェイン
       ID3D12CommandQueue*         commandQueue;           ///< コマンドキュー
-      ID3D12CommandAllocator*     commandAllocator;       ///< コマンドアロケーター
-      ID3D12GraphicsCommandList*  commandList;            ///< コマンドリスト
+      std::unique_ptr<CommandList> commandList;           ///< コマンドリスト
       std::unique_ptr<DescriptorHeap[]> descriptorHeaps;  ///< ディスクリプターヒープ配列
 
       // 後々ダブルバッファクラスへ移動

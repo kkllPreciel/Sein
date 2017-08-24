@@ -257,7 +257,7 @@ namespace Sein
       // Directx12ではGPUの描画の終了待ちを自動で行わない(同期が取れず画面がおかしくなる)
       // そのため同期を取るためのオブジェクト(フェンス)を作成する
       {
-        fence = new Fence;
+        fence = std::make_unique<Fence>();
         fence->Create(device);
 
         // 描画処理を行っている可能性があるので描画終了待ちを行う
@@ -277,14 +277,6 @@ namespace Sein
     {
       // GPUの描画終了待ちを行う
       WaitForGpu();
-
-      // フェンスの削除
-      if (nullptr != fence)
-      {
-        fence->Release();
-        delete fence;
-        fence = nullptr;
-      }
 
       pipelineState->Release();
       rootSignature->Release();

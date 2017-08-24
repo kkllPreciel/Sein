@@ -113,6 +113,7 @@ namespace Sein
       ID3D12CommandQueue*         commandQueue;           ///< コマンドキュー
       std::unique_ptr<CommandList> commandList;           ///< コマンドリスト
       std::unique_ptr<DescriptorHeap[]> descriptorHeaps;  ///< ディスクリプターヒープ配列
+      std::unique_ptr<Fence> fence;                       ///< フェンス
 
       // 後々ダブルバッファクラスへ移動
       static const unsigned int FrameCount = 2;               ///< フレーム数(ダブルバッファ)
@@ -121,8 +122,6 @@ namespace Sein
 
       // 深度ステンシル後々外部へ移動
       std::unique_ptr<DepthStencilView> depthStencilView; ///< 深度ステンシルビュー
-
-      Fence*  fence;  ///< フェンス
 
       /**
        *  @brief  描画終了待ちを行う

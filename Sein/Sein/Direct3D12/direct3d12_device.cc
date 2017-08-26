@@ -30,7 +30,7 @@ namespace Sein
      *  @brief  コンストラクタ
      */
     Device::Device() :
-      device(nullptr), swapChain(nullptr), commandQueue(nullptr),commandList(nullptr),
+      device(nullptr), swapChain(nullptr), commandQueue(nullptr, [](IUnknown* p) { p->Release(); }), commandList(nullptr),
       descriptorHeaps(nullptr), bufferIndex(0), rootSignature(nullptr), pipelineState(nullptr),
       depthStencilView(nullptr), fence(nullptr), texBuffer(nullptr, [](IUnknown* p) { p->Release(); })
     {
@@ -142,10 +142,12 @@ namespace Sein
         queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;  // タイムアウト処理を有効にする
         queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;  // レンダリング関連のコマンドリスト
 
-        if (FAILED(device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&commandQueue))))
+        ID3D12CommandQueue* queue;
+        if (FAILED(device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&queue))))
         {
           throw "コマンドキューの生成に失敗しました。";
         }
+        commandQueue.reset(queue);
       }
 
       // スワップチェインの作成
@@ -165,11 +167,11 @@ namespace Sein
 
         Microsoft::WRL::ComPtr<IDXGISwapChain1> pSwapChain;
         if (FAILED(factory->CreateSwapChainForHwnd(
-          commandQueue,	// コマンドキュー
-          handle,			// ウィンドウハンドル
-          &swapChainDesc,	// スワップチェインの設定情報
-          nullptr,		// フルスクリーンスワップチェインの設定(ウィンドウモードで作成するのでnullptr)
-          nullptr,		// TODO:調査
+          commandQueue.get(), // コマンドキュー
+          handle,             // ウィンドウハンドル
+          &swapChainDesc,     // スワップチェインの設定情報
+          nullptr,            // フルスクリーンスワップチェインの設定(ウィンドウモードで作成するのでnullptr)
+          nullptr,            // TODO:調査
           &pSwapChain)))
         {
           throw "スワップチェインの生成に失敗しました。";
@@ -286,7 +288,6 @@ namespace Sein
         renderTargetList[i]->Release();
       }
 
-      commandQueue->Release();
       swapChain->Release();
       device->Release();
     }
@@ -370,7 +371,7 @@ namespace Sein
      */
     void Device::WaitForGpu()
     {
-      fence->Wait(commandQueue);
+      fence->Wait(commandQueue.get());
     }
 
     /**

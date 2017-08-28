@@ -109,7 +109,7 @@ namespace Sein
 
     private:
       ID3D12Device*               device;                                   ///< デバイス
-      IDXGISwapChain3*            swapChain;                                ///< スワップチェイン
+      std::unique_ptr<IDXGISwapChain3, void(*)(IUnknown*)> swapChain;       ///< スワップチェイン
       std::unique_ptr<ID3D12CommandQueue, void(*)(IUnknown*)> commandQueue; ///< コマンドキュー
       std::unique_ptr<CommandList> commandList;                             ///< コマンドリスト
       std::unique_ptr<DescriptorHeap[]> descriptorHeaps;                    ///< ディスクリプターヒープ配列

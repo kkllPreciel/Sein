@@ -30,7 +30,7 @@ namespace Sein
      *  @brief  コンストラクタ
      */
     Device::Device() :
-      device(nullptr), swapChain(nullptr), commandQueue(nullptr, [](IUnknown* p) { p->Release(); }), commandList(nullptr),
+      device(nullptr), swapChain(nullptr, [](IUnknown* p) { p->Release(); }), commandQueue(nullptr, [](IUnknown* p) { p->Release(); }), commandList(nullptr),
       descriptorHeaps(nullptr), bufferIndex(0), rootSignature(nullptr), pipelineState(nullptr),
       depthStencilView(nullptr), fence(nullptr), texBuffer(nullptr, [](IUnknown* p) { p->Release(); })
     {
@@ -177,10 +177,12 @@ namespace Sein
           throw "スワップチェインの生成に失敗しました。";
         }
 
-        if (FAILED(pSwapChain.Get()->QueryInterface(IID_PPV_ARGS(&swapChain))))
+        IDXGISwapChain3* chain;
+        if (FAILED(pSwapChain.Get()->QueryInterface(IID_PPV_ARGS(&chain))))
         {
           throw "IDXGISwapChain3の生成に失敗しました。";
         }
+        swapChain.reset(chain);
 
         // バックバッファの番号を取得する
         bufferIndex = swapChain->GetCurrentBackBufferIndex();
@@ -288,7 +290,6 @@ namespace Sein
         renderTargetList[i]->Release();
       }
 
-      swapChain->Release();
       device->Release();
     }
 

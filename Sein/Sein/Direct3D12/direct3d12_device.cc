@@ -30,7 +30,7 @@ namespace Sein
      *  @brief  コンストラクタ
      */
     Device::Device() :
-      device(nullptr), swapChain(nullptr, [](IUnknown* p) { p->Release(); }), commandQueue(nullptr, [](IUnknown* p) { p->Release(); }), commandList(nullptr),
+      device(nullptr, [](IUnknown* p) { p->Release(); }), swapChain(nullptr, [](IUnknown* p) { p->Release(); }), commandQueue(nullptr, [](IUnknown* p) { p->Release(); }), commandList(nullptr),
       descriptorHeaps(nullptr), bufferIndex(0), rootSignature(nullptr), pipelineState(nullptr),
       depthStencilView(nullptr), fence(nullptr), texBuffer(nullptr, [](IUnknown* p) { p->Release(); })
     {
@@ -81,10 +81,12 @@ namespace Sein
         // アダプターを列挙し作成すると
         // 環境によってメモリリークが発生したため
         // デフォルトのアダプターを使用し作成する
-        if (FAILED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device))))
+        ID3D12Device* pDevice;
+        if (FAILED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&pDevice))))
         {
           throw "デバイスの生成に失敗しました。";
         }
+        device.reset(pDevice);
 #else
         Microsoft::WRL::ComPtr<IDXGIAdapter1> pAdapter;
 
@@ -190,7 +192,7 @@ namespace Sein
 
       // コマンドリストの生成
       commandList = std::make_unique<CommandList>();
-      commandList->Create(device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+      commandList->Create(device.get(), D3D12_COMMAND_LIST_TYPE_DIRECT);
 
       // Alt + Enterでフルスクリーン化の機能を無効に設定
       factory->MakeWindowAssociation(handle, DXGI_MWA_NO_ALT_ENTER);
@@ -207,7 +209,7 @@ namespace Sein
         cbvHeapDesc.NumDescriptors = 3;                                 // ディスクリプターヒープ内のディスクリプター数(定数バッファ、シェーダーリソース)
         cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;      // 定数バッファ or シェーダーリソース(テクスチャ) or ランダムアクセス のどれかのヒープ
         cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;  // シェーダーからアクセス可
-        cbvSrvHeap.Create(device, cbvHeapDesc);
+        cbvSrvHeap.Create(device.get(), cbvHeapDesc);
       }
 
       // 深度ステンシルビュー用ディスクリプターヒープを生成
@@ -217,7 +219,7 @@ namespace Sein
         heapDesc.NumDescriptors = 1;                      // ディスクリプターヒープ内のディスクリプター数(深度ステンシルビュー)
         heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;   // 深度ステンシルビューのヒープ
         heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE; // シェーダーからアクセス不可
-        dsvDescriptorHeap.Create(device, heapDesc);
+        dsvDescriptorHeap.Create(device.get(), heapDesc);
       }
 
       // レンダーターゲット
@@ -231,7 +233,7 @@ namespace Sein
           rtvHeapDesc.NumDescriptors = FrameCount;              // ディスクリプターヒープ内のディスクリプター数(フロントバッファ、バックバッファ)
           rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;    // 種別はレンダーターゲットビュー
           rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;  // シェーダーから参照しない
-          rtvDescriptorHeap.Create(device, rtvHeapDesc);
+          rtvDescriptorHeap.Create(device.get(), rtvHeapDesc);
         }
 
         // ディスクリプターの登録
@@ -262,7 +264,7 @@ namespace Sein
       // そのため同期を取るためのオブジェクト(フェンス)を作成する
       {
         fence = std::make_unique<Fence>();
-        fence->Create(device);
+        fence->Create(device.get());
 
         // 描画処理を行っている可能性があるので描画終了待ちを行う
         WaitForGpu();
@@ -289,8 +291,6 @@ namespace Sein
       {
         renderTargetList[i]->Release();
       }
-
-      device->Release();
     }
 
     /**
@@ -387,7 +387,7 @@ namespace Sein
         depthStencilView = std::make_unique<DepthStencilView>();
         auto& descriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_DSV];
         auto& descriptor = descriptorHeap.CreateDescriptor();
-        depthStencilView->Create(device, descriptor.GetHandleForCPU(), width, height);
+        depthStencilView->Create(device.get(), descriptor.GetHandleForCPU(), width, height);
       }
 
       // テクスチャバッファの生成
@@ -702,7 +702,7 @@ namespace Sein
       auto constantBuffer = std::make_unique<ConstantBuffer>();
       auto& descriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV];
       auto& descriptor = descriptorHeap.CreateDescriptor();
-      constantBuffer->Create(device, descriptor.GetHandleForCPU(), size);
+      constantBuffer->Create(device.get(), descriptor.GetHandleForCPU(), size);
 
       return constantBuffer;
     }
@@ -726,7 +726,7 @@ namespace Sein
       auto shaderResourceBuffer = std::make_unique<ShaderResourceBuffer>();
       auto& descriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV];
       auto& descriptor = descriptorHeap.CreateDescriptor();
-      shaderResourceBuffer->Create(device, descriptor.GetHandleForCPU(), num, size);
+      shaderResourceBuffer->Create(device.get(), descriptor.GetHandleForCPU(), num, size);
 
       return shaderResourceBuffer;
     }

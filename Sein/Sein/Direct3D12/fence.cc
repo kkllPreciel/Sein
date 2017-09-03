@@ -15,7 +15,7 @@ namespace Sein
     /**
      *  @brief  コンストラクタ
      */
-    Fence::Fence() : fence(nullptr), index(0), eventHandle(nullptr)
+    Fence::Fence() : fence(nullptr, [](IUnknown* p) {p->Release(); }), index(0), eventHandle(nullptr)
     {
 
     }
@@ -26,13 +26,17 @@ namespace Sein
      */
     void Fence::Create(ID3D12Device* const device)
     {
+      Release();
+
+      ID3D12Fence* pFence;
       if (FAILED(device->CreateFence(
         index,                  // フェンスの初期値
         D3D12_FENCE_FLAG_NONE,  // オプションの指定(今回は指定なし)
-        IID_PPV_ARGS(&fence))))
+        IID_PPV_ARGS(&pFence))))
       {
         throw "フェンスの生成に失敗しました。";
       }
+      fence.reset(pFence);
 
       ++index;
       // 同期待ち用のイベントを生成
@@ -51,7 +55,7 @@ namespace Sein
     {
       // 実行されているコマンドリストが完了したら
       // フェンスに指定の値を設定するようにする
-      if (FAILED(commandQueue->Signal(fence, index)))
+      if (FAILED(commandQueue->Signal(fence.get(), index)))
       {
         throw "コマンドキューのシグナル設定に失敗しました。";
       }
@@ -93,11 +97,7 @@ namespace Sein
         eventHandle = nullptr;
       }
 
-      if (nullptr != fence)
-      {
-        fence->Release();
-        fence = nullptr;
-      }
+      fence.reset(nullptr);
     }
   };
 };

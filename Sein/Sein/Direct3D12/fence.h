@@ -9,6 +9,7 @@
 #pragma once
 
  // include
+#include <memory>
 #include <d3d12.h>
 
 namespace Sein
@@ -62,9 +63,9 @@ namespace Sein
        */
       Fence& operator = (const Fence& other) = delete;
 
-      ID3D12Fence*  fence;        ///< フェンス
-      unsigned int  index;        ///< 現在の番号
-      HANDLE        eventHandle;  ///< イベントハンドル
+      std::unique_ptr<ID3D12Fence, void(*)(IUnknown*)>  fence;        ///< フェンス
+      unsigned int                                      index;        ///< 現在の番号
+      HANDLE                                            eventHandle;  ///< イベントハンドル
     };
   };
 };

@@ -390,15 +390,10 @@ namespace Sein
         depthStencilView->Create(device.get(), descriptor.GetHandleForCPU(), width, height);
       }
 
-      // テクスチャバッファの生成
-      {
-        CreateTextureBuffer();
-      }
-
       // ルートシグネチャの作成
       {
         // ディスクリプターレンジの設定(定数バッファとシェーダーリソース(頂点シェーダーのみで使用可)とシェーダーリソース(ピクセルシェーダーのみで使用可))
-        D3D12_DESCRIPTOR_RANGE descriptorRanges[3];
+        D3D12_DESCRIPTOR_RANGE descriptorRanges[2];
         {
           descriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;								// ディスクリプターの種別(定数バッファビュー)
           descriptorRanges[0].NumDescriptors = 1;															// ディスクリプターの数
@@ -682,8 +677,8 @@ namespace Sein
       auto handleCbv = cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();
       auto handleSrv = cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();
       auto handleTrv = cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();
-      handleCbv.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-      handleSrv.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * 2;
+      handleSrv.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+      handleTrv.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * 2;
       commandList->Get().SetGraphicsRootDescriptorTable(0, handleCbv);
       commandList->Get().SetGraphicsRootDescriptorTable(1, handleSrv);
       commandList->Get().SetGraphicsRootDescriptorTable(2, handleTrv);
@@ -743,9 +738,13 @@ namespace Sein
     // 後々別クラスへ移動する
 #pragma region Texture
     /**
-     *	@brief	テクスチャバッファを生成する
+     *  @brief  テクスチャバッファを生成する
+     *  @param  data:テクスチャデータ
+     *  @param  width:横幅
+     *  @param  height:縦幅
+     *  @param  bytesPerPixel:1ピクセルで使用するバイト数
      */
-    void Device::CreateTextureBuffer()
+    void Device::CreateTextureBuffer(const uint8_t* const data, const uint32_t width, const uint32_t height, const uint8_t bytesPerPixel)
     {
       // リソースの作成
       {
@@ -759,8 +758,8 @@ namespace Sein
         D3D12_RESOURCE_DESC textureDesc = {};
         textureDesc.MipLevels = 1;
         textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        textureDesc.Width = 600;
-        textureDesc.Height = 400;
+        textureDesc.Width = width;
+        textureDesc.Height = height;
         textureDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
         textureDesc.DepthOrArraySize = 1;
         textureDesc.SampleDesc.Count = 1;
@@ -779,40 +778,6 @@ namespace Sein
           throw "テクスチャ用リソースの作成に失敗しました。";
         }
         texBuffer.reset(resource);
-      }
-
-      // ダミーデータ作成
-      std::vector<UINT8> data;
-      {
-        const UINT rowPitch = 600 * 4;
-        const UINT cellPitch = rowPitch >> 3;
-        const UINT cellHeight = 600 >> 3;
-        const UINT textureSize = rowPitch * 400;
-
-        data.resize(textureSize);
-        UINT8* pData = &data[0];
-        for (UINT n = 0; n < textureSize; n += 4)
-        {
-          UINT x = n % rowPitch;
-          UINT y = n / rowPitch;
-          UINT i = x / cellPitch;
-          UINT j = y / cellHeight;
-
-          if (i % 2 == j % 2)
-          {
-            pData[n] = 0x00;		// R
-            pData[n + 1] = 0x00;	// G
-            pData[n + 2] = 0x00;	// B
-            pData[n + 3] = 0xff;	// A
-          }
-          else
-          {
-            pData[n] = 0xff;		// R
-            pData[n + 1] = 0xff;	// G
-            pData[n + 2] = 0xff;	// B
-            pData[n + 3] = 0xff;	// A
-          }
-        }
       }
 
       // 中間リソースの作成
@@ -862,9 +827,9 @@ namespace Sein
         // データのコピー
         {
           D3D12_SUBRESOURCE_DATA textureData = {};
-          textureData.pData = &data[0];
-          textureData.RowPitch = 600 * 4;
-          textureData.SlicePitch = textureData.RowPitch * 400;
+          textureData.pData = data;
+          textureData.RowPitch = width * bytesPerPixel;
+          textureData.SlicePitch = textureData.RowPitch * height;
 
           unsigned char* pData;
 
@@ -872,7 +837,7 @@ namespace Sein
           {
             throw "テクスチャ用中間リソースへのポインタの取得に失敗しました。";
           }
-          std::memcpy(pData, &data[0], sizeof(UINT8) * data.size());
+          std::memcpy(pData, data, sizeof(uint8_t) * textureData.SlicePitch);
           uploadHeap->Unmap(0, nullptr);
         }
 

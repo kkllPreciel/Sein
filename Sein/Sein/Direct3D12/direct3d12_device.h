@@ -165,8 +165,12 @@ namespace Sein
 
       /**
        *  @brief  テクスチャバッファを生成する
+       *  @param  data:テクスチャデータ
+       *  @param  width:横幅
+       *  @param  height:縦幅
+       *  @param  bytesPerPixel:1ピクセルで使用するバイト数
        */
-      void CreateTextureBuffer();
+      void CreateTextureBuffer(const uint8_t* const data, const uint32_t width, const uint32_t height, const uint8_t bytesPerPixel);
 #pragma endregion
     };
   };

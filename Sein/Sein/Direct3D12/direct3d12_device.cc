@@ -627,9 +627,10 @@ namespace Sein
      *  @brief  描画する
      *  @param  vertexBuffer:頂点バッファ
      *  @param  indexBuffer:頂点インデックスバッファ
+     *  @param  indexCount:頂点インデックス数
      *  @param  instanceCount:インスタンス数
      */
-    void Device::Render(const VertexBuffer& vertebBuffer, const IndexBuffer& indexBuffer, const unsigned int instanceCount)
+    void Device::Render(const VertexBuffer& vertebBuffer, const IndexBuffer& indexBuffer, const unsigned int indexCount, const unsigned int instanceCount)
     {
       // ビューポートの作成
       D3D12_VIEWPORT viewport;
@@ -664,7 +665,7 @@ namespace Sein
       commandList->Get().RSSetScissorRects(1, &scissor);
 
       // プリミティブトポロジーの設定
-      //commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
+      //commandList->Get().IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
       commandList->Get().IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
       // 頂点バッファビューの設定
@@ -684,7 +685,7 @@ namespace Sein
       commandList->Get().SetGraphicsRootDescriptorTable(2, handleTrv);
 
       // 描画コマンドの生成
-      commandList->Get().DrawIndexedInstanced(321567, instanceCount, 0, 0, 0);
+      commandList->Get().DrawIndexedInstanced(indexCount, instanceCount, 0, 0, 0);
     }
 
     /**

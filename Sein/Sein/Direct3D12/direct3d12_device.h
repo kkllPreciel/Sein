@@ -153,9 +153,10 @@ namespace Sein
        *  @brief  描画する
        *  @param  vertexBuffer:頂点バッファ
        *  @param  indexBuffer:頂点インデックスバッファ
+       *  @param  indexCount:頂点インデックス数
        *  @param  instanceCount:インスタンス数
        */
-      void Render(const VertexBuffer& vertebBuffer, const IndexBuffer& indexBuffer, const unsigned int instanceCount);
+      void Render(const VertexBuffer& vertebBuffer, const IndexBuffer& indexBuffer, const unsigned int indexCount, const unsigned int instanceCount);
 #pragma endregion
 
       // テクスチャ関連

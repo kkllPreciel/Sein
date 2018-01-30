@@ -22,6 +22,11 @@ namespace Sein
     {
     public:
       /**
+       *  @brief  コンストラクタ
+       */
+      IResource() = default;
+
+      /**
        *  @brief  デストラクタ
        */
       virtual ~IResource() = default;
@@ -36,6 +41,19 @@ namespace Sein
        *  @return リソースの参照
        */
       virtual ID3D12Resource& Get() const noexcept = 0;
+
+      /**
+       *  @brief  コピーコンストラクタ
+       *  @param  other:コピー元のインスタンス
+       */
+      IResource(const IResource& other) = delete;
+
+      /**
+       *  @brief  代入演算子オペレータ
+       *  @param  other:代入元のインスタンス
+       *  @return 代入後のインスタンス
+       */
+      IResource& operator = (const IResource& other) = delete;
     };
   };
 };

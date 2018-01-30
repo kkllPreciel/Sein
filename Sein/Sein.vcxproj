@@ -146,6 +146,7 @@
     <ClCompile Include="Sein\Direct3D12\index_buffer.cc" />
     <ClCompile Include="Sein\Direct3D12\mesh.cc" />
     <ClCompile Include="Sein\Direct3D12\shader_resource_buffer.cc" />
+    <ClCompile Include="Sein\Direct3D12\texture.cc" />
     <ClCompile Include="Sein\Direct3D12\vertex_buffer.cc" />
     <ClCompile Include="Sein\PMX\loader.cc" />
   </ItemGroup>
@@ -162,6 +163,7 @@
     <ClInclude Include="Sein\Direct3D12\mesh.h" />
     <ClInclude Include="Sein\Direct3D12\resource.h" />
     <ClInclude Include="Sein\Direct3D12\shader_resource_buffer.h" />
+    <ClInclude Include="Sein\Direct3D12\texture.h" />
     <ClInclude Include="Sein\Direct3D12\vertex_buffer.h" />
     <ClInclude Include="Sein\PMX\loader.h" />
     <ClInclude Include="Sein\PNG\loader.h" />

@@ -42,7 +42,7 @@ namespace Sein
       Release();
 
       // リソースの設定
-      D3D12_RESOURCE_DESC resource_desc;
+      D3D12_RESOURCE_DESC resource_desc = {};
       resource_desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D; // リソースの種別(今回は必ずバッファ)
       resource_desc.Alignment = 0;                                  // アラインメント
       resource_desc.Width = width;                                  // リソースの幅
@@ -52,10 +52,10 @@ namespace Sein
       resource_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;            // リソースデータフォーマット(R8G8B8A8等)
       resource_desc.SampleDesc.Count = 1;                           // ピクセル単位のマルチサンプリング数
       resource_desc.SampleDesc.Quality = 0;                         // マルチサンプリングの品質レベル
-      resource_desc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;        // テクスチャレイアウトオプション
+      resource_desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;          // テクスチャレイアウトオプション
       resource_desc.Flags = flag;                                   // リソース操作オプションフラグ
 
-                                                                    // リソース(バッファ)の生成
+      // リソース(バッファ)の生成
       ID3D12Resource* resource = nullptr;
       if (FAILED(device->CreateCommittedResource(
         &properties,                        // ヒープの設定

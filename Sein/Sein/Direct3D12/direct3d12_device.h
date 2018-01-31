@@ -28,7 +28,7 @@ namespace Sein
     class ShaderResourceBuffer;
     class DescriptorHeap;
     class CommandList;
-    class Texture;
+    class TextureView;
 
     /**
      *  @brief  Direct3D12用デバイスクラス(スワップチェインも一緒)
@@ -163,7 +163,7 @@ namespace Sein
       // テクスチャ関連
       // 後々別クラスへ移動
 #pragma region Texture
-      std::unique_ptr<Texture> texBuffer;  ///<テクスチャバッファ
+      std::unique_ptr<TextureView> texBuffer;  ///<テクスチャバッファ
 
       /**
        *  @brief  テクスチャバッファを生成する

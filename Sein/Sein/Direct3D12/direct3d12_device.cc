@@ -21,8 +21,7 @@
 #include "descriptor_heap.h"
 #include "descriptor.h"
 #include "command_list.h"
-#include "buffer.h"
-#include "texture.h"
+#include "texture_view.h"
 
 namespace Sein
 {
@@ -761,106 +760,47 @@ namespace Sein
      */
     void Device::CreateTextureBuffer(const uint8_t* const data, const uint32_t width, const uint32_t height, const uint8_t bytesPerPixel)
     {
-      // リソースの作成
-      {
-        D3D12_HEAP_PROPERTIES properties;
-        properties.Type = D3D12_HEAP_TYPE_DEFAULT;
-        properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-        properties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-        properties.CreationNodeMask = 1;
-        properties.VisibleNodeMask = 1;
+      texBuffer.reset();
+      texBuffer = std::make_unique<TextureView>();
 
-        Texture* texture = new Texture;
-        texture->Create(device.get(), properties, width, height);
-        texBuffer.reset(texture);
-      }
+      texBuffer->Create(device.get(), &(descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]), width, height);
+      texBuffer->Map(data, bytesPerPixel);
 
-      // 中間リソースの作成
-      {
-        std::unique_ptr<Sein::Direct3D12::Buffer> buffer = std::make_unique<Buffer>();
+      // テクスチャ用リソースへコピー
+      commandList->Begin();
 
-        D3D12_RESOURCE_DESC Desc = texBuffer->Get().GetDesc();
-        UINT64 RequiredSize = 0;
+      D3D12_RESOURCE_DESC Desc = texBuffer->GetTexture().Get().GetDesc();
+      D3D12_PLACED_SUBRESOURCE_FOOTPRINT footPrint;
+      device->GetCopyableFootprints(&Desc, 0, 1, 0, &footPrint, nullptr, nullptr, nullptr);
 
-        device->GetCopyableFootprints(&Desc, 0, 1, 0, nullptr, nullptr, nullptr, &RequiredSize);
+      D3D12_TEXTURE_COPY_LOCATION Dst;
+      Dst.pResource = &(texBuffer->GetTexture().Get());
+      Dst.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+      Dst.SubresourceIndex = 0;
 
-        D3D12_HEAP_PROPERTIES properties;
-        properties.Type = D3D12_HEAP_TYPE_UPLOAD;
-        properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-        properties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-        properties.CreationNodeMask = 1;
-        properties.VisibleNodeMask = 1;
-        buffer->Create(device.get(), properties, RequiredSize);
+      D3D12_TEXTURE_COPY_LOCATION Src;
+      Src.pResource = &(texBuffer->GetTemporaryBuffer().Get());
+      Src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+      Src.PlacedFootprint = footPrint;
+      commandList->Get().CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
 
-        // データのコピー
-        {
-          D3D12_SUBRESOURCE_DATA textureData = {};
-          textureData.pData = data;
-          textureData.RowPitch = width * bytesPerPixel;
-          textureData.SlicePitch = textureData.RowPitch * height;
+      // リソースバリア
+      D3D12_RESOURCE_BARRIER barrier;
+      barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+      barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+      barrier.Transition.pResource = &(texBuffer->GetTexture().Get());
+      barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+      barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+      barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+      commandList->Get().ResourceBarrier(1, &barrier);
 
-          unsigned char* pData;
+      // コマンドリストをクローズする
+      // コマンドリストの実行
+      commandList->End();
+      ID3D12CommandList* ppCommandLists[] = { &(commandList->Get()) };
+      commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
-          if (FAILED(buffer->Get().Map(0, nullptr, reinterpret_cast<void**>(&pData))))
-          {
-            throw "テクスチャ用中間リソースへのポインタの取得に失敗しました。";
-          }
-          std::memcpy(pData, data, sizeof(uint8_t) * textureData.SlicePitch);
-          buffer->Get().Unmap(0, nullptr);
-        }
-
-        // テクスチャ用リソースへコピー
-        {
-          commandList->Begin();
-
-          D3D12_RESOURCE_DESC Desc = texBuffer->Get().GetDesc();
-          D3D12_PLACED_SUBRESOURCE_FOOTPRINT footPrint;
-          device->GetCopyableFootprints(&Desc, 0, 1, 0, &footPrint, nullptr, nullptr, nullptr);
-
-          D3D12_TEXTURE_COPY_LOCATION Dst;
-          Dst.pResource = &(texBuffer->Get());
-          Dst.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-          Dst.SubresourceIndex = 0;
-
-          D3D12_TEXTURE_COPY_LOCATION Src;
-          Src.pResource = &(buffer->Get());
-          Src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
-          Src.PlacedFootprint = footPrint;
-          commandList->Get().CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
-
-          // リソースバリア
-          D3D12_RESOURCE_BARRIER barrier;
-          barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-          barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-          barrier.Transition.pResource = &(texBuffer->Get());
-          barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-          barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-          barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-          commandList->Get().ResourceBarrier(1, &barrier);
-
-          // コマンドリストをクローズする
-          // コマンドリストの実行
-          commandList->End();
-          ID3D12CommandList* ppCommandLists[] = { &(commandList->Get()) };
-          commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-
-          WaitForGpu();
-        }
-      }
-
-      // シェーダーリソースビューの作成
-      {
-        // Describe and create a SRV for the texture.
-        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-        srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-        srvDesc.Texture2D.MipLevels = 1;
-
-        auto& descriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV];
-        auto& descriptor = descriptorHeap.CreateDescriptor();
-        device->CreateShaderResourceView(&(texBuffer->Get()), &srvDesc, descriptor.GetHandleForCPU());
-      }
+      WaitForGpu();
     }
 #pragma endregion
   };

@@ -21,6 +21,8 @@
 #include "descriptor_heap.h"
 #include "descriptor.h"
 #include "command_list.h"
+#include "buffer.h"
+#include "texture.h"
 
 namespace Sein
 {
@@ -32,7 +34,7 @@ namespace Sein
     Device::Device() :
       device(nullptr, [](IUnknown* p) { p->Release(); }), swapChain(nullptr, [](IUnknown* p) { p->Release(); }), commandQueue(nullptr, [](IUnknown* p) { p->Release(); }), commandList(nullptr),
       descriptorHeaps(nullptr), bufferIndex(0), rootSignature(nullptr), pipelineState(nullptr),
-      depthStencilView(nullptr), fence(nullptr), texBuffer(nullptr, [](IUnknown* p) { p->Release(); })
+      depthStencilView(nullptr), fence(nullptr), texBuffer(nullptr)
     {
       for (auto i = 0; i < FrameCount; ++i)
       {
@@ -768,42 +770,19 @@ namespace Sein
         properties.CreationNodeMask = 1;
         properties.VisibleNodeMask = 1;
 
-        D3D12_RESOURCE_DESC textureDesc = {};
-        textureDesc.MipLevels = 1;
-        textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        textureDesc.Width = width;
-        textureDesc.Height = height;
-        textureDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-        textureDesc.DepthOrArraySize = 1;
-        textureDesc.SampleDesc.Count = 1;
-        textureDesc.SampleDesc.Quality = 0;
-        textureDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-
-        ID3D12Resource* resource = nullptr;
-        if (FAILED(device->CreateCommittedResource(
-          &properties,
-          D3D12_HEAP_FLAG_NONE,
-          &textureDesc,
-          D3D12_RESOURCE_STATE_COPY_DEST,
-          nullptr,
-          IID_PPV_ARGS(&resource))))
-        {
-          throw "テクスチャ用リソースの作成に失敗しました。";
-        }
-        texBuffer.reset(resource);
+        Texture* texture = new Texture;
+        texture->Create(device.get(), properties, width, height);
+        texBuffer.reset(texture);
       }
 
       // 中間リソースの作成
       {
-        Microsoft::WRL::ComPtr<ID3D12Resource> uploadHeap;
+        std::unique_ptr<Sein::Direct3D12::Buffer> buffer = std::make_unique<Buffer>();
 
-        D3D12_RESOURCE_DESC Desc = texBuffer->GetDesc();
+        D3D12_RESOURCE_DESC Desc = texBuffer->Get().GetDesc();
         UINT64 RequiredSize = 0;
 
-        ID3D12Device* pDevice;
-        texBuffer->GetDevice(__uuidof(*pDevice), reinterpret_cast<void**>(&pDevice));
-        pDevice->GetCopyableFootprints(&Desc, 0, 1, 0, nullptr, nullptr, nullptr, &RequiredSize);
-        pDevice->Release();
+        device->GetCopyableFootprints(&Desc, 0, 1, 0, nullptr, nullptr, nullptr, &RequiredSize);
 
         D3D12_HEAP_PROPERTIES properties;
         properties.Type = D3D12_HEAP_TYPE_UPLOAD;
@@ -811,31 +790,7 @@ namespace Sein
         properties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
         properties.CreationNodeMask = 1;
         properties.VisibleNodeMask = 1;
-
-        D3D12_RESOURCE_DESC resource_desc;
-        resource_desc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-        resource_desc.Alignment = 0;
-        resource_desc.Width = RequiredSize;
-        resource_desc.Height = 1;
-        resource_desc.DepthOrArraySize = 1;
-        resource_desc.MipLevels = 1;
-        resource_desc.Format = DXGI_FORMAT_UNKNOWN;
-        resource_desc.SampleDesc.Count = 1;
-        resource_desc.SampleDesc.Quality = 0;
-        resource_desc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-        resource_desc.Flags = D3D12_RESOURCE_FLAG_NONE;
-
-        // Create the GPU upload buffer.
-        if (FAILED(device->CreateCommittedResource(
-          &properties,
-          D3D12_HEAP_FLAG_NONE,
-          &resource_desc,
-          D3D12_RESOURCE_STATE_GENERIC_READ,
-          nullptr,
-          IID_PPV_ARGS(&uploadHeap))))
-        {
-          throw "テクスチャ用中間リソースの作成に失敗しました。";
-        }
+        buffer->Create(device.get(), properties, RequiredSize);
 
         // データのコピー
         {
@@ -846,29 +801,29 @@ namespace Sein
 
           unsigned char* pData;
 
-          if (FAILED(uploadHeap->Map(0, nullptr, reinterpret_cast<void**>(&pData))))
+          if (FAILED(buffer->Get().Map(0, nullptr, reinterpret_cast<void**>(&pData))))
           {
             throw "テクスチャ用中間リソースへのポインタの取得に失敗しました。";
           }
           std::memcpy(pData, data, sizeof(uint8_t) * textureData.SlicePitch);
-          uploadHeap->Unmap(0, nullptr);
+          buffer->Get().Unmap(0, nullptr);
         }
 
         // テクスチャ用リソースへコピー
         {
           commandList->Begin();
 
-          D3D12_RESOURCE_DESC Desc = texBuffer->GetDesc();
+          D3D12_RESOURCE_DESC Desc = texBuffer->Get().GetDesc();
           D3D12_PLACED_SUBRESOURCE_FOOTPRINT footPrint;
           device->GetCopyableFootprints(&Desc, 0, 1, 0, &footPrint, nullptr, nullptr, nullptr);
 
           D3D12_TEXTURE_COPY_LOCATION Dst;
-          Dst.pResource = texBuffer.get();
+          Dst.pResource = &(texBuffer->Get());
           Dst.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
           Dst.SubresourceIndex = 0;
 
           D3D12_TEXTURE_COPY_LOCATION Src;
-          Src.pResource = uploadHeap.Get();
+          Src.pResource = &(buffer->Get());
           Src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
           Src.PlacedFootprint = footPrint;
           commandList->Get().CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
@@ -877,7 +832,7 @@ namespace Sein
           D3D12_RESOURCE_BARRIER barrier;
           barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
           barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-          barrier.Transition.pResource = texBuffer.get();
+          barrier.Transition.pResource = &(texBuffer->Get());
           barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
           barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
           barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
@@ -904,7 +859,7 @@ namespace Sein
 
         auto& descriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV];
         auto& descriptor = descriptorHeap.CreateDescriptor();
-        device->CreateShaderResourceView(texBuffer.get(), &srvDesc, descriptor.GetHandleForCPU());
+        device->CreateShaderResourceView(&(texBuffer->Get()), &srvDesc, descriptor.GetHandleForCPU());
       }
     }
 #pragma endregion

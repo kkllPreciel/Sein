@@ -33,7 +33,7 @@ namespace Sein
     Device::Device() :
       device(nullptr, [](IUnknown* p) { p->Release(); }), swapChain(nullptr, [](IUnknown* p) { p->Release(); }), commandQueue(nullptr, [](IUnknown* p) { p->Release(); }), commandList(nullptr),
       descriptorHeaps(nullptr), bufferIndex(0), rootSignature(nullptr), pipelineState(nullptr),
-      depthStencilView(nullptr), fence(nullptr), texBuffer(nullptr)
+      depthStencilView(nullptr), fence(nullptr), texBuffer()
     {
       for (auto i = 0; i < FrameCount; ++i)
       {
@@ -760,26 +760,26 @@ namespace Sein
      */
     void Device::CreateTextureBuffer(const uint8_t* const data, const uint32_t width, const uint32_t height, const uint8_t bytesPerPixel)
     {
-      texBuffer.reset();
-      texBuffer = std::make_unique<TextureView>();
+      texBuffer.emplace_back(std::make_unique<TextureView>());
+      auto texture_view = texBuffer[texBuffer.size() - 1].get();
 
-      texBuffer->Create(device.get(), &(descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]), width, height);
-      texBuffer->Map(data, bytesPerPixel);
+      texture_view->Create(device.get(), &(descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]), width, height);
+      texture_view->Map(data, bytesPerPixel);
 
       // テクスチャ用リソースへコピー
       commandList->Begin();
 
-      D3D12_RESOURCE_DESC Desc = texBuffer->GetTexture().Get().GetDesc();
+      D3D12_RESOURCE_DESC Desc = texture_view->GetTexture().Get().GetDesc();
       D3D12_PLACED_SUBRESOURCE_FOOTPRINT footPrint;
       device->GetCopyableFootprints(&Desc, 0, 1, 0, &footPrint, nullptr, nullptr, nullptr);
 
       D3D12_TEXTURE_COPY_LOCATION Dst;
-      Dst.pResource = &(texBuffer->GetTexture().Get());
+      Dst.pResource = &(texture_view->GetTexture().Get());
       Dst.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
       Dst.SubresourceIndex = 0;
 
       D3D12_TEXTURE_COPY_LOCATION Src;
-      Src.pResource = &(texBuffer->GetTemporaryBuffer().Get());
+      Src.pResource = &(texture_view->GetTemporaryBuffer().Get());
       Src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
       Src.PlacedFootprint = footPrint;
       commandList->Get().CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
@@ -788,7 +788,7 @@ namespace Sein
       D3D12_RESOURCE_BARRIER barrier;
       barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
       barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-      barrier.Transition.pResource = &(texBuffer->GetTexture().Get());
+      barrier.Transition.pResource = &(texture_view->GetTexture().Get());
       barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
       barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
       barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;

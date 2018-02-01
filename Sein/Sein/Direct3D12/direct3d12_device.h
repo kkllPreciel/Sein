@@ -163,7 +163,7 @@ namespace Sein
       // テクスチャ関連
       // 後々別クラスへ移動
 #pragma region Texture
-      std::unique_ptr<TextureView> texBuffer;  ///<テクスチャバッファ
+      std::vector<std::unique_ptr<TextureView>> texBuffer;  ///<テクスチャバッファ
 
       /**
        *  @brief  テクスチャバッファを生成する

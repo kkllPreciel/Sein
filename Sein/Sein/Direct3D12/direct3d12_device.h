@@ -152,12 +152,30 @@ namespace Sein
     public:
       /**
        *  @brief  描画する
-       *  @param  vertexBuffer:頂点バッファ
-       *  @param  indexBuffer:頂点インデックスバッファ
        *  @param  indexCount:頂点インデックス数
        *  @param  instanceCount:インスタンス数
        */
-      void Render(const VertexBuffer& vertebBuffer, const IndexBuffer& indexBuffer, const unsigned int indexCount, const unsigned int instanceCount);
+      void Render(const unsigned int indexCount, const unsigned int instanceCount);
+
+      /**
+       *  @brief  頂点バッファを設定する
+       *  @param  start_slot:開始スロット番号
+       *  @param  vertex_buffer_count:頂点バッファの数
+       *  @param  vertex_buffers:頂点バッファの配列
+       */
+      void SetVertexBuffers(const UINT start_slot, const UINT vertex_buffer_count, const D3D12_VERTEX_BUFFER_VIEW* vertex_buffers);
+
+      /**
+       *  @brief  インデックスバッファを設定する
+       *  @param  index_buffer:インデックスバッファ
+       */
+      void SetIndexBuffer(const D3D12_INDEX_BUFFER_VIEW* index_buffer);
+
+      /**
+       *  @brief  プリミティブのタイプを設定する
+       *  @param  topology:プリミティブのタイプ
+       */
+      void SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY topology);
 #pragma endregion
 
       // テクスチャ関連

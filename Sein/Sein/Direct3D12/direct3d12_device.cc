@@ -638,12 +638,10 @@ namespace Sein
 
     /**
      *  @brief  描画する
-     *  @param  vertexBuffer:頂点バッファ
-     *  @param  indexBuffer:頂点インデックスバッファ
      *  @param  indexCount:頂点インデックス数
      *  @param  instanceCount:インスタンス数
      */
-    void Device::Render(const VertexBuffer& vertebBuffer, const IndexBuffer& indexBuffer, const unsigned int indexCount, const unsigned int instanceCount)
+    void Device::Render(const unsigned int indexCount, const unsigned int instanceCount)
     {
       // ビューポートの作成
       D3D12_VIEWPORT viewport;
@@ -677,16 +675,6 @@ namespace Sein
       // シザー矩形(シザーテスト)の設定
       commandList->Get().RSSetScissorRects(1, &scissor);
 
-      // プリミティブトポロジーの設定
-      //commandList->Get().IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
-      commandList->Get().IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-      // 頂点バッファビューの設定
-      commandList->Get().IASetVertexBuffers(0, 1, &(vertebBuffer.GetView()));
-
-      // 頂点インデックスビューの設定
-      commandList->Get().IASetIndexBuffer(&(indexBuffer.GetView()));
-
       // ディスクリプータヒープテーブルを設定
       auto handleCbv = cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();  // 定数バッファ用ディスクリプータヒープテーブル
       auto handleSrv = cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();  // StructuredBuffer用ディスクリプータヒープテーブル
@@ -699,6 +687,36 @@ namespace Sein
 
       // 描画コマンドの生成
       commandList->Get().DrawIndexedInstanced(indexCount, instanceCount, 0, 0, 0);
+    }
+
+    /**
+     *  @brief  頂点バッファを設定する
+     *  @param  start_slot:開始スロット番号
+     *  @param  vertex_buffer_count:頂点バッファの数
+     *  @param  vertex_buffers:頂点バッファの配列
+     */
+    void Device::SetVertexBuffers(const UINT start_slot, const UINT vertex_buffer_count, const D3D12_VERTEX_BUFFER_VIEW* vertex_buffers)
+    {
+      // 頂点バッファビューの設定
+      commandList->Get().IASetVertexBuffers(start_slot, vertex_buffer_count, vertex_buffers);
+    }
+    
+    /**
+     *  @brief  インデックスバッファを設定する
+     *  @param  index_buffer:インデックスバッファ
+     */
+    void Device::SetIndexBuffer(const D3D12_INDEX_BUFFER_VIEW* index_buffer)
+    {
+      commandList->Get().IASetIndexBuffer(index_buffer);
+    }
+    
+    /**
+     *  @brief  プリミティブのタイプを設定する
+     *  @param  topology:プリミティブのタイプ
+     */
+    void Device::SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY topology)
+    {
+      commandList->Get().IASetPrimitiveTopology(topology);
     }
 
     /**

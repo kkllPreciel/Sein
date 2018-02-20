@@ -6,12 +6,16 @@
  *  @version  1.0
  */
 
+#include "direct3d12_device.h"
+
 #if _DEBUG
 #include <sstream>
 #endif
+
 #include <winerror.h>
 #include <d3dcompiler.h>
-#include "direct3d12_device.h"
+#include "DirectXTK12/include/ResourceUploadBatch.h"
+
 #include "depth_stencil_view.h"
 #include "fence.h"
 #include "vertex_buffer.h"
@@ -770,55 +774,26 @@ namespace Sein
     // 後々別クラスへ移動する
 #pragma region Texture
     /**
-     *  @brief  テクスチャバッファを生成する
-     *  @param  data:テクスチャデータ
-     *  @param  width:横幅
-     *  @param  height:縦幅
-     *  @param  bytesPerPixel:1ピクセルで使用するバイト数
+     *  @brief  ファイルからテクスチャバッファを生成する
+     *  @param  file_path:テクスチャファイルパス
      */
-    void Device::CreateTextureBuffer(const uint8_t* const data, const uint32_t width, const uint32_t height, const uint8_t bytesPerPixel)
+    void Device::CreateTextureBufferFromFile(const std::wstring& file_path)
     {
+      DirectX::ResourceUploadBatch upload_batch(device.get());
+      upload_batch.Begin();
+
+      decltype(auto) texture = ITexture::CreateFromFile(device.get(), upload_batch, file_path);
+
+      auto uploadResourcesFinished = upload_batch.End(commandQueue.get());
+
+      WaitForGpu();
+
+      uploadResourcesFinished.wait();
+
       texBuffer.emplace_back(std::make_unique<TextureView>());
       auto texture_view = texBuffer[texBuffer.size() - 1].get();
 
-      texture_view->Create(device.get(), &(descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]), width, height);
-      texture_view->Map(data, bytesPerPixel);
-
-      // テクスチャ用リソースへコピー
-      commandList->Begin();
-
-      D3D12_RESOURCE_DESC Desc = texture_view->GetTexture().Get().GetDesc();
-      D3D12_PLACED_SUBRESOURCE_FOOTPRINT footPrint;
-      device->GetCopyableFootprints(&Desc, 0, 1, 0, &footPrint, nullptr, nullptr, nullptr);
-
-      D3D12_TEXTURE_COPY_LOCATION Dst;
-      Dst.pResource = &(texture_view->GetTexture().Get());
-      Dst.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-      Dst.SubresourceIndex = 0;
-
-      D3D12_TEXTURE_COPY_LOCATION Src;
-      Src.pResource = &(texture_view->GetTemporaryBuffer().Get());
-      Src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
-      Src.PlacedFootprint = footPrint;
-      commandList->Get().CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
-
-      // リソースバリア
-      D3D12_RESOURCE_BARRIER barrier;
-      barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-      barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-      barrier.Transition.pResource = &(texture_view->GetTexture().Get());
-      barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-      barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-      barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-      commandList->Get().ResourceBarrier(1, &barrier);
-
-      // コマンドリストをクローズする
-      // コマンドリストの実行
-      commandList->End();
-      ID3D12CommandList* ppCommandLists[] = { &(commandList->Get()) };
-      commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-
-      WaitForGpu();
+      texture_view->Create(device.get(), texture.release(), &(descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]));
     }
 #pragma endregion
   };

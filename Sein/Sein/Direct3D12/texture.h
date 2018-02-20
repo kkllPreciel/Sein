@@ -9,8 +9,10 @@
 #pragma once
 
  // include
-#include <d3d12.h>
 #include <memory>
+#include <string>
+#include <d3d12.h>
+#include "DirectXTK12/include/ResourceUploadBatch.h"
 #include "resource.h"
 
 namespace Sein
@@ -29,55 +31,13 @@ namespace Sein
       virtual ~ITexture() override = default;
 
       /**
-       *  @brief  テクスチャリソースを生成する
+       *  @brief  ファイルからテクスチャを生成する
        *  @param  device:Direct3D12のデバイス
-       *  @param  properties:リソースのヒーププロパティ
-       *  @param  width:リソースの横幅
-       *  @param  height:リソースの縦幅
-       *  @param  flag:リソース操作オプションフラグ
+       *  @param  upload_batch:リソース更新用クラスのインスタンス
+       *  @param  file_path:テクスチャファイルパス
+       *  @return テクスチャインターフェイスへのユニークポインタ
        */
-      virtual void Create(ID3D12Device* const device, const D3D12_HEAP_PROPERTIES& properties, const UINT64 width, const UINT64 height, const D3D12_RESOURCE_FLAGS flag = D3D12_RESOURCE_FLAG_NONE) noexcept(false) = 0;
-    };
-
-    /**
-     *  @brief  テクスチャ用クラス
-     */
-    class Texture final : public ITexture
-    {
-    public:
-      /**
-       *  @brief  コンストラクタ
-       */
-      Texture();
-
-      /**
-       *  @brief  デストラクタ
-       */
-      ~Texture() override;
-
-      /**
-       *  @brief  テクスチャリソースを生成する
-       *  @param  device:Direct3D12のデバイス
-       *  @param  properties:リソースのヒーププロパティ
-       *  @param  width:リソースの横幅
-       *  @param  height:リソースの縦幅
-       *  @param  flag:リソース操作オプションフラグ
-       */
-      void Create(ID3D12Device* const device, const D3D12_HEAP_PROPERTIES& properties, const UINT64 width, const UINT64 height, const D3D12_RESOURCE_FLAGS flag = D3D12_RESOURCE_FLAG_NONE) noexcept(false) override;
-
-      /**
-       *  @brief  リソースを開放する
-       */
-      void Release() noexcept override;
-
-      /**
-       *  @brief  リソースを取得する
-       *  @return リソースの参照
-       */
-      ID3D12Resource& Get() const noexcept override;
-
-    private:
-      std::unique_ptr<ID3D12Resource, void(*)(IUnknown*)> buffer; ///< バッファ
+      static std::unique_ptr<ITexture> CreateFromFile(ID3D12Device* const device, DirectX::ResourceUploadBatch& upload_batch, const std::wstring& file_path);
     };
   };
 };

@@ -184,13 +184,10 @@ namespace Sein
       std::vector<std::unique_ptr<TextureView>> texBuffer;  ///<テクスチャバッファ
 
       /**
-       *  @brief  テクスチャバッファを生成する
-       *  @param  data:テクスチャデータ
-       *  @param  width:横幅
-       *  @param  height:縦幅
-       *  @param  bytesPerPixel:1ピクセルで使用するバイト数
+       *  @brief  ファイルからテクスチャバッファを生成する
+       *  @param  file_path:テクスチャファイルパス
        */
-      void CreateTextureBuffer(const uint8_t* const data, const uint32_t width, const uint32_t height, const uint8_t bytesPerPixel);
+      void CreateTextureBufferFromFile(const std::wstring& file_path);
 #pragma endregion
     };
   };

@@ -12,7 +12,6 @@
 #include <d3d12.h>
 #include <memory>
 #include "texture.h"
-#include "buffer.h"
 #include "descriptor_heap.h"
 
 namespace Sein
@@ -38,11 +37,10 @@ namespace Sein
       /**
        *  @brief  テクスチャ用ビューを生成する
        *  @param  device:Direct3D12のデバイス
+       *  @param  texture:テクスチャ
        *  @param  descriptor_heap:ディスクリプターヒープ
-       *  @param  width:テクスチャの横幅
-       *  @param  height:テクスチャの縦幅
        */
-      void Create(ID3D12Device* const device, IDescriptorHeap* const descriptor_heap, const UINT64 width, const UINT64 height) noexcept(false);
+      void Create(ID3D12Device* const device, ITexture* const texture, IDescriptorHeap* const descriptor_heap) noexcept(false);
 
       /**
        *  @brief  テクスチャ用ビューを開放する
@@ -50,23 +48,10 @@ namespace Sein
       void Release() noexcept;
 
       /**
-       *  @brief  データのマップを行う
-       *  @param  data:テクスチャデータ
-       *  @param  bytesPerPixel:1ピクセルで使用するバイト数
-       */
-      void Map(const void* const data, const unsigned int bytesPerPixel) noexcept(false);
-
-      /**
        *  @brief  テクスチャを取得する
        *  @return テクスチャへの参照
        */
-      const Texture& GetTexture() const;
-
-      /**
-       *  @brief  中間バッファを取得する
-       *  @return 中間バッファへの参照
-       */
-      const Buffer& GetTemporaryBuffer() const;
+      const ITexture& GetTexture() const;
 
       /**
        *  @brief  コピーコンストラクタ
@@ -82,8 +67,7 @@ namespace Sein
       TextureView& operator = (const TextureView& other) = delete;
 
     private:
-      std::unique_ptr<Texture> texture_;  ///< テクスチャ
-      std::unique_ptr<Buffer> buffer_;    ///< 中間バッファ
+      std::unique_ptr<ITexture> texture_;  ///< テクスチャ
     };
   };
 };

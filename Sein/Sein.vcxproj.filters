@@ -113,5 +113,8 @@
     <ClInclude Include="Sein\Direct3D12\texture_view.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="Sein\Renderer\renderer.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -38,6 +38,17 @@ namespace Sein
       static std::shared_ptr<IRenderer> Create();
 
       /**
+       *  @brief  初期化する
+       *  @return 初期化成功フラグ
+       */
+      virtual bool Initialize() = 0;
+
+      /**
+       *  @brief  終了処理を行う
+       */
+      virtual void Destroy() = 0;
+
+      /**
        *  @brief  コピーコンストラクタ
        *  @param  other:コピー元のインスタンス
        */

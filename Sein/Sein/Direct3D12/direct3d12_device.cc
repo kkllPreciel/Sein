@@ -26,6 +26,7 @@
 #include "descriptor.h"
 #include "command_list.h"
 #include "texture_view.h"
+#include "descriptor_range.h"
 
 namespace Sein
 {
@@ -397,51 +398,35 @@ namespace Sein
 
       // ルートシグネチャの作成
       {
-        // ディスクリプターレンジの設定(定数バッファとシェーダーリソース(頂点シェーダーのみで使用可)とシェーダーリソース(ピクセルシェーダーのみで使用可))
-        D3D12_DESCRIPTOR_RANGE descriptorRanges[3];
-        {
-          // 定数バッファ用ディスクリプターレンジの設定
-          descriptorRanges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;								// ディスクリプターの種別(定数バッファビュー)
-          descriptorRanges[0].NumDescriptors = 1;															// ディスクリプターの数
-          descriptorRanges[0].BaseShaderRegister = 0;														// 範囲内のベースシェーダレジスタ
-          descriptorRanges[0].RegisterSpace = 0;															// レジスタ空間(TODO:調べる)
-          descriptorRanges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;	// ルートシグネチャ開始からのディスクリプタのオフセット?
+        // 定数バッファのディスクリプターレンジを作成
+        auto descriptor_range_for_cbv = IDescriptorRange::Create(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1);
 
-          // StructuredBuffer用ディスクリプターレンジの設定
-          descriptorRanges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;								// ディスクリプターの種別(シェーダーリソースビュー)
-          descriptorRanges[1].NumDescriptors = 1;															// ディスクリプターの数
-          descriptorRanges[1].BaseShaderRegister = 0;														// 範囲内のベースシェーダレジスタ
-          descriptorRanges[1].RegisterSpace = 0;															// レジスタ空間(TODO:調べる)
-          descriptorRanges[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;	// ルートシグネチャ開始からのディスクリプタのオフセット?
+        // StructuredBuffer(シェーダーリソース)のディスクリプターレンジを作成
+        auto descriptor_range_for_sbv = IDescriptorRange::Create(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1);
 
-          // テクスチャ用ディスクリプターレンジの設定
-          descriptorRanges[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;                              // ディスクリプターの種別(シェーダーリソースビュー)
-          descriptorRanges[2].NumDescriptors = 3;                                                       // ディスクリプターの数
-          descriptorRanges[2].BaseShaderRegister = 0;                                                   // 範囲内のベースシェーダレジスタ
-          descriptorRanges[2].RegisterSpace = 0;                                                        // レジスタ空間(TODO:調べる)
-          descriptorRanges[2].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // ルートシグネチャ開始からのディスクリプタのオフセット?
-        }
+        // テクスチャ(シェーダーリソース)のディスクリプターレンジを作成
+        auto descriptor_range_for_texture = IDescriptorRange::Create(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 3);
 
         // ルートパラメータの設定
         D3D12_ROOT_PARAMETER rootParameters[3];
         {
           // 定数バッファ用ルートパラメータ
-          rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;				// ルートシグネチャのスロットの種別(ディスクリプタテーブル)
-          rootParameters[0].DescriptorTable.NumDescriptorRanges = 1;									// ディスクリプターレンジの数
-          rootParameters[0].DescriptorTable.pDescriptorRanges = &descriptorRanges[0];					// ディスクリプターレンジのポインタ(数が1超なら配列の先頭ポインタ)
-          rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;						// ルートシグネチャのスロットの内容にアクセスできるシェーダの種別(頂点シェーダのみ)
+          rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;             // ルートシグネチャのスロットの種別(ディスクリプタテーブル)
+          rootParameters[0].DescriptorTable.NumDescriptorRanges = 1;                                // ディスクリプターレンジの数
+          rootParameters[0].DescriptorTable.pDescriptorRanges = &(descriptor_range_for_cbv->Get()); // ディスクリプターレンジのポインタ(数が1超なら配列の先頭ポインタ)
+          rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;                      // ルートシグネチャのスロットの内容にアクセスできるシェーダの種別(頂点シェーダのみ)
 
           // StructuredBuffer用ルートパラメータ
-          rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;				// ルートシグネチャのスロットの種別(ディスクリプタテーブル)
-          rootParameters[1].DescriptorTable.NumDescriptorRanges = 1;									// ディスクリプターレンジの数
-          rootParameters[1].DescriptorTable.pDescriptorRanges = &descriptorRanges[1];					// ディスクリプターレンジのポインタ(数が1超なら配列の先頭ポインタ)
-          rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;						// ルートシグネチャのスロットの内容にアクセスできるシェーダの種別(頂点シェーダのみ)
+          rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;             // ルートシグネチャのスロットの種別(ディスクリプタテーブル)
+          rootParameters[1].DescriptorTable.NumDescriptorRanges = 1;                                // ディスクリプターレンジの数
+          rootParameters[1].DescriptorTable.pDescriptorRanges = &(descriptor_range_for_sbv->Get()); // ディスクリプターレンジのポインタ(数が1超なら配列の先頭ポインタ)
+          rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;                      // ルートシグネチャのスロットの内容にアクセスできるシェーダの種別(頂点シェーダのみ)
 
           // テクスチャ用ルートパラメータ
-          rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;				// ルートシグネチャのスロットの種別(ディスクリプタテーブル)
-          rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;									// ディスクリプターレンジの数
-          rootParameters[2].DescriptorTable.pDescriptorRanges = &descriptorRanges[2];					// ディスクリプターレンジのポインタ(数が1超なら配列の先頭ポインタ)
-          rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;							// ルートシグネチャのスロットの内容にアクセスできるシェーダの種別(ピクセルシェーダのみ)
+          rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;                 // ルートシグネチャのスロットの種別(ディスクリプタテーブル)
+          rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;                                    // ディスクリプターレンジの数
+          rootParameters[2].DescriptorTable.pDescriptorRanges = &(descriptor_range_for_texture->Get()); // ディスクリプターレンジのポインタ(数が1超なら配列の先頭ポインタ)
+          rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;                           // ルートシグネチャのスロットの内容にアクセスできるシェーダの種別(ピクセルシェーダのみ)
         }
 
         // サンプラーの設定

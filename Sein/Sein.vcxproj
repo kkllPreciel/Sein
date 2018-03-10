@@ -154,6 +154,7 @@
     <ClCompile Include="Sein\Direct3D12\depth_stencil_view.cc" />
     <ClCompile Include="Sein\Direct3D12\descriptor.cc" />
     <ClCompile Include="Sein\Direct3D12\descriptor_heap.cc" />
+    <ClCompile Include="Sein\Direct3D12\descriptor_range.cc" />
     <ClCompile Include="Sein\Direct3D12\direct3d12_device.cc" />
     <ClCompile Include="Sein\Direct3D12\fence.cc" />
     <ClCompile Include="Sein\Direct3D12\index_buffer.cc" />
@@ -171,6 +172,7 @@
     <ClInclude Include="Sein\Direct3D12\depth_stencil_view.h" />
     <ClInclude Include="Sein\Direct3D12\descriptor.h" />
     <ClInclude Include="Sein\Direct3D12\descriptor_heap.h" />
+    <ClInclude Include="Sein\Direct3D12\descriptor_range.h" />
     <ClInclude Include="Sein\Direct3D12\direct3d12_device.h" />
     <ClInclude Include="Sein\Direct3D12\fence.h" />
     <ClInclude Include="Sein\Direct3D12\index_buffer.h" />

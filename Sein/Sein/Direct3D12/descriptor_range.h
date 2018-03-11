@@ -36,7 +36,7 @@ namespace Sein
        *  @brief  ディスクリプターレンジを取得する
        *  @return ディスクリプターレンジ
        */
-      virtual D3D12_DESCRIPTOR_RANGE Get() = 0;
+      virtual const D3D12_DESCRIPTOR_RANGE& Get() const = 0;
 
       /**
        *  @brief  コピーコンストラクタ

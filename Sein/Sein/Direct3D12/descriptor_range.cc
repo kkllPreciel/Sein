@@ -88,7 +88,7 @@ namespace Sein
          *  @brief  ディスクリプターレンジを取得する
          *  @return ディスクリプターレンジ
          */
-        D3D12_DESCRIPTOR_RANGE Get() override
+        const D3D12_DESCRIPTOR_RANGE& Get() const override
         {
           return descriptor_range_;
         }

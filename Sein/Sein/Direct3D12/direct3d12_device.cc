@@ -27,6 +27,7 @@
 #include "command_list.h"
 #include "texture_view.h"
 #include "descriptor_range.h"
+#include "root_parameter.h"
 
 namespace Sein
 {
@@ -409,25 +410,19 @@ namespace Sein
 
         // ルートパラメータの設定
         D3D12_ROOT_PARAMETER rootParameters[3];
-        {
-          // 定数バッファ用ルートパラメータ
-          rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;             // ルートシグネチャのスロットの種別(ディスクリプタテーブル)
-          rootParameters[0].DescriptorTable.NumDescriptorRanges = 1;                                // ディスクリプターレンジの数
-          rootParameters[0].DescriptorTable.pDescriptorRanges = &(descriptor_range_for_cbv->Get()); // ディスクリプターレンジのポインタ(数が1超なら配列の先頭ポインタ)
-          rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;                      // ルートシグネチャのスロットの内容にアクセスできるシェーダの種別(頂点シェーダのみ)
 
-          // StructuredBuffer用ルートパラメータ
-          rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;             // ルートシグネチャのスロットの種別(ディスクリプタテーブル)
-          rootParameters[1].DescriptorTable.NumDescriptorRanges = 1;                                // ディスクリプターレンジの数
-          rootParameters[1].DescriptorTable.pDescriptorRanges = &(descriptor_range_for_sbv->Get()); // ディスクリプターレンジのポインタ(数が1超なら配列の先頭ポインタ)
-          rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;                      // ルートシグネチャのスロットの内容にアクセスできるシェーダの種別(頂点シェーダのみ)
+        // 定数バッファ用ルートパラメータ
+        auto root_parameter_for_cbv = IRootParameter::CreateForDescriptorTable(*descriptor_range_for_cbv, D3D12_SHADER_VISIBILITY_VERTEX);
+        rootParameters[0] = root_parameter_for_cbv->Get();
 
-          // テクスチャ用ルートパラメータ
-          rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;                 // ルートシグネチャのスロットの種別(ディスクリプタテーブル)
-          rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;                                    // ディスクリプターレンジの数
-          rootParameters[2].DescriptorTable.pDescriptorRanges = &(descriptor_range_for_texture->Get()); // ディスクリプターレンジのポインタ(数が1超なら配列の先頭ポインタ)
-          rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;                           // ルートシグネチャのスロットの内容にアクセスできるシェーダの種別(ピクセルシェーダのみ)
-        }
+        // StructuredBuffer用ルートパラメータ
+        auto root_parameter_for_sbv = IRootParameter::CreateForDescriptorTable(*descriptor_range_for_sbv, D3D12_SHADER_VISIBILITY_VERTEX);
+        rootParameters[1] = root_parameter_for_sbv->Get();
+
+        // テクスチャ用ルートパラメータ
+        auto root_paramter_for_texture = IRootParameter::CreateForDescriptorTable(*descriptor_range_for_texture, D3D12_SHADER_VISIBILITY_PIXEL);
+        rootParameters[2] = root_paramter_for_texture->Get();
+
 
         // サンプラーの設定
         D3D12_STATIC_SAMPLER_DESC sampler = {};

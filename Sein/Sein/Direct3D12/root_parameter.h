@@ -56,7 +56,7 @@ namespace Sein
        *  @brief  タイプがディスクリプターテーブルのルートパラメータを作成する
        *  @param  descriptor_range_type:ディスクリプターレンジの種別
        *  @param  descriptor_count:ディスクリプターの個数
-       *  @return ディスクリプターレンジインターフェイスへのシェアードポインタ
+       *  @return ルートパラメータインターフェイスへのシェアードポインタ
        */
       static std::shared_ptr<IRootParameter> CreateForDescriptorTable(const IDescriptorRange& descriptor_range, const D3D12_SHADER_VISIBILITY& shader_visibility);
     };

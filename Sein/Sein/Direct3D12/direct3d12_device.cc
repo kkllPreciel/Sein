@@ -29,6 +29,7 @@
 #include "descriptor_range.h"
 #include "root_parameter.h"
 
+
 namespace Sein
 {
   namespace Direct3D12
@@ -38,7 +39,7 @@ namespace Sein
      */
     Device::Device() :
       device(nullptr, [](IUnknown* p) { p->Release(); }), swapChain(nullptr, [](IUnknown* p) { p->Release(); }), commandQueue(nullptr, [](IUnknown* p) { p->Release(); }), commandList(nullptr),
-      descriptorHeaps(nullptr), bufferIndex(0), rootSignature(nullptr), pipelineState(nullptr),
+      descriptorHeaps(nullptr), bufferIndex(0), root_signature_(nullptr), pipelineState(nullptr),
       depthStencilView(nullptr), fence(nullptr), texBuffer()
     {
       for (auto i = 0; i < FrameCount; ++i)
@@ -292,7 +293,7 @@ namespace Sein
       WaitForGpu();
 
       pipelineState->Release();
-      rootSignature->Release();
+      root_signature_->Release();
 
       for (auto i = 0; i < FrameCount; ++i)
       {
@@ -451,28 +452,8 @@ namespace Sein
           | D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS							// ドメインシェーダからルートシグネチャへのアクセス禁止
           | D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;						// ジオメトリシェーダからルートシグネチャへのアクセス禁止
 
-
-        // ルートシグネチャのシリアル化
-        Microsoft::WRL::ComPtr<ID3DBlob> signature;
-        if (FAILED(D3D12SerializeRootSignature(
-          &rootSignatureDesc,				// ルートシグネチャの設定
-          D3D_ROOT_SIGNATURE_VERSION_1,	// ルートシグネチャのバージョン
-          &signature,						// シリアライズしたルートシグネチャへアクセスするためのインターフェイス(ポインタ)
-          nullptr							// シリアライザのエラーメッセージへアクセスするためのインターフェイス(ポインタ)
-        )))
-        {
-          throw "ルートシグネチャのシリアライズに失敗しました。";
-        }
-
-        // ルートシグネチャの生成
-        if (FAILED(device->CreateRootSignature(
-          0,									// マルチアダプター(マルチGPU)の場合に使用するアダプター(GPU)の識別子(単一なので0)
-          signature->GetBufferPointer(),		// シリアル化されたシグネチャ設定へのポインタ
-          signature->GetBufferSize(),			// メモリのブロックサイズ
-          IID_PPV_ARGS(&rootSignature))))
-        {
-          throw "ルートシグネチャの生成に失敗しました。";
-        }
+        // ルートシグネチャの作成
+        root_signature_ = IRootSignature::Create(device.get(), rootSignatureDesc);
       }
 
       // パイプラインステートの作成
@@ -588,24 +569,26 @@ namespace Sein
         sampleDesc.Count = 1; // ピクセル単位のマルチサンプリングの数
 
         // パイプラインステートの設定
-        D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-        psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) }; // 入力レイアウトの構造
-        psoDesc.pRootSignature = rootSignature;                                   // ルートシグネチャ
-        psoDesc.RasterizerState = rasterizer_desc;                                // ラスタライザの状態
-        psoDesc.VS = vs;                                                          // 頂点シェーダーの構造
-        psoDesc.PS = ps;                                                          // ピクセルシェーダーの構造
-        psoDesc.BlendState = blendDesc;                                           // ブレンド状態の構造
-        psoDesc.DepthStencilState = depthStencilDesc;                             // 深度ステンシル状態の構造
-        psoDesc.SampleMask = UINT_MAX;                                            // ブレンドの状態のためのサンプルのマスク
-        psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;   // 入力プリミティブ(三角形)
-        psoDesc.NumRenderTargets = 1;                                             // レンダーターゲットのフォーマット数
-        psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;                       // レンダーターゲットのフォーマット
-        psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;                                // 深度ステンシルのフォーマット
-        psoDesc.SampleDesc = sampleDesc;                                          // サンプリング状態の構造
+        D3D12_GRAPHICS_PIPELINE_STATE_DESC pipeline_state_desc = {};
+        pipeline_state_desc.InputLayout = { inputElementDescs, _countof(inputElementDescs) }; // 入力レイアウトの構造
+        pipeline_state_desc.RasterizerState = rasterizer_desc;                                // ラスタライザの状態
+        pipeline_state_desc.VS = vs;                                                          // 頂点シェーダーの構造
+        pipeline_state_desc.PS = ps;                                                          // ピクセルシェーダーの構造
+        pipeline_state_desc.BlendState = blendDesc;                                           // ブレンド状態の構造
+        pipeline_state_desc.DepthStencilState = depthStencilDesc;                             // 深度ステンシル状態の構造
+        pipeline_state_desc.SampleMask = UINT_MAX;                                            // ブレンドの状態のためのサンプルのマスク
+        pipeline_state_desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;   // 入力プリミティブ(三角形)
+        pipeline_state_desc.NumRenderTargets = 1;                                             // レンダーターゲットのフォーマット数
+        pipeline_state_desc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;                       // レンダーターゲットのフォーマット
+        pipeline_state_desc.DSVFormat = DXGI_FORMAT_D32_FLOAT;                                // 深度ステンシルのフォーマット
+        pipeline_state_desc.SampleDesc = sampleDesc;                                          // サンプリング状態の構造
+
+        // ルートシグネチャをパイプラインステートに設定する
+        root_signature_->SetGraphicsPipelineStateDesc(&pipeline_state_desc);
 
         // グラフィックスパイプラインステートの生成
         if (FAILED(device->CreateGraphicsPipelineState(
-          &psoDesc,
+          &pipeline_state_desc,
           IID_PPV_ARGS(&pipelineState))))
         {
           ID3D12DebugDevice* debugInterface;
@@ -647,7 +630,7 @@ namespace Sein
       commandList->Get().SetPipelineState(pipelineState);
 
       // グラフィックスパイプラインのルートシグネチャを設定する
-      commandList->Get().SetGraphicsRootSignature(rootSignature);
+      root_signature_->SetGraphicsRootSignature(&(commandList->Get()));
 
       // 描画に使用するディスクリプターヒープを設定
       auto cbvSrvHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV].Get();

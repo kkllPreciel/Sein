@@ -66,6 +66,9 @@
     <ClCompile Include="Sein\Direct3D12\root_parameter.cc">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Sein\Direct3D12\root_signature.cc">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sein\Direct3D12\constant_buffer.h">
@@ -126,6 +129,9 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Sein\Direct3D12\root_parameter.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sein\Direct3D12\root_signature.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

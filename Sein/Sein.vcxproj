@@ -160,6 +160,7 @@
     <ClCompile Include="Sein\Direct3D12\index_buffer.cc" />
     <ClCompile Include="Sein\Direct3D12\mesh.cc" />
     <ClCompile Include="Sein\Direct3D12\root_parameter.cc" />
+    <ClCompile Include="Sein\Direct3D12\root_signature.cc" />
     <ClCompile Include="Sein\Direct3D12\shader_resource_buffer.cc" />
     <ClCompile Include="Sein\Direct3D12\texture.cc" />
     <ClCompile Include="Sein\Direct3D12\texture_view.cc" />
@@ -180,6 +181,7 @@
     <ClInclude Include="Sein\Direct3D12\mesh.h" />
     <ClInclude Include="Sein\Direct3D12\resource.h" />
     <ClInclude Include="Sein\Direct3D12\root_parameter.h" />
+    <ClInclude Include="Sein\Direct3D12\root_signature.h" />
     <ClInclude Include="Sein\Direct3D12\shader_resource_buffer.h" />
     <ClInclude Include="Sein\Direct3D12\texture.h" />
     <ClInclude Include="Sein\Direct3D12\texture_view.h" />

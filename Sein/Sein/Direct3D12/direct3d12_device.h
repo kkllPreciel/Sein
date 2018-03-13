@@ -15,6 +15,7 @@
 #include <d3d12.h>
 #include <dxgi1_4.h>
 #include <DirectXMath.h>
+#include "root_signature.h"
 
 namespace Sein
 {
@@ -139,9 +140,7 @@ namespace Sein
       // ルートシグネチャ関連
       // 後々別クラスへ移動
 #pragma region RootSignature
-
-      ID3D12RootSignature*  rootSignature;  ///< ルートシグネチャ
-
+      std::shared_ptr<IRootSignature> root_signature_;  ///< ルートシグネチャ
 #pragma endregion
 
       // パイプラインステート関連

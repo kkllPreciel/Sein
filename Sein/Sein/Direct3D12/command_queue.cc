@@ -47,6 +47,16 @@ namespace Sein
         }
 
         /**
+         *  @brief  コマンドリストを実行する
+         *  @param  command_list_count:コマンドリストの数
+         *  @param  command_list:の配列
+         */
+        void ExecuteCommandLists(std::uint32_t command_list_count, ID3D12CommandList* const* command_list) override
+        {
+          command_queue_->ExecuteCommandLists(command_list_count, command_list);
+        }
+
+        /**
          *  @brief  コマンドキューを取得する
          *  @return コマンドキュー
          */

@@ -33,6 +33,13 @@ namespace Sein
       virtual ~ICommandQueue() = default;
 
       /**
+       *  @brief  コマンドリストを実行する
+       *  @param  command_list_count:コマンドリストの数
+       *  @param  command_list:の配列
+       */
+      virtual void ExecuteCommandLists(std::uint32_t command_list_count, ID3D12CommandList* const* command_list) = 0;
+
+      /**
        *  @brief  コマンドキューを取得する
        *  @return コマンドキュー
        */

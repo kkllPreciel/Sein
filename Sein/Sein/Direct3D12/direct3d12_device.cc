@@ -384,7 +384,8 @@ namespace Sein
      */
     void Device::WaitForGpu()
     {
-      fence->Wait(commandQueue.get());
+      // TODO:const_cast‚ğíœ‚·‚é
+      fence->Wait(const_cast<ID3D12CommandQueue*>(&(command_queue_->Get())));
     }
 
     /**

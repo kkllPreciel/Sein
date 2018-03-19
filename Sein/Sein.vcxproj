@@ -163,6 +163,7 @@
     <ClCompile Include="Sein\Direct3D12\root_parameter.cc" />
     <ClCompile Include="Sein\Direct3D12\root_signature.cc" />
     <ClCompile Include="Sein\Direct3D12\shader_resource_buffer.cc" />
+    <ClCompile Include="Sein\Direct3D12\swap_chain.cc" />
     <ClCompile Include="Sein\Direct3D12\texture.cc" />
     <ClCompile Include="Sein\Direct3D12\texture_view.cc" />
     <ClCompile Include="Sein\Direct3D12\vertex_buffer.cc" />
@@ -185,6 +186,7 @@
     <ClInclude Include="Sein\Direct3D12\root_parameter.h" />
     <ClInclude Include="Sein\Direct3D12\root_signature.h" />
     <ClInclude Include="Sein\Direct3D12\shader_resource_buffer.h" />
+    <ClInclude Include="Sein\Direct3D12\swap_chain.h" />
     <ClInclude Include="Sein\Direct3D12\texture.h" />
     <ClInclude Include="Sein\Direct3D12\texture_view.h" />
     <ClInclude Include="Sein\Direct3D12\vertex_buffer.h" />

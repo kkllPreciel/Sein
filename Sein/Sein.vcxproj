@@ -148,6 +148,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Sein\Direct3D12\command_queue.cc" />
     <ClCompile Include="Sein\Direct3D12\buffer.cc" />
     <ClCompile Include="Sein\Direct3D12\command_list.cc" />
     <ClCompile Include="Sein\Direct3D12\constant_buffer.cc" />
@@ -168,6 +169,7 @@
     <ClCompile Include="Sein\PMX\loader.cc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Sein\Direct3D12\command_queue.h" />
     <ClInclude Include="Sein\Direct3D12\buffer.h" />
     <ClInclude Include="Sein\Direct3D12\command_list.h" />
     <ClInclude Include="Sein\Direct3D12\constant_buffer.h" />

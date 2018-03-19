@@ -15,7 +15,9 @@
 #include <d3d12.h>
 #include <dxgi1_4.h>
 #include <DirectXMath.h>
+#include "swap_chain.h"
 #include "root_signature.h"
+#include "command_queue.h"
 
 namespace Sein
 {
@@ -110,9 +112,29 @@ namespace Sein
       ID3D12Device& GetDevice() const;
 
     private:
-      std::unique_ptr<ID3D12Device, void(*)(IUnknown*)> device;             ///< デバイス
-      std::unique_ptr<IDXGISwapChain3, void(*)(IUnknown*)> swapChain;       ///< スワップチェイン
-      std::unique_ptr<ID3D12CommandQueue, void(*)(IUnknown*)> commandQueue; ///< コマンドキュー
+      /**
+       *  @brief  スワップチェーンを作成する
+       *  @param  factory:DXGIのファクトリ
+       *  @param  command_queue:コマンドキュー
+       *  @param  handle:ウィンドウハンドル
+       *  @param  swap_chain_desc:スワップチェーンの設定
+       *  @return スワップチェーンへのシェアードポインタ
+       */
+      std::shared_ptr<ISwapChain> CreateSwapChain(IDXGIFactory4* const factory, HWND handle, const DXGI_SWAP_CHAIN_DESC1& swap_chain_desc);
+
+      /**
+       *  @brief  コマンドキューを作成する
+       *  @param  command_queue_desc:コマンドキューの設定
+       *  @return コマンドキューへのシェアードポインタ
+       */
+      std::shared_ptr<ICommandQueue> CreateCommandQueue(const D3D12_COMMAND_QUEUE_DESC& command_queue_desc);
+
+    private:
+      std::unique_ptr<ID3D12Device, void(*)(ID3D12Device*)> device_;  ///< デバイス
+      std::shared_ptr<ICommandQueue> command_queue_;                  ///< コマンドキュー
+      std::shared_ptr<ISwapChain> swap_chain_;                        ///< スワップチェーン
+
+
       std::unique_ptr<CommandList> commandList;                             ///< コマンドリスト
       std::unique_ptr<DescriptorHeap[]> descriptorHeaps;                    ///< ディスクリプターヒープ配列
       std::unique_ptr<Fence> fence;                                         ///< フェンス

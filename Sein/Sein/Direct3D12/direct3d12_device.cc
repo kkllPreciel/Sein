@@ -38,7 +38,9 @@ namespace Sein
      *  @brief  コンストラクタ
      */
     Device::Device() :
-      device(nullptr, [](IUnknown* p) { p->Release(); }), swapChain(nullptr, [](IUnknown* p) { p->Release(); }), commandQueue(nullptr, [](IUnknown* p) { p->Release(); }), commandList(nullptr),
+      device_(nullptr, [](ID3D12Device* p) { p->Release(); }), command_queue_(nullptr), swap_chain_(nullptr),
+
+      commandList(nullptr),
       descriptorHeaps(nullptr), bufferIndex(0), root_signature_(nullptr), pipelineState(nullptr),
       depthStencilView(nullptr), fence(nullptr), texBuffer()
     {
@@ -92,9 +94,9 @@ namespace Sein
         ID3D12Device* pDevice;
         if (FAILED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&pDevice))))
         {
-          throw "デバイスの生成に失敗しました。";
+          throw std::exception("デバイスの生成に失敗しました。");
         }
-        device.reset(pDevice);
+        device_.reset(pDevice);
 #else
         Microsoft::WRL::ComPtr<IDXGIAdapter1> pAdapter;
 
@@ -144,63 +146,40 @@ namespace Sein
       }
 
       // コマンドキューの作成
+      // コマンドキューの作成
       // コマンドキューはGPUへ描画命令が出されたコマンドリストを
       // 順次実行する
       // つまり特定のアダプター(GPU)に関連付けられている
       {
-        D3D12_COMMAND_QUEUE_DESC queueDesc = {};
-        queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;  // タイムアウト処理を有効にする
-        queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;  // レンダリング関連のコマンドリスト
-
-        ID3D12CommandQueue* queue;
-        if (FAILED(device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&queue))))
-        {
-          throw "コマンドキューの生成に失敗しました。";
-        }
-        commandQueue.reset(queue);
+        D3D12_COMMAND_QUEUE_DESC command_queue_desc = {};
+        command_queue_desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;  // タイムアウト処理を有効にする
+        command_queue_desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;  // レンダリング関連のコマンドリスト
+        command_queue_ = this->CreateCommandQueue(command_queue_desc);
       }
 
       // スワップチェインの作成
       // コマンドキューを指定して作成する = アダプターを指定して作成する
       {
-        DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
-        swapChainDesc.Width = width;                                  // ウィンドウ横幅
-        swapChainDesc.Height = height;                                // ウィンドウ縦幅
-        swapChainDesc.BufferCount = FrameCount;                       // バッファの数は2個(フロントバッファも含むらしいが、公式サンプル等を見るとバックバッファの数な気がする)
-        swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;            // 恐らくバッファのフォーマット(4 成分、32 ビット符号なし整数)
-        swapChainDesc.Scaling = DXGI_SCALING_NONE;                    // 画面サイズとバッファサイズが等しくない時の拡縮動作(拡大縮小は行わない)
-        swapChainDesc.SampleDesc.Quality = 0;                         // マルチサンプリングの品質レベル
-        swapChainDesc.SampleDesc.Count = 1;                           // ピクセル単位のマルチサンプリング数
-        swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;  // バックバッファの使用目的及びCPUアクセスオプション(レンダーターゲットとして使用)
-        swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH; // スワップチェインの動作オプション(モード切替可能に設定)
-        swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;     // フロントバッファとバックバッファのスワップ挙動指定(バックバッファがディスプレイに表示されたら破棄する)
-
-        Microsoft::WRL::ComPtr<IDXGISwapChain1> pSwapChain;
-        if (FAILED(factory->CreateSwapChainForHwnd(
-          commandQueue.get(), // コマンドキュー
-          handle,             // ウィンドウハンドル
-          &swapChainDesc,     // スワップチェインの設定情報
-          nullptr,            // フルスクリーンスワップチェインの設定(ウィンドウモードで作成するのでnullptr)
-          nullptr,            // TODO:調査
-          &pSwapChain)))
-        {
-          throw "スワップチェインの生成に失敗しました。";
-        }
-
-        IDXGISwapChain3* chain;
-        if (FAILED(pSwapChain.Get()->QueryInterface(IID_PPV_ARGS(&chain))))
-        {
-          throw "IDXGISwapChain3の生成に失敗しました。";
-        }
-        swapChain.reset(chain);
+        DXGI_SWAP_CHAIN_DESC1 swap_chain_desc = {};
+        swap_chain_desc.Width = width;                                  // ウィンドウ横幅
+        swap_chain_desc.Height = height;                                // ウィンドウ縦幅
+        swap_chain_desc.BufferCount = FrameCount;                       // バッファの数は2個(フロントバッファも含むらしいが、公式サンプル等を見るとバックバッファの数な気がする)
+        swap_chain_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;            // 恐らくバッファのフォーマット(4 成分、32 ビット符号なし整数)
+        swap_chain_desc.Scaling = DXGI_SCALING_NONE;                    // 画面サイズとバッファサイズが等しくない時の拡縮動作(拡大縮小は行わない)
+        swap_chain_desc.SampleDesc.Quality = 0;                         // マルチサンプリングの品質レベル
+        swap_chain_desc.SampleDesc.Count = 1;                           // ピクセル単位のマルチサンプリング数
+        swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;  // バックバッファの使用目的及びCPUアクセスオプション(レンダーターゲットとして使用)
+        swap_chain_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH; // スワップチェインの動作オプション(モード切替可能に設定)
+        swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;     // フロントバッファとバックバッファのスワップ挙動指定(バックバッファがディスプレイに表示されたら破棄する)
+        swap_chain_ = this->CreateSwapChain(factory.Get(), handle, swap_chain_desc);
 
         // バックバッファの番号を取得する
-        bufferIndex = swapChain->GetCurrentBackBufferIndex();
+        bufferIndex = swap_chain_->GetCurrentBackBufferIndex();
       }
 
       // コマンドリストの生成
       commandList = std::make_unique<CommandList>();
-      commandList->Create(device.get(), D3D12_COMMAND_LIST_TYPE_DIRECT);
+      commandList->Create(device_.get(), D3D12_COMMAND_LIST_TYPE_DIRECT);
 
       // Alt + Enterでフルスクリーン化の機能を無効に設定
       factory->MakeWindowAssociation(handle, DXGI_MWA_NO_ALT_ENTER);
@@ -217,7 +196,7 @@ namespace Sein
         cbvHeapDesc.NumDescriptors = 5;                                 // ディスクリプターヒープ内のディスクリプター数(定数バッファ、シェーダーリソース)
         cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;      // 定数バッファ or シェーダーリソース(テクスチャ) or ランダムアクセス のどれかのヒープ
         cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;  // シェーダーからアクセス可
-        cbvSrvHeap.Create(device.get(), cbvHeapDesc);
+        cbvSrvHeap.Create(device_.get(), cbvHeapDesc);
       }
 
       // 深度ステンシルビュー用ディスクリプターヒープを生成
@@ -227,7 +206,7 @@ namespace Sein
         heapDesc.NumDescriptors = 1;                      // ディスクリプターヒープ内のディスクリプター数(深度ステンシルビュー)
         heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;   // 深度ステンシルビューのヒープ
         heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE; // シェーダーからアクセス不可
-        dsvDescriptorHeap.Create(device.get(), heapDesc);
+        dsvDescriptorHeap.Create(device_.get(), heapDesc);
       }
 
       // レンダーターゲット
@@ -241,7 +220,7 @@ namespace Sein
           rtvHeapDesc.NumDescriptors = FrameCount;              // ディスクリプターヒープ内のディスクリプター数(フロントバッファ、バックバッファ)
           rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;    // 種別はレンダーターゲットビュー
           rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;  // シェーダーから参照しない
-          rtvDescriptorHeap.Create(device.get(), rtvHeapDesc);
+          rtvDescriptorHeap.Create(device_.get(), rtvHeapDesc);
         }
 
         // ディスクリプターの登録
@@ -249,16 +228,16 @@ namespace Sein
           // フレームバッファ数文登録する
           for (auto i = 0; i < FrameCount; ++i)
           {
-            if (FAILED(swapChain->GetBuffer(i, IID_PPV_ARGS(&renderTargetList[i]))))
+            if (FAILED(swap_chain_->GetBuffer(i, &renderTargetList[i])))
             {
-              throw "バックバッファの取得に失敗しました。";
+              throw std::exception("バックバッファの取得に失敗しました。");
             }
 
             const auto& descriptor = rtvDescriptorHeap.CreateDescriptor();
 
             // レンダーターゲットビュー用のディスクリプターを作成する
             // ディスクリプターヒープの領域に作成される
-            device->CreateRenderTargetView(
+            device_->CreateRenderTargetView(
               renderTargetList[i],  // レンダー ターゲットを表すID3D12Resourceへのポインタ
               nullptr,              // D3D12_RENDER_TARGET_VIEW_DESCへのポインタ
               descriptor.GetHandleForCPU()
@@ -272,7 +251,7 @@ namespace Sein
       // そのため同期を取るためのオブジェクト(フェンス)を作成する
       {
         fence = std::make_unique<Fence>();
-        fence->Create(device.get());
+        fence->Create(device_.get());
 
         // 描画処理を行っている可能性があるので描画終了待ちを行う
         WaitForGpu();
@@ -282,6 +261,34 @@ namespace Sein
       {
         LoadAssets(width, height);
       }
+    }
+
+    /**
+     *  @brief  コマンドキューを作成する
+     *  @param  command_queue_desc:コマンドキューの設定
+     *  @return コマンドキューへのシェアードポインタ
+     */
+    std::shared_ptr<ICommandQueue> Device::CreateCommandQueue(const D3D12_COMMAND_QUEUE_DESC& command_queue_desc)
+    {
+      // コマンドキューの作成
+      // コマンドキューはGPUへ描画命令が出されたコマンドリストを
+      // 順次実行する
+      // つまり特定のアダプター(GPU)に関連付けられている
+      return ICommandQueue::Create(device_.get(), command_queue_desc);
+    }
+
+    /**
+     *  @brief  スワップチェーンを作成する
+     *  @param  factory:DXGIのファクトリ
+     *  @param  command_queue:コマンドキュー
+     *  @param  handle:ウィンドウハンドル
+     *  @param  swap_chain_desc:スワップチェーンの設定
+     *  @return スワップチェーンへのシェアードポインタ
+     */
+    std::shared_ptr<ISwapChain> Device::CreateSwapChain(IDXGIFactory4* const factory, HWND handle, const DXGI_SWAP_CHAIN_DESC1& swap_chain_desc)
+    {
+      // TODO:const_castを削除する
+      return ISwapChain::Create(factory, const_cast<ID3D12CommandQueue*>(&(command_queue_->Get())), handle, swap_chain_desc);
     }
 
     /**
@@ -360,19 +367,16 @@ namespace Sein
     {
       // コマンドリストの実行
       ID3D12CommandList* ppCommandLists[] = { &(commandList->Get()) };
-      commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+      command_queue_->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
       // 描画終了待ちを行う
       WaitForGpu();
 
       // 画面の更新
-      if (FAILED(swapChain->Present(1, 0)))
-      {
-        throw "画面の更新に失敗しました。";
-      }
+      swap_chain_->Present(1, 0);
 
       // バッファ番号を更新
-      bufferIndex = swapChain->GetCurrentBackBufferIndex();
+      bufferIndex = swap_chain_->GetCurrentBackBufferIndex();
     }
 
     /**
@@ -395,7 +399,7 @@ namespace Sein
         depthStencilView = std::make_unique<DepthStencilView>();
         auto& descriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_DSV];
         auto& descriptor = descriptorHeap.CreateDescriptor();
-        depthStencilView->Create(device.get(), descriptor.GetHandleForCPU(), width, height);
+        depthStencilView->Create(device_.get(), descriptor.GetHandleForCPU(), width, height);
       }
 
       // ルートシグネチャの作成
@@ -453,7 +457,7 @@ namespace Sein
           | D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;						// ジオメトリシェーダからルートシグネチャへのアクセス禁止
 
         // ルートシグネチャの作成
-        root_signature_ = IRootSignature::Create(device.get(), rootSignatureDesc);
+        root_signature_ = IRootSignature::Create(device_.get(), rootSignatureDesc);
       }
 
       // パイプラインステートの作成
@@ -587,12 +591,12 @@ namespace Sein
         root_signature_->SetGraphicsPipelineStateDesc(&pipeline_state_desc);
 
         // グラフィックスパイプラインステートの生成
-        if (FAILED(device->CreateGraphicsPipelineState(
+        if (FAILED(device_->CreateGraphicsPipelineState(
           &pipeline_state_desc,
           IID_PPV_ARGS(&pipelineState))))
         {
           ID3D12DebugDevice* debugInterface;
-          if (SUCCEEDED(device->QueryInterface(&debugInterface)))
+          if (SUCCEEDED(device_->QueryInterface(&debugInterface)))
           {
             debugInterface->ReportLiveDeviceObjects(D3D12_RLDO_DETAIL | D3D12_RLDO_IGNORE_INTERNAL);
             debugInterface->Release();
@@ -646,8 +650,8 @@ namespace Sein
       auto handleCbv = cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();  // 定数バッファ用ディスクリプータヒープテーブル
       auto handleSrv = cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();  // StructuredBuffer用ディスクリプータヒープテーブル
       auto handleTrv = cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();  // テクスチャ用ディスクリプータヒープテーブル
-      handleSrv.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-      handleTrv.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * 2;
+      handleSrv.ptr += device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+      handleTrv.ptr += device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * 2;
       commandList->Get().SetGraphicsRootDescriptorTable(0, handleCbv);
       commandList->Get().SetGraphicsRootDescriptorTable(1, handleSrv);
       commandList->Get().SetGraphicsRootDescriptorTable(2, handleTrv);
@@ -696,7 +700,7 @@ namespace Sein
       auto constantBuffer = std::make_unique<ConstantBuffer>();
       auto& descriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV];
       auto& descriptor = descriptorHeap.CreateDescriptor();
-      constantBuffer->Create(device.get(), descriptor.GetHandleForCPU(), size);
+      constantBuffer->Create(device_.get(), descriptor.GetHandleForCPU(), size);
 
       return constantBuffer;
     }
@@ -720,7 +724,7 @@ namespace Sein
       auto shaderResourceBuffer = std::make_unique<ShaderResourceBuffer>();
       auto& descriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV];
       auto& descriptor = descriptorHeap.CreateDescriptor();
-      shaderResourceBuffer->Create(device.get(), descriptor.GetHandleForCPU(), num, size);
+      shaderResourceBuffer->Create(device_.get(), descriptor.GetHandleForCPU(), num, size);
 
       return shaderResourceBuffer;
     }
@@ -731,7 +735,7 @@ namespace Sein
      */
     ID3D12Device& Device::GetDevice() const
     {
-      return *device;
+      return *device_;
     }
 
     // 後々別クラスへ移動する
@@ -742,12 +746,13 @@ namespace Sein
      */
     void Device::CreateTextureBufferFromFile(const std::wstring& file_path)
     {
-      DirectX::ResourceUploadBatch upload_batch(device.get());
+      DirectX::ResourceUploadBatch upload_batch(device_.get());
       upload_batch.Begin();
 
-      decltype(auto) texture = ITexture::CreateFromFile(device.get(), upload_batch, file_path);
+      decltype(auto) texture = ITexture::CreateFromFile(device_.get(), upload_batch, file_path);
 
-      auto uploadResourcesFinished = upload_batch.End(commandQueue.get());
+      // TODO:const_castを削除する
+      auto uploadResourcesFinished = upload_batch.End(const_cast<ID3D12CommandQueue*>(&(command_queue_->Get())));
 
       WaitForGpu();
 
@@ -756,7 +761,7 @@ namespace Sein
       texBuffer.emplace_back(std::make_unique<TextureView>());
       auto texture_view = texBuffer[texBuffer.size() - 1].get();
 
-      texture_view->Create(device.get(), texture.release(), &(descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]));
+      texture_view->Create(device_.get(), texture.release(), &(descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]));
     }
 #pragma endregion
   };

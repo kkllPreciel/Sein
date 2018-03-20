@@ -305,11 +305,6 @@ namespace Sein
         pipelineState->Release();
       }
 
-      if (root_signature_)
-      {
-        root_signature_->Release();
-      }
-
       for (auto i = 0; i < FrameCount; ++i)
       {
         renderTargetList[i]->Release();

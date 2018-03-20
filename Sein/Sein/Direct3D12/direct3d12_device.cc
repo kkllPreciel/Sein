@@ -299,8 +299,15 @@ namespace Sein
       // GPUの描画終了待ちを行う
       WaitForGpu();
 
-      pipelineState->Release();
-      root_signature_->Release();
+      if (pipelineState)
+      {
+        pipelineState->Release();
+      }
+
+      if (root_signature_)
+      {
+        root_signature_->Release();
+      }
 
       for (auto i = 0; i < FrameCount; ++i)
       {
@@ -477,7 +484,7 @@ namespace Sein
 
         // 頂点シェーダーのコンパイル
         if (FAILED(D3DCompileFromFile(
-          L"shaders.hlsl",	// シェーダーファイル名
+          L"D:/DiskD/Study/Multithread/LearnMultithreadedRendering/LearnMultithreadedRendering/x64/Debug/shaders.hlsl",	// シェーダーファイル名
           nullptr,			// シェーダーマクロ(今回は使用しない)
           nullptr,			// インクルードファイルを取り扱うために使用するID3DIncludeインタフェースへのポインタ(今回は使用しない)
           "VSMain",			// エントリーポイントの関数名
@@ -493,7 +500,7 @@ namespace Sein
 
         // ピクセルシェーダーのコンパイル
         if (FAILED(D3DCompileFromFile(
-          L"shaders.hlsl",	// シェーダーファイル名
+          L"D:/DiskD/Study/Multithread/LearnMultithreadedRendering/LearnMultithreadedRendering/x64/Debug/shaders.hlsl",	// シェーダーファイル名
           nullptr,			// シェーダーマクロ(今回は使用しない)
           nullptr,			// インクルードファイルを取り扱うために使用するID3DIncludeインタフェースへのポインタ(今回は使用しない)
           "PSMain",			// エントリーポイントの関数名

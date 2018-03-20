@@ -112,6 +112,7 @@ namespace Sein
      */
     std::shared_ptr<ISwapChain> ISwapChain::Create(IDXGIFactory4* const factory, ID3D12CommandQueue* const command_queue, HWND handle, const DXGI_SWAP_CHAIN_DESC1& swap_chain_desc)
     {
+      // TODO:unique_ptrを使用する(例外発生時にreleaseを呼び出さないといけないので)
       IDXGISwapChain1* swap_chain1;
       if (FAILED(factory->CreateSwapChainForHwnd(
         command_queue,    // コマンドキュー
@@ -131,6 +132,7 @@ namespace Sein
         swap_chain1->Release();
         throw std::exception("IDXGISwapChain3の生成に失敗しました。");
       }
+      swap_chain1->Release();
 
       auto swap_chain = std::make_shared<SwapChain>();
       swap_chain->SetSwapChain(chain);

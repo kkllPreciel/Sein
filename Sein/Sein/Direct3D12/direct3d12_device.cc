@@ -28,6 +28,7 @@
 #include "texture_view.h"
 #include "descriptor_range.h"
 #include "root_parameter.h"
+#include "shader.h"
 
 
 namespace Sein
@@ -469,50 +470,11 @@ namespace Sein
       }
 
       // パイプラインステートの作成
-      // シェーダーも一緒にコンパイルする
-      // 後々はコンパイル済みのシェーダーを使用する
       {
-        Microsoft::WRL::ComPtr<ID3DBlob> vertexShader;
-        Microsoft::WRL::ComPtr<ID3DBlob> pixelShader;
-
-        // コンパイルオプションフラグを設定する
-#if defined(_DEBUG)
-        UINT compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-#else
-        UINT compileFlags = 0;
-#endif
-
-        // 頂点シェーダーのコンパイル
-        if (FAILED(D3DCompileFromFile(
-          L"D:/DiskD/Study/Multithread/LearnMultithreadedRendering/LearnMultithreadedRendering/x64/Debug/shaders.hlsl",	// シェーダーファイル名
-          nullptr,			// シェーダーマクロ(今回は使用しない)
-          nullptr,			// インクルードファイルを取り扱うために使用するID3DIncludeインタフェースへのポインタ(今回は使用しない)
-          "VSMain",			// エントリーポイントの関数名
-          "vs_5_0",			// コンパイルターゲット(今回は頂点シェーダーでシェーダーモデル5)
-          compileFlags,		// コンパイルオプション
-          0,					// エフェクトファイルのコンパイルオプション(今回はエフェクトとして使用しないので0)
-          &vertexShader,		// コンパイルされたコードへアクセスするためのID3DBlobインタフェースのポインタ
-          nullptr				// コンパイルエラーメッセージへアクセスするためのID3DBlobインタフェースのポインタ
-        )))
-        {
-          throw "頂点シェーダーのコンパイルに失敗しました。";
-        }
-
-        // ピクセルシェーダーのコンパイル
-        if (FAILED(D3DCompileFromFile(
-          L"D:/DiskD/Study/Multithread/LearnMultithreadedRendering/LearnMultithreadedRendering/x64/Debug/shaders.hlsl",	// シェーダーファイル名
-          nullptr,			// シェーダーマクロ(今回は使用しない)
-          nullptr,			// インクルードファイルを取り扱うために使用するID3DIncludeインタフェースへのポインタ(今回は使用しない)
-          "PSMain",			// エントリーポイントの関数名
-          "ps_5_0",			// コンパイルターゲット(今回はピクセルシェーダーでシェーダーモデル5)
-          compileFlags,		// コンパイルオプション
-          0,					// エフェクトファイルのコンパイルオプション(今回はエフェクトとして使用しないので0)
-          &pixelShader,		// コンパイルされたコードへアクセスするためのID3DBlobインタフェースのポインタ
-          nullptr				// コンパイルエラーメッセージへアクセスするためのID3DBlobインタフェースのポインタ
-        )))
-        {
-          throw "ピクセルシェーダーのコンパイルに失敗しました。";
-        }
+        // シェーダーファイルの読み込み
+        // TODO:相対パスを指定できるように
+        auto vertex_shader = IShader::Create("D:/DiskD/Study/Multithread/LearnMultithreadedRendering/LearnMultithreadedRendering/x64/Debug/vertex.cso");
+        auto pixel_shader = IShader::Create("D:/DiskD/Study/Multithread/LearnMultithreadedRendering/LearnMultithreadedRendering/x64/Debug/pixel.cso");
 
         // 頂点入力レイアウト
         D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
@@ -536,16 +498,6 @@ namespace Sein
         rasterizer_desc.AntialiasedLineEnable = FALSE;                                  // 線のアンチエイリアシングを行うか(今回はしない)
         rasterizer_desc.ForcedSampleCount = 0;                                          // UAVレンダリングまたはラスタライズ中に強制されるサンプル数(今回は強制しない)
         rasterizer_desc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF; // 保守的なラスタライズフラグ(今回はオフ)
-
-        // パイプラインステートの設定に使用する頂点シェーダーのデータ構造を作成
-        D3D12_SHADER_BYTECODE vs;
-        vs.pShaderBytecode = vertexShader.Get()->GetBufferPointer();
-        vs.BytecodeLength = vertexShader.Get()->GetBufferSize();
-
-        // パイプラインステートの設定に使用するピクセルシェーダーのデータ構造を作成
-        D3D12_SHADER_BYTECODE ps;
-        ps.pShaderBytecode = pixelShader.Get()->GetBufferPointer();
-        ps.BytecodeLength = pixelShader.Get()->GetBufferSize();
 
         // レンダーターゲットのブレンド状態の設定
         const D3D12_RENDER_TARGET_BLEND_DESC defaultRenderTarggetBlendDesc =
@@ -584,8 +536,8 @@ namespace Sein
         D3D12_GRAPHICS_PIPELINE_STATE_DESC pipeline_state_desc = {};
         pipeline_state_desc.InputLayout = { inputElementDescs, _countof(inputElementDescs) }; // 入力レイアウトの構造
         pipeline_state_desc.RasterizerState = rasterizer_desc;                                // ラスタライザの状態
-        pipeline_state_desc.VS = vs;                                                          // 頂点シェーダーの構造
-        pipeline_state_desc.PS = ps;                                                          // ピクセルシェーダーの構造
+        pipeline_state_desc.VS = vertex_shader->Get();                                        // 頂点シェーダーの構造
+        pipeline_state_desc.PS = pixel_shader->Get();                                         // ピクセルシェーダーの構造
         pipeline_state_desc.BlendState = blendDesc;                                           // ブレンド状態の構造
         pipeline_state_desc.DepthStencilState = depthStencilDesc;                             // 深度ステンシル状態の構造
         pipeline_state_desc.SampleMask = UINT_MAX;                                            // ブレンドの状態のためのサンプルのマスク

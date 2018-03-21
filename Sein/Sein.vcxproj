@@ -158,6 +158,7 @@
     <ClCompile Include="Sein\Direct3D12\descriptor_range.cc" />
     <ClCompile Include="Sein\Direct3D12\direct3d12_device.cc" />
     <ClCompile Include="Sein\Direct3D12\fence.cc" />
+    <ClCompile Include="Sein\Direct3D12\graphics_pipeline_state.cc" />
     <ClCompile Include="Sein\Direct3D12\index_buffer.cc" />
     <ClCompile Include="Sein\Direct3D12\mesh.cc" />
     <ClCompile Include="Sein\Direct3D12\root_parameter.cc" />
@@ -181,6 +182,7 @@
     <ClInclude Include="Sein\Direct3D12\descriptor_range.h" />
     <ClInclude Include="Sein\Direct3D12\direct3d12_device.h" />
     <ClInclude Include="Sein\Direct3D12\fence.h" />
+    <ClInclude Include="Sein\Direct3D12\graphics_pipeline_state.h" />
     <ClInclude Include="Sein\Direct3D12\index_buffer.h" />
     <ClInclude Include="Sein\Direct3D12\mesh.h" />
     <ClInclude Include="Sein\Direct3D12\resource.h" />

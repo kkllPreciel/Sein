@@ -18,6 +18,7 @@
 #include "swap_chain.h"
 #include "root_signature.h"
 #include "command_queue.h"
+#include "graphics_pipeline_state.h"
 
 namespace Sein
 {
@@ -134,6 +135,10 @@ namespace Sein
       std::shared_ptr<ICommandQueue> command_queue_;                  ///< コマンドキュー
       std::shared_ptr<ISwapChain> swap_chain_;                        ///< スワップチェーン
 
+      // TODO:外部へ移動する
+      std::shared_ptr<IRootSignature> root_signature_;                ///< ルートシグネチャ
+      std::shared_ptr<IGraphicsPipelineState> pipeline_state_;        ///< パイプラインステート
+
 
       std::unique_ptr<CommandList> commandList;                             ///< コマンドリスト
       std::unique_ptr<DescriptorHeap[]> descriptorHeaps;                    ///< ディスクリプターヒープ配列
@@ -158,17 +163,6 @@ namespace Sein
        *  @param  height:ウィンドウ縦幅
        */
       void LoadAssets(unsigned int width, unsigned int height);
-
-      // ルートシグネチャ関連
-      // 後々別クラスへ移動
-#pragma region RootSignature
-      std::shared_ptr<IRootSignature> root_signature_;  ///< ルートシグネチャ
-#pragma endregion
-
-      // パイプラインステート関連
-      // 後々別クラスへ移動
-#pragma region PipelineState
-      ID3D12PipelineState*  pipelineState;  ///< パイプラインステート
 
     public:
       /**
@@ -197,7 +191,6 @@ namespace Sein
        *  @param  topology:プリミティブのタイプ
        */
       void SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY topology);
-#pragma endregion
 
       // テクスチャ関連
       // 後々別クラスへ移動

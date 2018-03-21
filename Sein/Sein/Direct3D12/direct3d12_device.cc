@@ -41,8 +41,11 @@ namespace Sein
     Device::Device() :
       device_(nullptr, [](ID3D12Device* p) { p->Release(); }), command_queue_(nullptr), swap_chain_(nullptr),
 
+      root_signature_(nullptr), pipeline_state_(nullptr),
+
+
       commandList(nullptr),
-      descriptorHeaps(nullptr), bufferIndex(0), root_signature_(nullptr), pipelineState(nullptr),
+      descriptorHeaps(nullptr), bufferIndex(0),
       depthStencilView(nullptr), fence(nullptr), texBuffer()
     {
       for (auto i = 0; i < FrameCount; ++i)
@@ -300,11 +303,6 @@ namespace Sein
       // GPUの描画終了待ちを行う
       WaitForGpu();
 
-      if (pipelineState)
-      {
-        pipelineState->Release();
-      }
-
       for (auto i = 0; i < FrameCount; ++i)
       {
         renderTargetList[i]->Release();
@@ -546,19 +544,7 @@ namespace Sein
         root_signature_->SetGraphicsPipelineStateDesc(&pipeline_state_desc);
 
         // グラフィックスパイプラインステートの生成
-        if (FAILED(device_->CreateGraphicsPipelineState(
-          &pipeline_state_desc,
-          IID_PPV_ARGS(&pipelineState))))
-        {
-          ID3D12DebugDevice* debugInterface;
-          if (SUCCEEDED(device_->QueryInterface(&debugInterface)))
-          {
-            debugInterface->ReportLiveDeviceObjects(D3D12_RLDO_DETAIL | D3D12_RLDO_IGNORE_INTERNAL);
-            debugInterface->Release();
-          }
-
-          throw "パイプラインステートの生成に失敗しました。";
-        }
+        pipeline_state_ = IGraphicsPipelineState::Create(device_.get(), pipeline_state_desc);
       }
     }
 
@@ -586,7 +572,7 @@ namespace Sein
       scissor.bottom = 400;
 
       // パイプラインステートの設定(切り替えない場合は、コマンドリストリセット時に設定可能)
-      commandList->Get().SetPipelineState(pipelineState);
+      pipeline_state_->SetPipelineState(&(commandList->Get()));
 
       // グラフィックスパイプラインのルートシグネチャを設定する
       root_signature_->SetGraphicsRootSignature(&(commandList->Get()));

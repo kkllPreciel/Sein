@@ -185,6 +185,7 @@
     <ClInclude Include="Sein\Direct3D12\graphics_pipeline_state.h" />
     <ClInclude Include="Sein\Direct3D12\index_buffer.h" />
     <ClInclude Include="Sein\Direct3D12\mesh.h" />
+    <ClInclude Include="Sein\Direct3D12\rasterizer_desc.h" />
     <ClInclude Include="Sein\Direct3D12\resource.h" />
     <ClInclude Include="Sein\Direct3D12\root_parameter.h" />
     <ClInclude Include="Sein\Direct3D12\root_signature.h" />

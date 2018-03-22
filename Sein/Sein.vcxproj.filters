@@ -158,5 +158,8 @@
     <ClInclude Include="Sein\Direct3D12\graphics_pipeline_state.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="Sein\Direct3D12\rasterizer_desc.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

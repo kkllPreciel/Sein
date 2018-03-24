@@ -161,6 +161,7 @@
     <ClCompile Include="Sein\Direct3D12\graphics_pipeline_state.cc" />
     <ClCompile Include="Sein\Direct3D12\index_buffer.cc" />
     <ClCompile Include="Sein\Direct3D12\mesh.cc" />
+    <ClCompile Include="Sein\Direct3D12\rasterizer_desc.cc" />
     <ClCompile Include="Sein\Direct3D12\root_parameter.cc" />
     <ClCompile Include="Sein\Direct3D12\root_signature.cc" />
     <ClCompile Include="Sein\Direct3D12\shader.cc" />

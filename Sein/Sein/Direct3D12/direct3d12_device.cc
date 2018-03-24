@@ -29,6 +29,7 @@
 #include "descriptor_range.h"
 #include "root_parameter.h"
 #include "shader.h"
+#include "rasterizer_desc.h"
 
 
 namespace Sein
@@ -478,19 +479,8 @@ namespace Sein
           { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
         };
 
-        // ラスタライザーステートの設定
-        D3D12_RASTERIZER_DESC rasterizer_desc;
-        rasterizer_desc.FillMode = D3D12_FILL_MODE_SOLID;                               // 三角形を描画するときに使用する塗りつぶしモード(今回は塗りつぶし)
-        rasterizer_desc.CullMode = D3D12_CULL_MODE_NONE;                                // カリングのモード(裏向きのポリゴンを描画しない)
-        rasterizer_desc.FrontCounterClockwise = FALSE;                                  // ポリゴンの表裏の判定方法(今回は時計回りなら表)
-        rasterizer_desc.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;                           // 深度バイアス(Z-Fighting対策?)
-        rasterizer_desc.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;                // 深度バイアスのクランプ値
-        rasterizer_desc.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;   // 傾斜を考慮した深度バイアス(ピーターパン現象対策?)
-        rasterizer_desc.DepthClipEnable = TRUE;                                         // Zクリッピングを行うか(今回は行う)
-        rasterizer_desc.MultisampleEnable = FALSE;                                      // マルチサンプリングのアンチエイリアシングを行うか(今回はしない)
-        rasterizer_desc.AntialiasedLineEnable = FALSE;                                  // 線のアンチエイリアシングを行うか(今回はしない)
-        rasterizer_desc.ForcedSampleCount = 0;                                          // UAVレンダリングまたはラスタライズ中に強制されるサンプル数(今回は強制しない)
-        rasterizer_desc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF; // 保守的なラスタライズフラグ(今回はオフ)
+        // デフォルト設定のラスタライザーステートの設定
+        auto rasterizer_desc = CreateDefaultRasterizerDesc();
 
         // レンダーターゲットのブレンド状態の設定
         const D3D12_RENDER_TARGET_BLEND_DESC defaultRenderTarggetBlendDesc =

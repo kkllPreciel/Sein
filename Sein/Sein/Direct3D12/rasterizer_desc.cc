@@ -19,7 +19,7 @@ namespace Sein
      *  @param  cull_mode:カリングのモード(デフォルトはカリングなし)
      *  @return ラスタライザの設定
      */
-    D3D12_RASTERIZER_DESC CreateDefaultRasterizerDesc(D3D12_FILL_MODE fill_mode = D3D12_FILL_MODE::D3D12_FILL_MODE_SOLID, D3D12_CULL_MODE cull_mode = D3D12_CULL_MODE_NONE)
+    D3D12_RASTERIZER_DESC CreateDefaultRasterizerDesc(D3D12_FILL_MODE fill_mode, D3D12_CULL_MODE cull_mode)
     {
       // ラスタライザーステートの設定
       D3D12_RASTERIZER_DESC desc;

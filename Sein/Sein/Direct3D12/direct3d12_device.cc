@@ -367,10 +367,6 @@ namespace Sein
      */
     void Device::Present()
     {
-      // コマンドリストの実行
-      ID3D12CommandList* ppCommandLists[] = { &(commandList->Get()) };
-      command_queue_->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-
       // 描画終了待ちを行う
       WaitForGpu();
 
@@ -693,6 +689,17 @@ namespace Sein
       auto texture_view = texBuffer[texBuffer.size() - 1].get();
 
       texture_view->Create(device_.get(), texture.release(), &(descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]));
+    }
+#pragma endregion
+
+#pragma region CommandQueue
+    /**
+     *  @brief  コマンドリストを実行する
+     */
+    void Device::ExecuteCommandLists()
+    {
+      ID3D12CommandList* ppCommandLists[] = { &(commandList->Get()) };
+      command_queue_->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
     }
 #pragma endregion
   };

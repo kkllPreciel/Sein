@@ -203,6 +203,13 @@ namespace Sein
        */
       void CreateTextureBufferFromFile(const std::wstring& file_path);
 #pragma endregion
+
+#pragma region CommandQueue
+      /**
+       *  @brief  コマンドリストを実行する
+       */
+      void ExecuteCommandLists();
+#pragma endregion
     };
   };
 };

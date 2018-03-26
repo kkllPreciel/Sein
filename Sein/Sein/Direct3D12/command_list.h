@@ -2,7 +2,7 @@
  *  @file     command_list.h
  *  @brief    コマンドリストに関するヘッダファイル
  *  @author   kkllPreciel
- *  @date     2017/08/21
+ *  @date     2018/03/26
  *  @version  1.0
  */
 
@@ -23,26 +23,60 @@ namespace Sein
     {
     public:
       /**
+       *  @brief  コンストラクタ
+       */
+      ICommandList() = default;
+
+      /**
        *  @brief  デストラクタ
        */
       virtual ~ICommandList() = default;
 
       /**
-       *  @brief  コマンドリストを生成する
-       *  @param  device:Direct3D12のデバイス
-       *  @param  type:コマンドリストのタイプ
+       *  @brief  コピーコンストラクタ
+       *  @param  other:コピー元のインスタンス
        */
-      virtual void Create(ID3D12Device* const device, const D3D12_COMMAND_LIST_TYPE& type) = 0;
+      ICommandList(const ICommandList& other) = delete;
 
       /**
-       *  @brief  リソースを開放する
+       *  @brief  代入演算子オペレータ
+       *  @param  other:代入元のインスタンス
+       *  @return 代入後のインスタンス
        */
-      virtual void Release() = 0;
+      ICommandList& operator = (const ICommandList& other) = delete;
 
       /**
        *  @brief  記録を開始する
        */
       virtual void Begin() = 0;
+
+      /**
+       *  @brief  リソースの状態遷移に対してバリアを設定する
+       *  @param  resource:バリアを設定するリソース
+       *  @param  before:状態遷移前のリソースの状態
+       *  @param  after:状態遷移後のリソースの状態
+       */
+      virtual void ResourceBarrier(ID3D12Resource* const resource, const D3D12_RESOURCE_STATES before, const D3D12_RESOURCE_STATES after) = 0;
+
+      /**
+       *  @brief  頂点バッファを設定する
+       *  @param  start_slot:開始スロット番号
+       *  @param  vertex_buffer_count:頂点バッファの数
+       *  @param  vertex_buffers:頂点バッファの配列
+       */
+      virtual void SetVertexBuffers(const std::uint32_t start_slot, std::uint32_t vertex_buffer_count, const D3D12_VERTEX_BUFFER_VIEW* vertex_buffers) = 0;
+
+      /**
+       *  @brief  インデックスバッファを設定する
+       *  @param  index_buffer:インデックスバッファ
+       */
+      virtual void SetIndexBuffer(const D3D12_INDEX_BUFFER_VIEW* index_buffer) = 0;
+
+      /**
+       *  @brief  プリミティブのトポロジーを設定する
+       *  @param  primitive_topology:プリミティブのトポロジー
+       */
+      virtual void SetPrimitiveTopology(const D3D12_PRIMITIVE_TOPOLOGY primitive_topology) = 0;
 
       /**
        *  @brief  記録を終了する
@@ -53,70 +87,20 @@ namespace Sein
        *  @brief  コマンドリストを取得する
        *  @return コマンドリストの参照
        */
-      virtual ID3D12GraphicsCommandList& Get() const = 0;
-    };
-
-    /**
-     *  @brief  コマンドリスト用クラス
-     */
-    class CommandList final : public ICommandList
-    {
-    public:
-      /**
-       *  @brief  コンストラクタ
-       */
-      CommandList();
-
-      /**
-       *  @brief  デストラクタ
-       */
-      ~CommandList() override;
-
-      /**
-       *  @brief  コマンドリストを生成する
-       *  @param  device:Direct3D12のデバイス
-       *  @param  type:コマンドリストのタイプ
-       */
-      void Create(ID3D12Device* const device, const D3D12_COMMAND_LIST_TYPE& type) override;
+      virtual const ID3D12GraphicsCommandList& Get() const = 0;
 
       /**
        *  @brief  リソースを開放する
        */
-      void Release() override;
+      virtual void Release() noexcept = 0;
 
       /**
-       *  @brief  記録を開始する
+       *  @brief  コマンドリストを作成する
+       *  @param  device:Direct3D12のデバイス
+       *  @param  command_list_type:コマンドリストのタイプ
+       *  @return コマンドリストへのシェアードポインタ
        */
-      void Begin() override;
-
-      /**
-       *  @brief  記録を終了する
-       */
-      void End() override;
-
-      /**
-       *  @brief  コマンドリストを取得する
-       *  @return コマンドリストの参照
-       */
-      ID3D12GraphicsCommandList& Get() const override;
-
-    private:
-      /**
-       *  @brief  コピーコンストラクタ
-       *  @param  other:コピー元のインスタンス
-       */
-      CommandList(const CommandList& other) = delete;
-
-      /**
-       *  @brief  代入演算子オペレータ
-       *  @param  other:代入元のインスタンス
-       *  @return 代入後のインスタンス
-       */
-      CommandList& operator = (const CommandList& other) = delete;
-
-    private:
-      std::unique_ptr<ID3D12CommandAllocator, void(*)(IUnknown*)> commandAllocator; ///< コマンドアロケータ
-      std::unique_ptr<ID3D12GraphicsCommandList, void(*)(IUnknown*)> commandList;   ///< コマンドリスト
+      static std::shared_ptr<ICommandList> Create(ID3D12Device* const device, const D3D12_COMMAND_LIST_TYPE& command_list_type);
     };
   };
 };

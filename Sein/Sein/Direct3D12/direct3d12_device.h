@@ -79,12 +79,12 @@ namespace Sein
       /**
        *  @brief  シーンを開始する
        */
-      void BeginScene();
+      void BeginScene(ICommandList* const command_list);
 
       /**
        *  @brief  シーンを終了する
        */
-      void EndScene();
+      void EndScene(ICommandList* const command_list);
 
       /**
        *  @brief  画面を更新する
@@ -145,8 +145,6 @@ namespace Sein
       // TODO:外部へ移動する
       std::shared_ptr<IRootSignature> root_signature_;                ///< ルートシグネチャ
       std::shared_ptr<IGraphicsPipelineState> pipeline_state_;        ///< パイプラインステート
-      std::shared_ptr<ICommandList> command_list_;                    ///< コマンドリスト
-
 
       std::unique_ptr<DescriptorHeap[]> descriptorHeaps;                    ///< ディスクリプターヒープ配列
       std::unique_ptr<Fence> fence;                                         ///< フェンス
@@ -174,30 +172,11 @@ namespace Sein
     public:
       /**
        *  @brief  描画する
+       *  @param  command_list:コマンドリスト
        *  @param  indexCount:頂点インデックス数
        *  @param  instanceCount:インスタンス数
        */
-      void Render(const unsigned int indexCount, const unsigned int instanceCount);
-
-      /**
-       *  @brief  頂点バッファを設定する
-       *  @param  start_slot:開始スロット番号
-       *  @param  vertex_buffer_count:頂点バッファの数
-       *  @param  vertex_buffers:頂点バッファの配列
-       */
-      void SetVertexBuffers(const UINT start_slot, const UINT vertex_buffer_count, const D3D12_VERTEX_BUFFER_VIEW* vertex_buffers);
-
-      /**
-       *  @brief  インデックスバッファを設定する
-       *  @param  index_buffer:インデックスバッファ
-       */
-      void SetIndexBuffer(const D3D12_INDEX_BUFFER_VIEW* index_buffer);
-
-      /**
-       *  @brief  プリミティブのタイプを設定する
-       *  @param  topology:プリミティブのタイプ
-       */
-      void SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY topology);
+      void Render(ICommandList* const command_list, const unsigned int indexCount, const unsigned int instanceCount);
 
       // テクスチャ関連
       // 後々別クラスへ移動
@@ -214,8 +193,9 @@ namespace Sein
 #pragma region CommandQueue
       /**
        *  @brief  コマンドリストを実行する
+       *  @param  command_list:コマンドリスト
        */
-      void ExecuteCommandLists();
+      void ExecuteCommandLists(ICommandList* const command_list);
 #pragma endregion
     };
   };

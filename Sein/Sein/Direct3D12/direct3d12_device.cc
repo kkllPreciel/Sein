@@ -42,10 +42,10 @@ namespace Sein
     Device::Device() :
       device_(nullptr, [](ID3D12Device* p) { p->Release(); }), command_queue_(nullptr), swap_chain_(nullptr),
 
-      root_signature_(nullptr), pipeline_state_(nullptr),
+      root_signature_(nullptr), pipeline_state_(nullptr), command_list_(nullptr),
 
 
-      commandList(nullptr),
+
       descriptorHeaps(nullptr), bufferIndex(0),
       depthStencilView(nullptr), fence(nullptr), texBuffer()
     {
@@ -183,8 +183,9 @@ namespace Sein
       }
 
       // コマンドリストの生成
-      commandList = std::make_unique<CommandList>();
-      commandList->Create(device_.get(), D3D12_COMMAND_LIST_TYPE_DIRECT);
+      {
+        command_list_ = this->CreateCommandList(D3D12_COMMAND_LIST_TYPE_DIRECT);
+      }
 
       // Alt + Enterでフルスクリーン化の機能を無効に設定
       factory->MakeWindowAssociation(handle, DXGI_MWA_NO_ALT_ENTER);
@@ -297,6 +298,16 @@ namespace Sein
     }
 
     /**
+     *  @brief  コマンドリストを作成する
+     *  @param  command_list_type:コマンドリストのタイプ
+     *  @return コマンドリストのシェアードポインタ
+     */
+    std::shared_ptr<ICommandList> Device::CreateCommandList(const D3D12_COMMAND_LIST_TYPE& command_list_type)
+    {
+      return ICommandList::Create(device_.get(), command_list_type);
+    }
+
+    /**
      *	@brief	デバイスを開放する
      */
     void Device::Release()
@@ -315,17 +326,14 @@ namespace Sein
      */
     void Device::BeginScene()
     {
-      commandList->Begin();
+      // TODO:const_castの削除
+      decltype(auto) command_list = const_cast<ID3D12GraphicsCommandList&>(command_list_->Get());
+
+      command_list_->Begin();
 
       // バックバッファが描画ターゲットとして使用できるようになるまで待つ
-      D3D12_RESOURCE_BARRIER barrier;
-      barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;					// バリアはリソースの状態遷移に対して設置
-      barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-      barrier.Transition.pResource = renderTargetList[bufferIndex];			// リソースは描画ターゲット
-      barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;			// 遷移前はPresent
-      barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;		// 遷移後は描画ターゲット
-      barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-      commandList->Get().ResourceBarrier(1, &barrier);
+      // リソースは描画ターゲット, 遷移前はPresent, 遷移後は描画ターゲット
+      command_list_->ResourceBarrier(renderTargetList[bufferIndex], D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
       // バックバッファを描画ターゲットとして設定する
       // デバイスへ深度ステンシルビューをバインドする
@@ -333,14 +341,14 @@ namespace Sein
       const auto& rtvDescriptor = rtvDescriptorHeap.GetDescriptor(bufferIndex);
       auto& dsvDescriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_DSV];
       const auto& dsvDescriptor = dsvDescriptorHeap.GetDescriptor(0); // TODO:マジックナンバーを消す
-      commandList->Get().OMSetRenderTargets(1, &rtvDescriptor.GetHandleForCPU(), false, &dsvDescriptor.GetHandleForCPU());
+      command_list.OMSetRenderTargets(1, &rtvDescriptor.GetHandleForCPU(), false, &dsvDescriptor.GetHandleForCPU());
 
       // バックバッファをクリアする
       const float Color[] = { 0.0f, 0.0f, 0.6f, 1.0f };
-      commandList->Get().ClearRenderTargetView(rtvDescriptor.GetHandleForCPU(), Color, 0, nullptr);
+      command_list.ClearRenderTargetView(rtvDescriptor.GetHandleForCPU(), Color, 0, nullptr);
 
       // 深度ステンシルビューをクリアする(深度バッファのみ)
-      commandList->Get().ClearDepthStencilView(dsvDescriptor.GetHandleForCPU(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+      command_list.ClearDepthStencilView(dsvDescriptor.GetHandleForCPU(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
     }
 
     /**
@@ -349,17 +357,11 @@ namespace Sein
     void Device::EndScene()
     {
       // バックバッファの描画完了を待つためのバリアを設置
-      D3D12_RESOURCE_BARRIER barrier;
-      barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;					// バリアはリソースの状態遷移に対して設置
-      barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-      barrier.Transition.pResource = renderTargetList[bufferIndex];			// リソースは描画ターゲット
-      barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;	// 遷移前は描画ターゲット
-      barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;			// 遷移後はPresent
-      barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-      commandList->Get().ResourceBarrier(1, &barrier);
+      // リソースは描画ターゲット, 遷移前は描画ターゲット, 遷移後はPresent
+      command_list_->ResourceBarrier(renderTargetList[bufferIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 
       // コマンドリストをクローズする
-      commandList->End();
+      command_list_->End();
     }
 
     /**
@@ -541,6 +543,9 @@ namespace Sein
      */
     void Device::Render(const unsigned int indexCount, const unsigned int instanceCount)
     {
+      // TODO:const_castの削除
+      decltype(auto) command_list = const_cast<ID3D12GraphicsCommandList&>(command_list_->Get());
+
       // ビューポートの作成
       D3D12_VIEWPORT viewport;
       viewport.TopLeftX = 0;
@@ -550,6 +555,9 @@ namespace Sein
       viewport.MinDepth = 0;
       viewport.MaxDepth = 1;
 
+      // ビューポートの設定
+      command_list.RSSetViewports(1, &viewport);
+
       // シザー矩形(シザーテスト)の作成
       D3D12_RECT scissor;
       scissor.left = 0;
@@ -557,21 +565,18 @@ namespace Sein
       scissor.right = 600;
       scissor.bottom = 400;
 
+      // シザー矩形(シザーテスト)の設定
+      command_list.RSSetScissorRects(1, &scissor);
+
       // パイプラインステートの設定(切り替えない場合は、コマンドリストリセット時に設定可能)
-      pipeline_state_->SetPipelineState(&(commandList->Get()));
+      pipeline_state_->SetPipelineState(&command_list);
 
       // グラフィックスパイプラインのルートシグネチャを設定する
-      root_signature_->SetGraphicsRootSignature(&(commandList->Get()));
+      root_signature_->SetGraphicsRootSignature(&command_list);
 
       // 描画に使用するディスクリプターヒープを設定
       auto cbvSrvHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV].Get();
-      commandList->Get().SetDescriptorHeaps(1, &cbvSrvHeap);
-
-      // ビューポートの設定
-      commandList->Get().RSSetViewports(1, &viewport);
-
-      // シザー矩形(シザーテスト)の設定
-      commandList->Get().RSSetScissorRects(1, &scissor);
+      command_list.SetDescriptorHeaps(1, &cbvSrvHeap);
 
       // ディスクリプータヒープテーブルを設定
       auto handleCbv = cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();  // 定数バッファ用ディスクリプータヒープテーブル
@@ -579,12 +584,12 @@ namespace Sein
       auto handleTrv = cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();  // テクスチャ用ディスクリプータヒープテーブル
       handleSrv.ptr += device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
       handleTrv.ptr += device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) * 2;
-      commandList->Get().SetGraphicsRootDescriptorTable(0, handleCbv);
-      commandList->Get().SetGraphicsRootDescriptorTable(1, handleSrv);
-      commandList->Get().SetGraphicsRootDescriptorTable(2, handleTrv);
+      command_list.SetGraphicsRootDescriptorTable(0, handleCbv);
+      command_list.SetGraphicsRootDescriptorTable(1, handleSrv);
+      command_list.SetGraphicsRootDescriptorTable(2, handleTrv);
 
       // 描画コマンドの生成
-      commandList->Get().DrawIndexedInstanced(indexCount, instanceCount, 0, 0, 0);
+      command_list.DrawIndexedInstanced(indexCount, instanceCount, 0, 0, 0);
     }
 
     /**
@@ -595,8 +600,7 @@ namespace Sein
      */
     void Device::SetVertexBuffers(const UINT start_slot, const UINT vertex_buffer_count, const D3D12_VERTEX_BUFFER_VIEW* vertex_buffers)
     {
-      // 頂点バッファビューの設定
-      commandList->Get().IASetVertexBuffers(start_slot, vertex_buffer_count, vertex_buffers);
+      command_list_->SetVertexBuffers(start_slot, vertex_buffer_count, vertex_buffers);
     }
     
     /**
@@ -605,7 +609,7 @@ namespace Sein
      */
     void Device::SetIndexBuffer(const D3D12_INDEX_BUFFER_VIEW* index_buffer)
     {
-      commandList->Get().IASetIndexBuffer(index_buffer);
+      command_list_->SetIndexBuffer(index_buffer);
     }
     
     /**
@@ -614,7 +618,7 @@ namespace Sein
      */
     void Device::SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY topology)
     {
-      commandList->Get().IASetPrimitiveTopology(topology);
+      command_list_->SetPrimitiveTopology(topology);
     }
 
     /**
@@ -698,7 +702,10 @@ namespace Sein
      */
     void Device::ExecuteCommandLists()
     {
-      ID3D12CommandList* ppCommandLists[] = { &(commandList->Get()) };
+      // TODO:const_castの削除
+      decltype(auto) command_list = const_cast<ID3D12GraphicsCommandList&>(command_list_->Get());
+
+      ID3D12CommandList* ppCommandLists[] = { &command_list };
       command_queue_->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
     }
 #pragma endregion

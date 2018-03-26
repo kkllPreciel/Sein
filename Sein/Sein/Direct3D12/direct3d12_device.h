@@ -19,6 +19,7 @@
 #include "root_signature.h"
 #include "command_queue.h"
 #include "graphics_pipeline_state.h"
+#include "command_list.h"
 
 namespace Sein
 {
@@ -31,7 +32,6 @@ namespace Sein
     class ConstantBuffer;
     class ShaderResourceBuffer;
     class DescriptorHeap;
-    class CommandList;
     class TextureView;
 
     /**
@@ -107,6 +107,13 @@ namespace Sein
       std::unique_ptr<ShaderResourceBuffer> CreateShaderResourceBuffer(const unsigned int num, const unsigned int size);
 
       /**
+       *  @brief  コマンドリストを作成する
+       *  @param  command_list_type:コマンドリストのタイプ
+       *  @return コマンドリストのシェアードポインタ
+       */
+      std::shared_ptr<ICommandList> CreateCommandList(const D3D12_COMMAND_LIST_TYPE& command_list_type);
+
+      /**
        *  @brief  デバイスを取得する
        *  @return デバイスへの参照
        */
@@ -138,9 +145,9 @@ namespace Sein
       // TODO:外部へ移動する
       std::shared_ptr<IRootSignature> root_signature_;                ///< ルートシグネチャ
       std::shared_ptr<IGraphicsPipelineState> pipeline_state_;        ///< パイプラインステート
+      std::shared_ptr<ICommandList> command_list_;                    ///< コマンドリスト
 
 
-      std::unique_ptr<CommandList> commandList;                             ///< コマンドリスト
       std::unique_ptr<DescriptorHeap[]> descriptorHeaps;                    ///< ディスクリプターヒープ配列
       std::unique_ptr<Fence> fence;                                         ///< フェンス
 

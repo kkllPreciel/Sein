@@ -79,12 +79,12 @@ namespace Sein
       /**
        *  @brief  シーンを開始する
        */
-      void BeginScene(ICommandList* const command_list);
+      void BeginScene(ICommandList* const command_list, std::uint32_t buffer_index);
 
       /**
        *  @brief  シーンを終了する
        */
-      void EndScene(ICommandList* const command_list);
+      void EndScene(ICommandList* const command_list, std::uint32_t buffer_index);
 
       /**
        *  @brief  画面を更新する
@@ -118,6 +118,12 @@ namespace Sein
        *  @return デバイスへの参照
        */
       ID3D12Device& GetDevice() const;
+
+      /**
+       *  @brief  次にバックバッファになるバッファの番号を取得する
+       *  @return 次にバックバッファになるバッファの番号
+       */
+      const std::uint32_t GetNextBackBufferIndex() const;
 
     private:
       /**

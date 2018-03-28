@@ -319,8 +319,12 @@ namespace Sein
     /**
      *  @brief  シーンを開始する
      */
-    void Device::BeginScene(ICommandList* const command_list)
+    void Device::BeginScene(ICommandList* const command_list, std::uint32_t buffer_index)
     {
+      decltype(auto) render_target = renderTargetList[buffer_index];
+      decltype(auto) descriptor_heap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_RTV];
+      const auto& descriptor_for_rtv = descriptor_heap.GetDescriptor(buffer_index);
+
       // TODO:const_castの削除
       decltype(auto) graphics_command_list = const_cast<ID3D12GraphicsCommandList&>(command_list->Get());
 
@@ -328,32 +332,33 @@ namespace Sein
 
       // バックバッファが描画ターゲットとして使用できるようになるまで待つ
       // リソースは描画ターゲット, 遷移前はPresent, 遷移後は描画ターゲット
-      command_list->ResourceBarrier(renderTargetList[bufferIndex], D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+      command_list->ResourceBarrier(render_target, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
       // バックバッファを描画ターゲットとして設定する
       // デバイスへ深度ステンシルビューをバインドする
-      auto& rtvDescriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_RTV];
-      const auto& rtvDescriptor = rtvDescriptorHeap.GetDescriptor(bufferIndex);
+      
       auto& dsvDescriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_DSV];
       const auto& dsvDescriptor = dsvDescriptorHeap.GetDescriptor(0); // TODO:マジックナンバーを消す
-      graphics_command_list.OMSetRenderTargets(1, &rtvDescriptor.GetHandleForCPU(), false, &dsvDescriptor.GetHandleForCPU());
+      graphics_command_list.OMSetRenderTargets(1, &descriptor_for_rtv.GetHandleForCPU(), false, &dsvDescriptor.GetHandleForCPU());
 
       // バックバッファをクリアする
       const float Color[] = { 0.0f, 0.0f, 0.6f, 1.0f };
-      graphics_command_list.ClearRenderTargetView(rtvDescriptor.GetHandleForCPU(), Color, 0, nullptr);
+      graphics_command_list.ClearRenderTargetView(descriptor_for_rtv.GetHandleForCPU(), Color, 0, nullptr);
 
       // 深度ステンシルビューをクリアする(深度バッファのみ)
       graphics_command_list.ClearDepthStencilView(dsvDescriptor.GetHandleForCPU(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
     }
-
+    
     /**
      *  @brief  シーンを終了する
      */
-    void Device::EndScene(ICommandList* const command_list)
+    void Device::EndScene(ICommandList* const command_list, std::uint32_t buffer_index)
     {
+      decltype(auto) render_target = renderTargetList[buffer_index];
+
       // バックバッファの描画完了を待つためのバリアを設置
       // リソースは描画ターゲット, 遷移前は描画ターゲット, 遷移後はPresent
-      command_list->ResourceBarrier(renderTargetList[bufferIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+      command_list->ResourceBarrier(render_target, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 
       // コマンドリストをクローズする
       command_list->End();
@@ -677,5 +682,14 @@ namespace Sein
       command_queue_->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
     }
 #pragma endregion
+
+    /**
+     *  @brief  次にバックバッファになるバッファの番号を取得する
+     *  @return 次にバックバッファになるバッファの番号
+     */
+    const std::uint32_t Device::GetNextBackBufferIndex() const
+    {
+      return (swap_chain_->GetCurrentBackBufferIndex() + 1) % FrameCount;
+    }
   };
 };

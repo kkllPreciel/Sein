@@ -39,9 +39,6 @@
     <ClCompile Include="Sein\Direct3D12\fence.cc">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Sein\Direct3D12\mesh.cc">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Sein\PMX\loader.cc">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -108,9 +105,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Sein\PNG\loader.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Sein\Direct3D12\mesh.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Sein\Direct3D12\fence.h">

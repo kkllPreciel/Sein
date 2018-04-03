@@ -2,7 +2,7 @@
  *  @file     index_buffer.h
  *  @brief    頂点インデックスバッファに関するヘッダファイル
  *  @author   kkllPreciel
- *  @date     2017/05/08
+ *  @date     2018/04/03
  *  @version  1.0
  */
 
@@ -16,56 +16,60 @@ namespace Sein
 {
   namespace Direct3D12
   {
-    class Buffer;
-
     /**
-     *  @brief  頂点インデックスバッファクラス
+     *  @brief  頂点インデックスバッファ用インターフェイス
      */
-    class IndexBuffer
+    class IIndexBuffer
     {
     public:
       /**
        *  @brief  コンストラクタ
        */
-      IndexBuffer();
+      IIndexBuffer() = default;
 
       /**
        *  @brief  デストラクタ
        */
-      ~IndexBuffer();
+      virtual ~IIndexBuffer() = default;
 
       /**
-       *  @brief  頂点インデックスバッファの生成を行う
-       *  @param  device:Direct3D12のデバイス
-       *  @param  size:頂点インデックスバッファのサイズ(全頂点インデックス合計サイズ)
-       *  @param  indices:頂点インデックスデータ
-       *  @param  format:データフォーマット
+       *  @brief  マップする
+       *  @param  format:頂点インデックスのフォーマット
+       *  @param  indices:頂点インデックス配列へのポインタ
        */
-      void Create(ID3D12Device* const device, const unsigned int size, const void* const indices, DXGI_FORMAT format);
+      virtual void Map(const DXGI_FORMAT format, const void* const indices) = 0;
 
       /**
-       *  @brief  ビューを取得する
-       *  @return ビューへの参照
+       *  @brief  頂点インデックスバッファビューを取得する
+       *  @return 頂点インデックスバッファビュー
        */
-      const D3D12_INDEX_BUFFER_VIEW& GetView() const;
+      virtual const D3D12_INDEX_BUFFER_VIEW& GetView() = 0;
 
-    private:
+      /**
+       *  @brief  頂点インデックスバッファを開放する
+       */
+      virtual void Release() noexcept = 0;
+
       /**
        *  @brief  コピーコンストラクタ
        *  @param  other:コピー元のインスタンス
        */
-      IndexBuffer(const IndexBuffer& other) = delete;
+      IIndexBuffer(const IIndexBuffer& other) = delete;
 
       /**
        *  @brief  代入演算子オペレータ
        *  @param  other:代入元のインスタンス
        *  @return 代入後のインスタンス
        */
-      IndexBuffer& operator = (const IndexBuffer& other) = delete;
+      IIndexBuffer& operator = (const IIndexBuffer& other) = delete;
 
-    private:
-      std::unique_ptr<Buffer> buffer; ///< バッファ(リソース)
-      D3D12_INDEX_BUFFER_VIEW view;   ///< 頂点インデックスバッファのビュー
+      /**
+       *  @brief  頂点インデックスバッファを作成する
+       *  @param  device:Direct3D12のデバイス
+       *  @param  size_in_bytes:頂点インデックスバッファのサイズ(頂点インデックスサイズ * 頂点インデックス数)
+       *  @return 頂点インデックスバッファへのユニークポインタ
+       */
+      static std::unique_ptr<IIndexBuffer> Create(ID3D12Device* const device, const std::uint32_t size_in_bytes);
     };
   };
 };

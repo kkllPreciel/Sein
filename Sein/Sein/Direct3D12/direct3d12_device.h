@@ -20,13 +20,13 @@
 #include "command_queue.h"
 #include "graphics_pipeline_state.h"
 #include "command_list.h"
+#include "vertex_buffer.h"
+#include "index_buffer.h"
 
 namespace Sein
 {
   namespace Direct3D12
   {
-    class VertexBuffer;
-    class IndexBuffer;
     class DepthStencilView;
     class Fence;
     class ConstantBuffer;
@@ -112,6 +112,20 @@ namespace Sein
        *  @return コマンドリストのシェアードポインタ
        */
       std::shared_ptr<ICommandList> CreateCommandList(const D3D12_COMMAND_LIST_TYPE& command_list_type);
+
+      /**
+       *  @brief  頂点バッファを作成する
+       *  @param  size_in_bytes:頂点バッファのサイズ(頂点サイズ * 頂点数)
+       *  @return 頂点バッファへのユニークポインタ
+       */
+      std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const std::uint32_t size_in_bytes);
+
+      /**
+       *  @brief  頂点インデックスバッファを作成する
+       *  @param  size_in_bytes:頂点インデックスバッファのサイズ(頂点インデックスサイズ * 頂点インデックス数)
+       *  @return 頂点インデックスバッファへのユニークポインタ
+       */
+      std::unique_ptr<IIndexBuffer> CreateIndexBuffer(const std::uint32_t size_in_bytes);
 
       /**
        *  @brief  デバイスを取得する

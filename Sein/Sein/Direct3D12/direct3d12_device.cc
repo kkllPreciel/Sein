@@ -303,6 +303,26 @@ namespace Sein
     }
 
     /**
+     *  @brief  頂点バッファを作成する
+     *  @param  size_in_bytes:頂点バッファのサイズ(頂点サイズ * 頂点数)
+     *  @return 頂点バッファへのユニークポインタ
+     */
+    std::unique_ptr<IVertexBuffer> Device::CreateVertexBuffer(const std::uint32_t size_in_bytes)
+    {
+      return IVertexBuffer::Create(device_.get(), size_in_bytes);
+    }
+    
+    /**
+     *  @brief  頂点インデックスバッファを作成する
+     *  @param  size_in_bytes:頂点インデックスバッファのサイズ(頂点インデックスサイズ * 頂点インデックス数)
+     *  @return 頂点インデックスバッファへのユニークポインタ
+     */
+    std::unique_ptr<IIndexBuffer> Device::CreateIndexBuffer(const std::uint32_t size_in_bytes)
+    {
+      return IIndexBuffer::Create(device_.get(), size_in_bytes);
+    }
+
+    /**
      *	@brief	デバイスを開放する
      */
     void Device::Release()

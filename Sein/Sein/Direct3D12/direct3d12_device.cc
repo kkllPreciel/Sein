@@ -323,6 +323,16 @@ namespace Sein
     }
 
     /**
+     *  @brief  シェーダーを作成する
+     *  @param  shader_file_path:シェーダーファイルのパス
+     *  @return シェーダーへのシェアードポインタ
+     */
+    std::shared_ptr<IShader> Device::CreateShader(const std::string& shader_file_path)
+    {
+      return IShader::Create(shader_file_path);
+    }
+
+    /**
      *	@brief	デバイスを開放する
      */
     void Device::Release()
@@ -485,8 +495,8 @@ namespace Sein
       {
         // シェーダーファイルの読み込み
         // TODO:相対パスを指定できるように
-        auto vertex_shader = IShader::Create("D:/DiskD/Study/Multithread/LearnMultithreadedRendering/LearnMultithreadedRendering/x64/Debug/vertex.cso");
-        auto pixel_shader = IShader::Create("D:/DiskD/Study/Multithread/LearnMultithreadedRendering/LearnMultithreadedRendering/x64/Debug/pixel.cso");
+        auto vertex_shader = this->CreateShader("D:/DiskD/Study/Multithread/LearnMultithreadedRendering/LearnMultithreadedRendering/x64/Debug/vertex.cso");
+        auto pixel_shader = this->CreateShader("D:/DiskD/Study/Multithread/LearnMultithreadedRendering/LearnMultithreadedRendering/x64/Debug/pixel.cso");
 
         // 頂点入力レイアウト
         D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =

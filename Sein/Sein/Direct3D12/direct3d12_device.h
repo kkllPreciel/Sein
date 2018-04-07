@@ -22,6 +22,7 @@
 #include "command_list.h"
 #include "vertex_buffer.h"
 #include "index_buffer.h"
+#include "shader.h"
 
 namespace Sein
 {
@@ -126,6 +127,13 @@ namespace Sein
        *  @return 頂点インデックスバッファへのユニークポインタ
        */
       std::unique_ptr<IIndexBuffer> CreateIndexBuffer(const std::uint32_t size_in_bytes);
+
+      /**
+       *  @brief  シェーダーを作成する
+       *  @param  shader_file_path:シェーダーファイルのパス
+       *  @return シェーダーへのシェアードポインタ
+       */
+      std::shared_ptr<IShader> CreateShader(const std::string& shader_file_path);
 
       /**
        *  @brief  デバイスを取得する

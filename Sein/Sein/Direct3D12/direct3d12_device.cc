@@ -303,6 +303,19 @@ namespace Sein
     }
 
     /**
+     *  @brief  定数バッファを作成する
+     *  @param  size_in_bytes:定数バッファのサイズ
+     *  @return 定数バッファのユニークポインタ
+     */
+    std::unique_ptr<IConstantBuffer> Device::CreateConstantBuffer(const std::uint32_t size_in_bytes)
+    {
+      auto& descriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV];
+      auto& descriptor = descriptorHeap.CreateDescriptor();
+
+      return IConstantBuffer::Create(device_.get(), descriptor.GetHandleForCPU(), size_in_bytes);
+    }
+
+    /**
      *  @brief  頂点バッファを作成する
      *  @param  size_in_bytes:頂点バッファのサイズ(頂点サイズ * 頂点数)
      *  @return 頂点バッファへのユニークポインタ
@@ -621,21 +634,6 @@ namespace Sein
 
       // 描画コマンドの生成
       graphics_command_list.DrawIndexedInstanced(indexCount, instanceCount, 0, 0, 0);
-    }
-
-    /**
-     *  @brief  定数バッファを作成する
-     *  @param  size:定数バッファのサイズ
-     *  @return 定数バッファへのポインタ
-     */
-    std::unique_ptr<ConstantBuffer> Device::CreateConstantBuffer(const unsigned int size)
-    {
-      auto constantBuffer = std::make_unique<ConstantBuffer>();
-      auto& descriptorHeap = descriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV];
-      auto& descriptor = descriptorHeap.CreateDescriptor();
-      constantBuffer->Create(device_.get(), descriptor.GetHandleForCPU(), size);
-
-      return constantBuffer;
     }
 
     /**

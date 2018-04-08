@@ -23,6 +23,7 @@
 #include "vertex_buffer.h"
 #include "index_buffer.h"
 #include "shader.h"
+#include "constant_buffer.h"
 
 namespace Sein
 {
@@ -30,7 +31,6 @@ namespace Sein
   {
     class DepthStencilView;
     class Fence;
-    class ConstantBuffer;
     class ShaderResourceBuffer;
     class DescriptorHeap;
     class TextureView;
@@ -94,10 +94,10 @@ namespace Sein
 
       /**
        *  @brief  定数バッファを作成する
-       *  @param  size:定数バッファのサイズ
+       *  @param  size_in_bytes:定数バッファのサイズ
        *  @return 定数バッファのユニークポインタ
        */
-      std::unique_ptr<ConstantBuffer> CreateConstantBuffer(const unsigned int size);
+      std::unique_ptr<IConstantBuffer> CreateConstantBuffer(const std::uint32_t size_in_bytes);
 
       /**
        *  @brief  シェーダーリソースバッファを作成する

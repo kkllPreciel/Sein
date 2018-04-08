@@ -2,7 +2,7 @@
  *  @file     constant_buffer.h
  *  @brief    定数バッファに関するヘッダファイル
  *  @author   kkllPreciel
- *  @date     2017/07/21
+ *  @date     2018/04/08
  *  @version  1.0
  */
 
@@ -16,61 +16,55 @@ namespace Sein
 {
   namespace Direct3D12
   {
-    class Buffer;
-
     /**
-     *  @brief  定数バッファクラス
+     *  @brief  定数バッファ用インターフェイス
      */
-    class ConstantBuffer
+    class IConstantBuffer
     {
     public:
       /**
        *  @brief  コンストラクタ
        */
-      ConstantBuffer();
+      IConstantBuffer() = default;
 
       /**
        *  @brief  デストラクタ
        */
-      ~ConstantBuffer();
+      virtual ~IConstantBuffer() = default;
 
       /**
-       *  @brief  定数バッファを生成する
-       *  @param  device:Direct3D12のデバイス
-       *  @param  descriptor_handle:ディスクリプターハンドル
-       *  @param  size:定数バッファのサイズ
+       *  @brief  マップする
+       *  @param  size_in_bytes:マップするデータのサイズ
+       *  @param  data:マップするデータへのポインタ
        */
-      void Create(ID3D12Device* const device, const D3D12_CPU_DESCRIPTOR_HANDLE descriptor_handle, const unsigned int size) noexcept(false);
+      virtual void Map(const std::uint32_t size_in_bytes, const void* const data) = 0;
 
       /**
        *  @brief  定数バッファを開放する
        */
-      void Release() noexcept;
+      virtual void Release() noexcept = 0;
 
-      /**
-       *  @brief  データのマップを行う
-       *  @param  data:マップするデータ
-       *  @param  size:マップするデータのサイズ
-       */
-      void Map(const void* const data, const unsigned int size) noexcept(false);
-
-    private:
       /**
        *  @brief  コピーコンストラクタ
        *  @param  other:コピー元のインスタンス
        */
-      ConstantBuffer(const ConstantBuffer& other) = delete;
+      IConstantBuffer(const IConstantBuffer& other) = delete;
 
       /**
        *  @brief  代入演算子オペレータ
        *  @param  other:代入元のインスタンス
        *  @return 代入後のインスタンス
        */
-      ConstantBuffer& operator = (const ConstantBuffer& other) = delete;
+      IConstantBuffer& operator = (const IConstantBuffer& other) = delete;
 
-    private:
-      std::unique_ptr<Buffer> buffer; ///< バッファ(リソース)
-      void* buffer_pointer;           ///< バッファへのポインタ
+      /**
+       *  @brief  定数バッファを作成する
+       *  @param  device:Direct3D12のデバイス
+       *  @param  descriptor_handle:ディスクリプターハンドル
+       *  @param  size_in_bytes:定数バッファのサイズ
+       *  @return 定数バッファへのユニークポインタ
+       */
+      static std::unique_ptr<IConstantBuffer> Create(ID3D12Device* const device, const D3D12_CPU_DESCRIPTOR_HANDLE descriptor_handle, const std::uint32_t size_in_bytes);
     };
   };
 };

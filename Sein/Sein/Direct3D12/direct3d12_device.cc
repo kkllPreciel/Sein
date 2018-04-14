@@ -600,7 +600,7 @@ namespace Sein
       viewport.MaxDepth = 1;
 
       // ビューポートの設定
-      graphics_command_list.RSSetViewports(1, &viewport);
+      command_list->SetViewports(1, &viewport);
 
       // シザー矩形(シザーテスト)の作成
       D3D12_RECT scissor;
@@ -610,7 +610,7 @@ namespace Sein
       scissor.bottom = 400;
 
       // シザー矩形(シザーテスト)の設定
-      graphics_command_list.RSSetScissorRects(1, &scissor);
+      command_list->SetScissorRects(1, &scissor);
 
       // パイプラインステートの設定(切り替えない場合は、コマンドリストリセット時に設定可能)
       pipeline_state_->SetPipelineState(&graphics_command_list);

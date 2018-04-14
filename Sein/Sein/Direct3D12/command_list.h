@@ -79,6 +79,20 @@ namespace Sein
       virtual void SetPrimitiveTopology(const D3D12_PRIMITIVE_TOPOLOGY primitive_topology) = 0;
 
       /**
+       *  @brief  ビューポートを設定する
+       *  @param  viewport_count:ビューポートの個数
+       *  @param  viewports:ビューポート配列の先頭ポインタ
+       */
+      virtual void SetViewports(const std::uint32_t viewport_count, const D3D12_VIEWPORT* const viewports) = 0;
+
+      /**
+       *  @brief  シザー矩形を設定する
+       *  @param  scissor_rect_count:シザー矩形の個数
+       *  @param  scissor_rects:シザー矩形配列の先頭ポインタ
+       */
+      virtual void SetScissorRects(const std::uint32_t scissor_rect_count, const D3D12_RECT* const scissor_rects) = 0;
+
+      /**
        *  @brief  記録を終了する
        */
       virtual void End() = 0;

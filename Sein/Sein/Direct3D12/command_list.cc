@@ -122,6 +122,26 @@ namespace Sein
         {
           command_list_->IASetPrimitiveTopology(primitive_topology);
         }
+
+        /**
+         *  @brief  ビューポートを設定する
+         *  @param  viewport_count:ビューポートの個数
+         *  @param  viewports:ビューポート配列の先頭ポインタ
+         */
+        void SetViewports(const std::uint32_t viewport_count, const D3D12_VIEWPORT* const viewports) override
+        {
+          command_list_->RSSetViewports(viewport_count, viewports);
+        }
+  
+        /**
+         *  @brief  シザー矩形を設定する
+         *  @param  scissor_rect_count:シザー矩形の個数
+         *  @param  scissor_rects:シザー矩形配列の先頭ポインタ
+         */
+        void SetScissorRects(const std::uint32_t scissor_rect_count, const D3D12_RECT* const scissor_rects) override
+        {
+          command_list_->RSSetScissorRects(scissor_rect_count, scissor_rects);
+        }
         
         /**
          *  @brief  記録を終了する

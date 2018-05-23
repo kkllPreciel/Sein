@@ -25,7 +25,10 @@ namespace Sein
         /**
          *  @brief  コンストラクタ
          */
-        Device() : device_(nullptr, [](ID3D11Device* p) { p->Release(); })
+        Device()
+          : device_(nullptr, [](ID3D11Device* p) { p->Release(); }),
+          context_(nullptr, [](ID3D11DeviceContext* p) { p->Release(); }),
+          swap_chain_(nullptr, [](IDXGISwapChain* p) { p->Release(); })
         {
 
         }
@@ -43,7 +46,9 @@ namespace Sein
          */
         void Destroy() override
         {
-          // TODO:デバイスの削除
+          swap_chain_.reset();
+          context_.reset();
+          device_.reset();
         }
 
         /**
@@ -58,7 +63,11 @@ namespace Sein
         }
 
       private:
-        std::shared_ptr<ID3D11Device> device_;  ///< デバイス
+        std::shared_ptr<ID3D11Device> device_;          ///< デバイス
+        std::shared_ptr<ID3D11DeviceContext> context_;  ///< コンテキスト
+        std::shared_ptr<IDXGISwapChain> swap_chain_;    ///< スワップチェーン
+        D3D_DRIVER_TYPE driver_type_;                   ///< ドライバー種別
+        D3D_FEATURE_LEVEL feature_level_;               ///< 機能レベル
       };
     };
 

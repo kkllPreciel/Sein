@@ -13,49 +13,76 @@ namespace Sein
 {
   namespace Direct3D12
   {
-    /**
-     *  @brief  コンストラクタ
-     */
-    Descriptor::Descriptor() : handleCPU({}), handleGPU({})
+    namespace
     {
+      /**
+       *  @brief  ディスクリプター用クラス
+       */
+      class Descriptor final : public IDescriptor
+      {
+      public:
+        /**
+         *  @brief  コンストラクタ
+         *  @param  handle_for_cpu:CPUハンドル
+         *  @param  handle_for_gpu:GPUハンドル
+         */
+        Descriptor(const D3D12_CPU_DESCRIPTOR_HANDLE& handle_for_cpu, const D3D12_GPU_DESCRIPTOR_HANDLE& handle_for_gpu)
+          : handle_for_cpu_(handle_for_cpu), handle_for_gpu_(handle_for_gpu)
+        {
 
-    }
-    
-    /**
-     *  @brief  デストラクタ
-     */
-    Descriptor::~Descriptor()
-    {
+        }
 
-    }
+        /**
+         *  @brief  デストラクタ
+         */
+        ~Descriptor() override
+        {
+          Release();
+        }
+
+        /**
+         *  @brief  リソースを開放する
+         */
+        void Release() noexcept override
+        {
+
+        }
+        
+        /**
+         *  @brief  CPUディスクリプターハンドルを取得する
+         *  @return CPUハンドル
+         */
+        D3D12_CPU_DESCRIPTOR_HANDLE GetHandleForCPU() const override
+        {
+          return handle_for_cpu_;
+        }
+        
+        /**
+         *  @brief  GPUディスクリプターハンドルを取得する
+         *  @return GPUハンドル
+         */
+        D3D12_GPU_DESCRIPTOR_HANDLE GetHandleForGPU() const override
+        {
+          return handle_for_gpu_;
+        }
+
+      private:
+        D3D12_CPU_DESCRIPTOR_HANDLE handle_for_cpu_;  ///< GPUハンドル
+        D3D12_GPU_DESCRIPTOR_HANDLE handle_for_gpu_;  ///< GPUハンドル
+      };
+    };
 
     /**
      *  @brief  ディスクリプターを生成する
-     *  @param  handleForCPU:CPUハンドル
-     *  @param  handleForGPU:GPUハンドル
+     *  @param  handle_for_cpu:CPUハンドル
+     *  @param  handle_for_gpu:GPUハンドル
+     *  @return ディスクリプターへのシェアードポインタ
      */
-    void Descriptor::Create(const D3D12_CPU_DESCRIPTOR_HANDLE& handleForCPU, const D3D12_GPU_DESCRIPTOR_HANDLE& handleForGPU)
+    std::shared_ptr<IDescriptor> IDescriptor::Create(const D3D12_CPU_DESCRIPTOR_HANDLE& handle_for_cpu, const D3D12_GPU_DESCRIPTOR_HANDLE& handle_for_gpu)
     {
-      handleCPU = handleForCPU;
-      handleGPU = handleForGPU;
-    }
-    
-    /**
-     *  @brief  CPUディスクリプターハンドルを取得する
-     *  @return CPUハンドル
-     */
-    D3D12_CPU_DESCRIPTOR_HANDLE Descriptor::GetHandleForCPU() const
-    {
-      return handleCPU;
-    }
-    
-    /**
-     *  @brief  GPUディスクリプターハンドルを取得する
-     *  @return GPUハンドル
-     */
-    D3D12_GPU_DESCRIPTOR_HANDLE Descriptor::GetHandleForGPU() const
-    {
-      return handleGPU;
+      auto descriptor = std::make_shared<Descriptor>(handle_for_cpu, handle_for_gpu);
+
+      return descriptor;
     }
   };
 };

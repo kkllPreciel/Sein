@@ -8,118 +8,153 @@
 
  // include
 #include "descriptor_heap.h"
-#include "descriptor.h"
+#include <vector>
+#include <functional>
 
 namespace Sein
 {
   namespace Direct3D12
   {
-    /**
-     *  @brief  コンストラクタ
-     */
-    DescriptorHeap::DescriptorHeap() : heap(nullptr, [](IUnknown* p) {p->Release();}), descriptors(nullptr), incrementSize(0), availableCount(0), createdCount(0)
+    namespace
     {
+      /**
+       *  @brief  ディスクリプターヒープ用クラス
+       */
+      class DescriptorHeap final : public IDescriptorHeap
+      {
+      public:
+        /**
+         *  @brief  コンストラクタ
+         */
+        DescriptorHeap() : descriptor_heap_(nullptr, [](IUnknown* p) {p->Release(); }), descriptors_(), descriptor_increment_size_(0), available_count_(0), created_count_(0)
+        {
 
-    }
+        }
 
-    /**
-     *  @brief  デストラクタ
-     */
-    DescriptorHeap::~DescriptorHeap()
-    {
-      Release();
-    }
-    
+        /**
+         *  @brief  デストラクタ
+         */
+        ~DescriptorHeap() override
+        {
+          Release();
+        }
+
+        /**
+         *  @brief  生成する
+         *  @param  device:Direct3D12のデバイス
+         *  @param  desc:ディスクリプターヒープの設定情報
+         */
+        void Create(ID3D12Device* const device, const D3D12_DESCRIPTOR_HEAP_DESC& desc)
+        {
+          Release();
+
+          ID3D12DescriptorHeap* descriptor_heap = nullptr;
+          if (FAILED(device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&descriptor_heap))))
+          {
+            throw std::exception("ディスクリプターヒープの生成に失敗しました。");
+          }
+
+          descriptor_heap_.reset(descriptor_heap);
+          descriptor_increment_size_ = device->GetDescriptorHandleIncrementSize(desc.Type);
+          descriptors_.resize(desc.NumDescriptors);
+          available_count_ = desc.NumDescriptors;
+          created_count_ = 0;
+        }
+
+        /**
+         *  @brief  リソースを開放する
+         */
+        void Release() noexcept override
+        {
+          descriptors_.clear();
+          descriptor_heap_.reset(nullptr);
+        }
+        
+        /**
+         *  @brief  ディスクリプターを生成する
+         *  @return ディスクリプターハンドル
+         */
+        const IDescriptor& CreateDescriptor() override
+        {
+          if (GetAvailableCount() <= 0)
+          {
+            throw std::exception("生成可能なディスクリプター数を超えています");
+          }
+
+          auto handle_for_cpu = descriptor_heap_->GetCPUDescriptorHandleForHeapStart();
+          auto handle_for_gpu = descriptor_heap_->GetGPUDescriptorHandleForHeapStart();
+          handle_for_cpu.ptr += descriptor_increment_size_ * created_count_;
+          handle_for_gpu.ptr += descriptor_increment_size_ * created_count_;
+
+          descriptors_[created_count_] = IDescriptor::Create(handle_for_cpu, handle_for_gpu);
+          return *(descriptors_[created_count_++]);
+        }
+        
+        /**
+         *  @brief  ディスクリプターを取得する
+         *  @param  index:ディスクリプター番号
+         *  @return ディスクリプターハンドル
+         */
+        const IDescriptor& GetDescriptor(const std::uint32_t index) override
+        {
+          if (created_count_ <= index)
+          {
+            throw std::exception("指定されたインデックスが生成済みのディスクリプター数を超えています");
+          }
+
+          return *(descriptors_[index]);
+        }
+        
+        /**
+         *  @brief  生成したディスクリプター数を取得する
+         *  @return 生成したディスクリプター数
+         */
+        std::uint32_t GetCreatedCount() const override
+        {
+          return created_count_;
+        }
+        
+        /**
+         *  @brief  生成可能なディスクリプター数を取得する
+         *  @return 生成可能なディスクリプター数
+         */
+        std::uint32_t GetAvailableCount() const override
+        {
+          return available_count_ - created_count_;
+        }
+
+        /**
+         *  @brief  コマンドリストにディスクリプターヒープを設定する
+         *  @param  command_list:コマンドリスト
+         */
+        void SetDescriptorHeaps(ID3D12GraphicsCommandList* command_list) const override
+        {
+          auto descriptor_heap = descriptor_heap_.get();
+          command_list->SetDescriptorHeaps(1, &descriptor_heap);
+        }
+
+      private:
+        std::unique_ptr<ID3D12DescriptorHeap, std::function<void(ID3D12DescriptorHeap*)>> descriptor_heap_; ///< ディスクリプターヒープ
+        std::vector<std::shared_ptr<IDescriptor>> descriptors_;                                             ///< ディスクリプターの配列
+        std::uint32_t descriptor_increment_size_;                                                           ///< ディスクリプターハンドルのインクリメントサイズ
+        std::uint32_t available_count_;                                                                     ///< 生成可能なディスクリプター数
+        std::uint32_t created_count_;                                                                       ///< 生成したディスクリプター数
+      };
+    };
+
     /**
      *  @brief  ディスクリプターヒープを生成する
      *  @param  device:Direct3D12のデバイス
      *  @param  desc:ディスクリプターヒープの設定情報
+     *  @return ディスクリプターヒープへのシェアードポインタ
      */
-    void DescriptorHeap::Create(ID3D12Device* const device, const D3D12_DESCRIPTOR_HEAP_DESC& desc)
+    std::shared_ptr<IDescriptorHeap> IDescriptorHeap::Create(ID3D12Device* const device, const D3D12_DESCRIPTOR_HEAP_DESC& desc)
     {
-      Release();
+      auto descriptor_heap = std::make_shared<DescriptorHeap>();
 
-      ID3D12DescriptorHeap* descriptor_heap = nullptr;
-      auto hr = device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&descriptor_heap));
-      if (FAILED(hr))
-      {
-        throw "ディスクリプターヒープの生成に失敗しました。";
-      }
-      heap.reset(descriptor_heap);
-      incrementSize = device->GetDescriptorHandleIncrementSize(desc.Type);
-      descriptors = std::make_unique<Descriptor[]>(desc.NumDescriptors);
-      availableCount = desc.NumDescriptors;
-      createdCount = 0;
-    }
-    
-    /**
-     *  @brief  リソースを開放する
-     */
-    void DescriptorHeap::Release()
-    {
-      heap.reset(nullptr);
-      descriptors.reset(nullptr);
-    }
-    
-    /**
-     *  @brief  ディスクリプターヒープを取得する
-     *  @return ディスクリプターヒープへのポインタ
-     */
-    ID3D12DescriptorHeap* DescriptorHeap::Get() const
-    {
-      return heap.get();
-    }
+      descriptor_heap->Create(device, desc);
 
-    /**
-     *  @brief  ディスクリプターを生成する
-     *  @return ディスクリプターハンドル
-     */
-    const IDescriptor& DescriptorHeap::CreateDescriptor()
-    {
-      if (availableCount <= createdCount)
-      {
-        throw "生成可能なディスクリプター数を超えています";
-      }
-
-      auto handleForCPU = heap->GetCPUDescriptorHandleForHeapStart();
-      auto handleForGPU = heap->GetGPUDescriptorHandleForHeapStart();
-      handleForCPU.ptr += incrementSize * createdCount;
-      handleForGPU.ptr += incrementSize * createdCount;
-      descriptors[createdCount].Create(handleForCPU, handleForGPU);
-      return descriptors[createdCount++];
-    }
-    
-    /**
-     *  @brief  ディスクリプターを取得する
-     *  @param  index:ディスクリプター番号
-     *  @return ディスクリプターハンドル
-     */
-    const IDescriptor& DescriptorHeap::GetDescriptor(const unsigned int index)
-    {
-      if (createdCount <= index)
-      {
-        throw "指定されたインデックスが生成済みのディスクリプター数を超えています";
-      }
-
-      return descriptors[index];
-    }
-    
-    /**
-     *  @brief  生成したディスクリプター数を取得する
-     *  @return 生成したディスクリプター数
-     */
-    unsigned short DescriptorHeap::GetCreatedCount() const
-    {
-      return static_cast<unsigned short>(createdCount);
-    }
-    
-    /**
-     *  @brief  生成可能なディスクリプター数を取得する
-     *  @return 生成可能なディスクリプター数
-     */
-    unsigned short DescriptorHeap::GetAvailableCount() const
-    {
-      return availableCount - static_cast<unsigned int>(createdCount);
+      return descriptor_heap;
     }
   };
 };

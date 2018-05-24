@@ -9,6 +9,7 @@
 #pragma once
 
 // include
+#include <memory>
 #include <d3d12.h>
 
 namespace Sein
@@ -22,9 +23,32 @@ namespace Sein
     {
     public:
       /**
+       *  @brief  コンストラクタ
+       */
+      IDescriptor() = default;
+
+      /**
        *  @brief  デストラクタ
        */
       virtual ~IDescriptor() = default;
+
+      /**
+       *  @brief  コピーコンストラクタ
+       *  @param  other:コピー元のインスタンス
+       */
+      IDescriptor(const IDescriptor& other) = delete;
+
+      /**
+       *  @brief  代入演算子オペレータ
+       *  @param  other:代入元のインスタンス
+       *  @return 代入後のインスタンス
+       */
+      IDescriptor& operator = (const IDescriptor& other) = delete;
+
+      /**
+       *  @brief  リソースを開放する
+       */
+      virtual void Release() noexcept = 0;
 
       /**
        *  @brief  CPUディスクリプターハンドルを取得する
@@ -37,60 +61,14 @@ namespace Sein
        *  @return GPUハンドル
        */
       virtual D3D12_GPU_DESCRIPTOR_HANDLE GetHandleForGPU() const = 0;
-    };
-
-    /**
-     *  @brief  ディスクリプター用クラス
-     */
-    class Descriptor final : public IDescriptor
-    {
-    public:
-      /**
-       *  @brief  コンストラクタ
-       */
-      Descriptor();
-
-      /**
-       *  @brief  デストラクタ
-       */
-      ~Descriptor() override;
 
       /**
        *  @brief  ディスクリプターを生成する
-       *  @param  handleForCPU:CPUハンドル
-       *  @param  handleForGPU:GPUハンドル
+       *  @param  handle_for_cpu:CPUハンドル
+       *  @param  handle_for_gpu:GPUハンドル
+       *  @return ディスクリプターへのシェアードポインタ
        */
-      void Create(const D3D12_CPU_DESCRIPTOR_HANDLE& handleForCPU, const D3D12_GPU_DESCRIPTOR_HANDLE& handleForGPU);
-
-      /**
-       *  @brief  CPUディスクリプターハンドルを取得する
-       *  @return CPUハンドル
-       */
-      D3D12_CPU_DESCRIPTOR_HANDLE GetHandleForCPU() const override;
-
-      /**
-       *  @brief  GPUディスクリプターハンドルを取得する
-       *  @return GPUハンドル
-       */
-      D3D12_GPU_DESCRIPTOR_HANDLE GetHandleForGPU() const override;
-
-    private:
-      /**
-       *  @brief  コピーコンストラクタ
-       *  @param  other:コピー元のインスタンス
-       */
-      Descriptor(const Descriptor& other) = delete;
-
-      /**
-       *  @brief  代入演算子オペレータ
-       *  @param  other:代入元のインスタンス
-       *  @return 代入後のインスタンス
-       */
-      Descriptor& operator = (const Descriptor& other) = delete;
-
-    private:
-      D3D12_CPU_DESCRIPTOR_HANDLE handleCPU;  ///< GPUハンドル
-      D3D12_GPU_DESCRIPTOR_HANDLE handleGPU;  ///< GPUハンドル
+      static std::shared_ptr<IDescriptor> Create(const D3D12_CPU_DESCRIPTOR_HANDLE& handle_for_cpu, const D3D12_GPU_DESCRIPTOR_HANDLE& handle_for_gpu);
     };
   };
 };

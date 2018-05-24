@@ -9,44 +9,47 @@
 #pragma once
 
 // include
-#include <d3d12.h>
 #include <memory>
+#include <d3d12.h>
+#include "descriptor.h"
 
 namespace Sein
 {
   namespace Direct3D12
   {
-    class IDescriptor;
-    class Descriptor;
-
     /**
-     *  @brief  ディスクリプターヒープ用interface
+     *  @brief  ディスクリプター用interface
      */
     class IDescriptorHeap
     {
     public:
+      /**
+       *  @brief  コンストラクタ
+       */
+      IDescriptorHeap() = default;
+
       /**
        *  @brief  デストラクタ
        */
       virtual ~IDescriptorHeap() = default;
 
       /**
-       *  @brief  ディスクリプターヒープを生成する
-       *  @param  device:Direct3D12のデバイス
-       *  @param  desc:ディスクリプターヒープの設定情報
+       *  @brief  コピーコンストラクタ
+       *  @param  other:コピー元のインスタンス
        */
-      virtual void Create(ID3D12Device* const device, const D3D12_DESCRIPTOR_HEAP_DESC& desc) = 0;
+      IDescriptorHeap(const IDescriptorHeap& other) = delete;
+
+      /**
+       *  @brief  代入演算子オペレータ
+       *  @param  other:代入元のインスタンス
+       *  @return 代入後のインスタンス
+       */
+      IDescriptorHeap& operator = (const IDescriptorHeap& other) = delete;
 
       /**
        *  @brief  リソースを開放する
        */
-      virtual void Release() = 0;
-
-      /**
-       *  @brief  ディスクリプターヒープを取得する
-       *  @return ディスクリプターヒープへのポインタ
-       */
-      virtual ID3D12DescriptorHeap* Get() const = 0;
+      virtual void Release() noexcept = 0;
 
       /**
        *  @brief  ディスクリプターを生成する
@@ -59,100 +62,33 @@ namespace Sein
        *  @param  index:ディスクリプター番号
        *  @return ディスクリプターハンドル
        */
-      virtual const IDescriptor& GetDescriptor(const unsigned int index) = 0;
+      virtual const IDescriptor& GetDescriptor(const std::uint32_t index) = 0;
 
       /**
        *  @brief  生成したディスクリプター数を取得する
        *  @return 生成したディスクリプター数
        */
-      virtual unsigned short GetCreatedCount() const = 0;
+      virtual std::uint32_t GetCreatedCount() const = 0;
 
       /**
        *  @brief  生成可能なディスクリプター数を取得する
        *  @return 生成可能なディスクリプター数
        */
-      virtual unsigned short GetAvailableCount() const = 0;
-    };
-
-    /**
-     *  @brief  ディスクリプターヒープ用クラス
-     */
-    class DescriptorHeap final : public IDescriptorHeap
-    {
-    public:
-      /**
-       *  @brief  コンストラクタ
-       */
-      DescriptorHeap();
+      virtual std::uint32_t GetAvailableCount() const = 0;
 
       /**
-       *  @brief  デストラクタ
+       *  @brief  コマンドリストにディスクリプターヒープを設定する
+       *  @param  command_list:コマンドリスト
        */
-      ~DescriptorHeap() override;
+      virtual void SetDescriptorHeaps(ID3D12GraphicsCommandList* command_list) const = 0;
 
       /**
        *  @brief  ディスクリプターヒープを生成する
        *  @param  device:Direct3D12のデバイス
        *  @param  desc:ディスクリプターヒープの設定情報
+       *  @return ディスクリプターヒープへのシェアードポインタ
        */
-      void Create(ID3D12Device* const device, const D3D12_DESCRIPTOR_HEAP_DESC& desc) override;
-
-      /**
-       *  @brief  リソースを開放する
-       */
-      void Release() override;
-
-      /**
-       *  @brief  ディスクリプターヒープを取得する
-       *  @return ディスクリプターヒープへのポインタ
-       */
-      ID3D12DescriptorHeap* Get() const override;
-
-      /**
-       *  @brief  ディスクリプターを生成する
-       *  @return ディスクリプターハンドル
-       */
-      const IDescriptor& CreateDescriptor() override;
-
-      /**
-       *  @brief  ディスクリプターを取得する
-       *  @param  index:ディスクリプター番号
-       *  @return ディスクリプターハンドル
-       */
-      const IDescriptor& GetDescriptor(const unsigned int index) override;
-
-      /**
-       *  @brief  生成したディスクリプター数を取得する
-       *  @return 生成したディスクリプター数
-       */
-      unsigned short GetCreatedCount() const override;
-
-      /**
-       *  @brief  生成可能なディスクリプター数を取得する
-       *  @return 生成可能なディスクリプター数
-       */
-      unsigned short GetAvailableCount() const override;
-
-    private:
-      /**
-       *  @brief  コピーコンストラクタ
-       *  @param  other:コピー元のインスタンス
-       */
-      DescriptorHeap(const DescriptorHeap& other) = delete;
-
-      /**
-       *  @brief  代入演算子オペレータ
-       *  @param  other:代入元のインスタンス
-       *  @return 代入後のインスタンス
-       */
-      DescriptorHeap& operator = (const DescriptorHeap& other) = delete;
-
-    private:
-      std::unique_ptr<ID3D12DescriptorHeap, void(*)(IUnknown*)> heap; ///< ディスクリプターヒープ
-      std::unique_ptr<Descriptor[]> descriptors;                      ///< ディスクリプター配列
-      unsigned int incrementSize;                                     ///< インクリメントサイズ
-      unsigned int availableCount;                                    ///< 生成可能なディスクリプター数
-      unsigned int createdCount;                                      ///< 生成したディスクリプター数
+      static std::shared_ptr<IDescriptorHeap> Create(ID3D12Device* const device, const D3D12_DESCRIPTOR_HEAP_DESC& desc);
     };
   };
 };

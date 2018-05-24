@@ -17,6 +17,7 @@
 #include "vertex_buffer.h"
 #include "index_buffer.h"
 #include "shader.h"
+#include "descriptor_heap.h"
 
 namespace Sein
 {
@@ -140,8 +141,13 @@ namespace Sein
        */
       virtual void ExecuteCommandLists(ICommandList* const command_list) = 0;
 
+      /**
+       *  @brief  ディスクリプターヒープを生成する
+       *  @param  descriptor_heap_desc:ディスクリプターヒープの設定
+       *  @return ディスクリプターヒープのシェアードポインタ
+       */
+      virtual std::shared_ptr<IDescriptorHeap> CreateDescriptorHeap(const D3D12_DESCRIPTOR_HEAP_DESC& descriptor_heap_desc) = 0;
 
-      // TODO:ディスクリプターヒープを作成するインターフェイス
       // TODO:レンダーターゲットを作成するインターフェイス
 
 

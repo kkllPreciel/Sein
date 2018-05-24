@@ -14,8 +14,6 @@
 
 #include "DirectXTK12/include/ResourceUploadBatch.h"
 
-#include "descriptor.h"
-#include "descriptor_heap.h"
 #include "fence.h"
 #include "texture_view.h"
 #include "depth_stencil_view.h"
@@ -190,7 +188,7 @@ namespace Sein
             cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;      // 定数バッファ or シェーダーリソース(テクスチャ) or ランダムアクセス のどれかのヒープ
             cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;  // シェーダーからアクセス可
 
-            descriptor_heaps_[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV] = IDescriptorHeap::Create(device_.get(), cbvHeapDesc);
+            descriptor_heaps_[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV] = this->CreateDescriptorHeap(cbvHeapDesc);
           }
 
           // 深度ステンシルビュー用ディスクリプターヒープを生成
@@ -200,7 +198,7 @@ namespace Sein
             heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;   // 深度ステンシルビューのヒープ
             heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE; // シェーダーからアクセス不可
             
-            descriptor_heaps_[D3D12_DESCRIPTOR_HEAP_TYPE_DSV] = IDescriptorHeap::Create(device_.get(), heapDesc);
+            descriptor_heaps_[D3D12_DESCRIPTOR_HEAP_TYPE_DSV] = this->CreateDescriptorHeap(heapDesc);
           }
 
           // レンダーターゲット
@@ -212,7 +210,7 @@ namespace Sein
             rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;    // 種別はレンダーターゲットビュー
             rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;  // シェーダーから参照しない
 
-            descriptor_heaps_[D3D12_DESCRIPTOR_HEAP_TYPE_RTV] = IDescriptorHeap::Create(device_.get(), rtvHeapDesc);
+            descriptor_heaps_[D3D12_DESCRIPTOR_HEAP_TYPE_RTV] = this->CreateDescriptorHeap(rtvHeapDesc);
 
             // ディスクリプターの登録
             {
@@ -506,6 +504,16 @@ namespace Sein
 
           ID3D12CommandList* ppCommandLists[] = { &graphics_command_list };
           command_queue_->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+        }
+
+        /**
+         *  @brief  ディスクリプターヒープを生成する
+         *  @param  descriptor_heap_desc:ディスクリプターヒープの設定
+         *  @return ディスクリプターヒープのシェアードポインタ
+         */
+        std::shared_ptr<IDescriptorHeap> CreateDescriptorHeap(const D3D12_DESCRIPTOR_HEAP_DESC& descriptor_heap_desc) override
+        {
+          return IDescriptorHeap::Create(device_.get(), descriptor_heap_desc);
         }
 
       private:

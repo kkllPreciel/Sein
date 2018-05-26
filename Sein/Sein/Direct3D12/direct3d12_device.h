@@ -88,6 +88,14 @@ namespace Sein
       virtual std::unique_ptr<IConstantBuffer> CreateConstantBuffer(const std::uint32_t size_in_bytes) = 0;
 
       /**
+       *  @brief  定数バッファを作成する
+       *  @param  descriptor_heap:定数バッファを作成するディスクリプターヒープ
+       *  @param  size_in_bytes:定数バッファのサイズ
+       *  @return 定数バッファのユニークポインタ
+       */
+      virtual std::unique_ptr<IConstantBuffer> CreateConstantBuffer(std::shared_ptr<IDescriptorHeap>& descriptor_heap, const std::uint32_t size_in_bytes) = 0;
+
+      /**
        *  @brief  シェーダーリソースバッファを作成する
        *  @param  num:リソース内の要素数
        *  @param  size:リソース内の1要素のサイズ

@@ -391,8 +391,18 @@ namespace Sein
         std::unique_ptr<IConstantBuffer> CreateConstantBuffer(const std::uint32_t size_in_bytes) override
         {
           auto& descriptorHeap = descriptor_heaps_[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV];
-          auto& descriptor = descriptorHeap->CreateDescriptor();
+          return this->CreateConstantBuffer(descriptorHeap, size_in_bytes);
+        }
 
+        /**
+         *  @brief  定数バッファを作成する
+         *  @param  descriptor_heap:定数バッファを作成するディスクリプターヒープ
+         *  @param  size_in_bytes:定数バッファのサイズ
+         *  @return 定数バッファのユニークポインタ
+         */
+        std::unique_ptr<IConstantBuffer> CreateConstantBuffer(std::shared_ptr<IDescriptorHeap>& descriptor_heap, const std::uint32_t size_in_bytes) override
+        {
+          auto& descriptor = descriptor_heap->CreateDescriptor();
           return IConstantBuffer::Create(device_.get(), descriptor.GetHandleForCPU(), size_in_bytes);
         }
         

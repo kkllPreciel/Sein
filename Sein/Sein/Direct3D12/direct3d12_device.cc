@@ -429,6 +429,23 @@ namespace Sein
 
           return shaderResourceBuffer;
         }
+
+        /**
+         *  @brief  深度ステンシルバッファを作成する
+         *  @param  descriptor_heap:深度ステンシルバッファを作成するディスクリプターヒープ
+         *  @param  width:深度ステンシルバッファの横幅
+         *  @param  height:深度ステンシルバッファの縦幅
+         *  @return 深度ステンシルバッファのユニークポインタ
+         */
+        std::unique_ptr<DepthStencilView> CreateDepthStencilView(std::shared_ptr<IDescriptorHeap>& descriptor_heap, const std::uint32_t width, const std::uint32_t height) override
+        {
+          auto depth_stencil_view = std::make_unique<DepthStencilView>();
+          
+          auto& descriptor = descriptor_heap->CreateDescriptor();
+          depth_stencil_view->Create(device_.get(), descriptor.GetHandleForCPU(), width, height);
+
+          return depth_stencil_view;
+        }
         
         /**
          *  @brief  コマンドリストを作成する
@@ -536,10 +553,7 @@ namespace Sein
         {
           // 深度ステンシルビューの作成
           {
-            depthStencilView = std::make_unique<DepthStencilView>();
-            auto& descriptorHeap = descriptor_heaps_[D3D12_DESCRIPTOR_HEAP_TYPE_DSV];
-            auto& descriptor = descriptorHeap->CreateDescriptor();
-            depthStencilView->Create(device_.get(), descriptor.GetHandleForCPU(), width, height);
+            depthStencilView = this->CreateDepthStencilView(descriptor_heaps_[D3D12_DESCRIPTOR_HEAP_TYPE_DSV], width, height);
           }
 
           // ルートシグネチャの作成

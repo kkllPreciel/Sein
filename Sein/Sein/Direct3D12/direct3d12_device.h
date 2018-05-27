@@ -18,6 +18,7 @@
 #include "index_buffer.h"
 #include "shader.h"
 #include "descriptor_heap.h"
+#include "depth_stencil_view.h"
 
 namespace Sein
 {
@@ -102,6 +103,15 @@ namespace Sein
        *  @return シェーダーリソースバッファのユニークポインタ
        */
       virtual std::unique_ptr<ShaderResourceBuffer> CreateShaderResourceBuffer(const unsigned int num, const unsigned int size) = 0;
+
+      /**
+       *  @brief  深度ステンシルバッファを作成する
+       *  @param  descriptor_heap:深度ステンシルバッファを作成するディスクリプターヒープ
+       *  @param  width:深度ステンシルバッファの横幅
+       *  @param  height:深度ステンシルバッファの縦幅
+       *  @return 深度ステンシルバッファのユニークポインタ
+       */
+      virtual std::unique_ptr<DepthStencilView> CreateDepthStencilView(std::shared_ptr<IDescriptorHeap>& descriptor_heap, const std::uint32_t width, const std::uint32_t height) = 0;
 
       /**
        *  @brief  コマンドリストを作成する

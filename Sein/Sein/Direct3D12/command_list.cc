@@ -142,6 +142,26 @@ namespace Sein
         {
           command_list_->RSSetScissorRects(scissor_rect_count, scissor_rects);
         }
+
+        /**
+         *  @brief  ディスクリプターヒープを設定する
+         *  @param  descriptor_heap_count:ディスクリプターヒープの個数
+         *  @param  descriptor_heaps:ディスクリプターヒープ配列の先頭ポインタ
+         */
+        void SetDescriptorHeaps(const std::uint32_t descriptor_heap_count, ID3D12DescriptorHeap* const* descriptor_heaps) override
+        {
+          command_list_->SetDescriptorHeaps(descriptor_heap_count, descriptor_heaps);
+        }
+
+        /**
+         *  @brief  ディスクリプターテーブルを設定する
+         *  @param  root_parameter_index:ルートパラメータの番号
+         *  @param  descriptor_handle:ディスクリプターのハンドル
+         */
+        void SetGraphicsRootDescriptorTable(const std::uint32_t root_parameter_index, D3D12_GPU_DESCRIPTOR_HANDLE descriptor_handle) override
+        {
+          command_list_->SetGraphicsRootDescriptorTable(root_parameter_index, descriptor_handle);
+        }
         
         /**
          *  @brief  記録を終了する

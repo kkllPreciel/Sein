@@ -93,6 +93,20 @@ namespace Sein
       virtual void SetScissorRects(const std::uint32_t scissor_rect_count, const D3D12_RECT* const scissor_rects) = 0;
 
       /**
+       *  @brief  ディスクリプターヒープを設定する
+       *  @param  descriptor_heap_count:ディスクリプターヒープの個数
+       *  @param  descriptor_heaps:ディスクリプターヒープ配列の先頭ポインタ
+       */
+      virtual void SetDescriptorHeaps(const std::uint32_t descriptor_heap_count, ID3D12DescriptorHeap* const* descriptor_heaps) = 0;
+
+      /**
+       *  @brief  ディスクリプターテーブルを設定する
+       *  @param  root_parameter_index:ルートパラメータの番号
+       *  @param  descriptor_handle:ディスクリプターのハンドル
+       */
+      virtual void SetGraphicsRootDescriptorTable(const std::uint32_t root_parameter_index, D3D12_GPU_DESCRIPTOR_HANDLE descriptor_handle) = 0;
+
+      /**
        *  @brief  記録を終了する
        */
       virtual void End() = 0;

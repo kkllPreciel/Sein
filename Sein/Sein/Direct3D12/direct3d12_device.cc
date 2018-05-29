@@ -181,16 +181,6 @@ namespace Sein
             descriptor_heaps_.resize(D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES);
           }
 
-          // 定数バッファビュー、シェーダーリソースビュー用ディスクリプターヒープを生成
-          {
-            D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDesc = {};
-            cbvHeapDesc.NumDescriptors = 5;                                 // ディスクリプターヒープ内のディスクリプター数(定数バッファ、シェーダーリソース)
-            cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;      // 定数バッファ or シェーダーリソース(テクスチャ) or ランダムアクセス のどれかのヒープ
-            cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;  // シェーダーからアクセス可
-
-            descriptor_heaps_[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV] = this->CreateDescriptorHeap(cbvHeapDesc);
-          }
-
           // 深度ステンシルビュー用ディスクリプターヒープを生成
           {
             D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
@@ -302,14 +292,15 @@ namespace Sein
           // 深度ステンシルビューをクリアする(深度バッファのみ)
           graphics_command_list.ClearDepthStencilView(dsvDescriptor.GetHandleForCPU(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
         }
-        
+
         /**
          *  @brief  描画する
          *  @param  command_list:コマンドリスト
-         *  @param  indexCount:頂点インデックス数
-         *  @param  instanceCount:インスタンス数
+         *  @param  descriptor_heap:ディスクリプターヒープ
+         *  @param  index_count:頂点インデックス数
+         *  @param  instance_count:インスタンス数
          */
-        void Render(ICommandList* const command_list, const unsigned int indexCount, const unsigned int instanceCount) override
+        void Render(ICommandList* const command_list, std::shared_ptr<IDescriptorHeap>& descriptor_heap, const std::uint32_t index_count, const std::uint32_t instance_count) override
         {
           // TODO:const_castの削除
           decltype(auto) graphics_command_list = const_cast<ID3D12GraphicsCommandList&>(command_list->Get());
@@ -342,18 +333,18 @@ namespace Sein
           // グラフィックスパイプラインのルートシグネチャを設定する
           root_signature_->SetGraphicsRootSignature(&graphics_command_list);
 
-          // 描画に使用するディスクリプターヒープを設定
-          auto& descriptor_heap = descriptor_heaps_[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV];
-          descriptor_heap->SetDescriptorHeaps(&graphics_command_list);
+          // ディスクリプターヒープの設定
+          descriptor_heap->SetDescriptorHeaps(command_list);
 
-          // ディスクリプータヒープテーブルを設定
-          // TODO:ディスクリプターテーブルの設定をディスクリプターヒープに移動する
-          graphics_command_list.SetGraphicsRootDescriptorTable(0, descriptor_heap->GetDescriptor(0).GetHandleForGPU());  // 定数バッファ用ディスクリプータヒープテーブル
-          graphics_command_list.SetGraphicsRootDescriptorTable(1, descriptor_heap->GetDescriptor(1).GetHandleForGPU());  // StructuredBuffer用ディスクリプータヒープテーブル
-          //graphics_command_list.SetGraphicsRootDescriptorTable(2, descriptor_heap->GetDescriptor(2).GetHandleForGPU());  // テクスチャ用ディスクリプータヒープテーブル
+          // ディスクリプータヒープテーブルを設定(TODO:ディスクリプターヒープに移動する)
+          // ルートパラメータとディスクリプターヒープの関連付け
+          // ディスクリプターヒープは上書きしても問題ない
+          command_list->SetGraphicsRootDescriptorTable(0, descriptor_heap->GetDescriptor(0).GetHandleForGPU());  // 定数バッファ用ディスクリプータヒープテーブル
+          command_list->SetGraphicsRootDescriptorTable(1, descriptor_heap->GetDescriptor(1).GetHandleForGPU());  // StructuredBuffer用ディスクリプータヒープテーブル
+          //store_command_list.SetGraphicsRootDescriptorTable(2, descriptor_heap->GetDescriptor(2).GetHandleForGPU());  // テクスチャ用ディスクリプータヒープテーブル
 
           // 描画コマンドの生成
-          graphics_command_list.DrawIndexedInstanced(indexCount, instanceCount, 0, 0, 0);
+          graphics_command_list.DrawIndexedInstanced(index_count, instance_count, 0, 0, 0);
         }
         
         /**
@@ -382,17 +373,6 @@ namespace Sein
           // 画面の更新
           swap_chain_->Present(1, 0);
         }
-        
-        /**
-         *  @brief  定数バッファを作成する
-         *  @param  size_in_bytes:定数バッファのサイズ
-         *  @return 定数バッファのユニークポインタ
-         */
-        std::unique_ptr<IConstantBuffer> CreateConstantBuffer(const std::uint32_t size_in_bytes) override
-        {
-          auto& descriptorHeap = descriptor_heaps_[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV];
-          return this->CreateConstantBuffer(descriptorHeap, size_in_bytes);
-        }
 
         /**
          *  @brief  定数バッファを作成する
@@ -405,14 +385,15 @@ namespace Sein
           auto& descriptor = descriptor_heap->CreateDescriptor();
           return IConstantBuffer::Create(device_.get(), descriptor.GetHandleForCPU(), size_in_bytes);
         }
-        
+
         /**
          *  @brief  シェーダーリソースバッファを作成する
+         *  @param  descriptor_heap:シェーダーリソースバッファを作成するディスクリプターヒープ
          *  @param  num:リソース内の要素数
          *  @param  size:リソース内の1要素のサイズ
          *  @return シェーダーリソースバッファのユニークポインタ
          */
-        std::unique_ptr<ShaderResourceBuffer> CreateShaderResourceBuffer(const unsigned int num, const unsigned int size) override
+        std::unique_ptr<ShaderResourceBuffer> CreateShaderResourceBuffer(std::shared_ptr<IDescriptorHeap>& descriptor_heap, const std::uint32_t num, const std::uint32_t size) override
         {
           // ヒープの設定
           D3D12_HEAP_PROPERTIES properties;
@@ -423,8 +404,7 @@ namespace Sein
           properties.VisibleNodeMask = 1;                               // 恐らくヒープが表示されるアダプター(GPU)の番号
 
           auto shaderResourceBuffer = std::make_unique<ShaderResourceBuffer>();
-          auto& descriptorHeap = descriptor_heaps_[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV];
-          auto& descriptor = descriptorHeap->CreateDescriptor();
+          auto& descriptor = descriptor_heap->CreateDescriptor();
           shaderResourceBuffer->Create(device_.get(), descriptor.GetHandleForCPU(), num, size);
 
           return shaderResourceBuffer;

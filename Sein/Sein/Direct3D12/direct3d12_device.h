@@ -66,10 +66,11 @@ namespace Sein
       /**
        *  @brief  描画する
        *  @param  command_list:コマンドリスト
-       *  @param  indexCount:頂点インデックス数
-       *  @param  instanceCount:インスタンス数
+       *  @param  descriptor_heap:ディスクリプターヒープ
+       *  @param  index_count:頂点インデックス数
+       *  @param  instance_count:インスタンス数
        */
-      virtual void Render(ICommandList* const command_list, const unsigned int indexCount, const unsigned int instanceCount) = 0;
+      virtual void Render(ICommandList* const command_list, std::shared_ptr<IDescriptorHeap>& descriptor_heap, const std::uint32_t index_count, const std::uint32_t instance_count) = 0;
 
       /**
        *  @brief  シーンを終了する
@@ -83,13 +84,6 @@ namespace Sein
 
       /**
        *  @brief  定数バッファを作成する
-       *  @param  size_in_bytes:定数バッファのサイズ
-       *  @return 定数バッファのユニークポインタ
-       */
-      virtual std::unique_ptr<IConstantBuffer> CreateConstantBuffer(const std::uint32_t size_in_bytes) = 0;
-
-      /**
-       *  @brief  定数バッファを作成する
        *  @param  descriptor_heap:定数バッファを作成するディスクリプターヒープ
        *  @param  size_in_bytes:定数バッファのサイズ
        *  @return 定数バッファのユニークポインタ
@@ -98,11 +92,12 @@ namespace Sein
 
       /**
        *  @brief  シェーダーリソースバッファを作成する
+       *  @param  descriptor_heap:シェーダーリソースバッファを作成するディスクリプターヒープ
        *  @param  num:リソース内の要素数
        *  @param  size:リソース内の1要素のサイズ
        *  @return シェーダーリソースバッファのユニークポインタ
        */
-      virtual std::unique_ptr<ShaderResourceBuffer> CreateShaderResourceBuffer(const unsigned int num, const unsigned int size) = 0;
+      virtual std::unique_ptr<ShaderResourceBuffer> CreateShaderResourceBuffer(std::shared_ptr<IDescriptorHeap>& descriptor_heap, const std::uint32_t num, const std::uint32_t size) = 0;
 
       /**
        *  @brief  深度ステンシルバッファを作成する

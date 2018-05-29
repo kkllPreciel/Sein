@@ -127,10 +127,10 @@ namespace Sein
          *  @brief  コマンドリストにディスクリプターヒープを設定する
          *  @param  command_list:コマンドリスト
          */
-        void SetDescriptorHeaps(ID3D12GraphicsCommandList* command_list) const override
+        void SetDescriptorHeaps(ICommandList* const command_list) const override
         {
           auto descriptor_heap = descriptor_heap_.get();
-          command_list->SetDescriptorHeaps(1, &descriptor_heap);
+          command_list->SetDescriptorHeaps(1, &(descriptor_heap));
         }
 
       private:

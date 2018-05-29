@@ -12,6 +12,7 @@
 #include <memory>
 #include <d3d12.h>
 #include "descriptor.h"
+#include "command_list.h"
 
 namespace Sein
 {
@@ -80,7 +81,7 @@ namespace Sein
        *  @brief  コマンドリストにディスクリプターヒープを設定する
        *  @param  command_list:コマンドリスト
        */
-      virtual void SetDescriptorHeaps(ID3D12GraphicsCommandList* command_list) const = 0;
+      virtual void SetDescriptorHeaps(ICommandList* const command_list) const = 0;
 
       /**
        *  @brief  ディスクリプターヒープを生成する

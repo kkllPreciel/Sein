@@ -59,15 +59,20 @@ namespace Sein
 
         /**
          *  @brief  マップする
-         *  @param  stride_in_bytes:1頂点のサイズ
+         *  @param  context:コンテキスト
+         *  @param  size_in_bytes:頂点配列のサイズ
          *  @param  vertices:頂点配列へのポインタ
          */
-        void Map(const std::uint32_t stride_in_bytes, const void* const vertices) override
+        void Map(ID3D11DeviceContext* const context, const std::uint32_t size_in_bytes, const void* const vertices) override
         {
-          //D3D11_MAPPED_SUBRESOURCE subresource;
-          //deviceContext->Map(vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
-          //memcpy(msr.pData, v, sizeof(Vector3) * 3); // 3頂点分コピー
-          //deviceContext->Unmap(vertexBuffer, 0);
+          D3D11_MAPPED_SUBRESOURCE mapped_buffer = {};
+          mapped_buffer.pData = nullptr;
+
+          buffer_->Map(context, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped_buffer);
+
+          std::memcpy(mapped_buffer.pData, vertices, size_in_bytes);
+
+          buffer_->Unmap(context, 0);
         }
 
         /**

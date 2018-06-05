@@ -44,6 +44,23 @@ namespace Sein
        *  @return 代入後のインスタンス
        */
       IBuffer& operator = (const IBuffer& other) = delete;
+
+      /**
+       *  @brief  マップする
+       *  @param  context:コンテキスト
+       *  @param  subresource:サブリソースのインデックス番号
+       *  @param  map_type:リソースに対するCPUのアクセス許可設定
+       *  @param  map_flags:GPUで使用中だった場合のCPUの対応方法
+       *  @param  mapped_resource:マップされたサブリソースへのポインタ
+       */
+      virtual void Map(ID3D11DeviceContext* const context, UINT subresource, D3D11_MAP map_type, UINT map_flags, D3D11_MAPPED_SUBRESOURCE* const mapped_resource) = 0;
+
+      /**
+       *  @brief  アンマップする
+       *  @param  context:コンテキスト
+       *  @param  subresource:アンマップするサブリソースのインデックス番号
+       */
+      virtual void Unmap(ID3D11DeviceContext* const context, UINT subresource) = 0;
       
       /**
        *  @brief  終了処理を行う

@@ -56,6 +56,29 @@ namespace Sein
         }
 
         /**
+         *  @brief  マップする
+         *  @param  context:コンテキスト
+         *  @param  subresource:サブリソースのインデックス番号
+         *  @param  map_type:リソースに対するCPUのアクセス許可設定
+         *  @param  map_flags:GPUで使用中だった場合のCPUの対応方法
+         *  @param  mapped_resource:マップされたサブリソースへのポインタ
+         */
+        void Map(ID3D11DeviceContext* const context, UINT subresource, D3D11_MAP map_type, UINT map_flags, D3D11_MAPPED_SUBRESOURCE* const mapped_resource) override
+        {
+          context->Map(buffer_.get(), subresource, map_type, map_flags, mapped_resource);
+        }
+
+        /**
+         *  @brief  アンマップする
+         *  @param  context:コンテキスト
+         *  @param  subresource:アンマップするサブリソースのインデックス番号
+         */
+        void Unmap(ID3D11DeviceContext* const context, UINT subresource) override
+        {
+          context->Unmap(buffer_.get(), subresource);
+        }
+
+        /**
          *  @brief  終了処理を行う
          */
         void Destroy() override

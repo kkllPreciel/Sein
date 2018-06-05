@@ -81,10 +81,10 @@
     <ClCompile Include="Sein\Direct3D12\rasterizer_desc.cc">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Sein\Direct3D11\direct3d11_device.cc">
+    <ClCompile Include="Sein\Direct3D11\direct3d11_buffer.cc">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Sein\Direct3D11\direct3d11_buffer.cc">
+    <ClCompile Include="Sein\Direct3D11\direct3d11_device.cc">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Sein\Direct3D11\direct3d11_vertex_buffer.cc">
@@ -167,10 +167,10 @@
     <ClInclude Include="Sein\Direct3D12\rasterizer_desc.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Sein\Direct3D11\direct3d11_device.h">
+    <ClInclude Include="Sein\Direct3D11\direct3d11_buffer.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Sein\Direct3D11\direct3d11_buffer.h">
+    <ClInclude Include="Sein\Direct3D11\direct3d11_device.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Sein\Direct3D11\direct3d11_vertex_buffer.h">

@@ -47,10 +47,11 @@ namespace Sein
 
       /**
        *  @brief  マップする
-       *  @param  stride_in_bytes:1頂点のサイズ
+       *  @param  context:コンテキスト
+       *  @param  size_in_bytes:頂点配列のサイズ
        *  @param  vertices:頂点配列へのポインタ
        */
-      virtual void Map(const std::uint32_t stride_in_bytes, const void* const vertices) = 0;
+      virtual void Map(ID3D11DeviceContext* const context, const std::uint32_t size_in_bytes, const void* const vertices) = 0;
       
       /**
        *  @brief  終了処理を行う

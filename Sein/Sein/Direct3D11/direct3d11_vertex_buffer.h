@@ -62,7 +62,7 @@ namespace Sein
        *  @brief  頂点バッファを作成する
        *  @param  device:Direct3D11のデバイス
        *  @param  size_in_bytes:頂点バッファのサイズ(頂点サイズ * 頂点数)
-       *  @return 頂点バッファへのユニークポインタ
+       *  @return 頂点バッファへのシェアードポインタ
        */
       static std::shared_ptr<IVertexBuffer> Create(ID3D11Device* const device, const std::uint32_t size_in_bytes);
     };

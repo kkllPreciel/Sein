@@ -29,7 +29,7 @@ namespace Sein
          */
         Device()
           : device_(nullptr, [](ID3D11Device* p) { p->Release(); }),
-          context_(nullptr, [](ID3D11DeviceContext* p) { p->Release(); }),
+          immediate_context_(nullptr, [](ID3D11DeviceContext* p) { p->Release(); }),
           swap_chain_(nullptr, [](IDXGISwapChain* p) { p->Release(); })
         {
 
@@ -49,7 +49,7 @@ namespace Sein
         void Destroy() override
         {
           swap_chain_.reset();
-          context_.reset();
+          immediate_context_.reset();
           device_.reset();
         }
 
@@ -118,7 +118,7 @@ namespace Sein
               &context)))
             {
               device_.reset(device);
-              context_.reset(context);
+              immediate_context_.reset(context);
               swap_chain_.reset(swap_chain);
               driver_type_ = driver_type;
 
@@ -126,18 +126,18 @@ namespace Sein
             }
           }
 
-          if (!device_ || !context_ || !swap_chain_)
+          if (!device_ || !immediate_context_ || !swap_chain_)
           {
             throw std::exception("デバイスの生成に失敗しました。");
           }
         }
 
       private:
-        std::unique_ptr<ID3D11Device, std::function<void(ID3D11Device*)>> device_;                ///< デバイス
-        std::unique_ptr<ID3D11DeviceContext, std::function<void(ID3D11DeviceContext*)>> context_; ///< コンテキスト
-        std::unique_ptr<IDXGISwapChain, std::function<void(IDXGISwapChain*)>> swap_chain_;        ///< スワップチェーン
-        D3D_DRIVER_TYPE driver_type_;                                                             ///< ドライバー種別
-        D3D_FEATURE_LEVEL feature_level_;                                                         ///< 機能レベル
+        std::unique_ptr<ID3D11Device, std::function<void(ID3D11Device*)>> device_;                          ///< デバイス
+        std::unique_ptr<ID3D11DeviceContext, std::function<void(ID3D11DeviceContext*)>> immediate_context_; ///< コンテキスト
+        std::unique_ptr<IDXGISwapChain, std::function<void(IDXGISwapChain*)>> swap_chain_;                  ///< スワップチェーン
+        D3D_DRIVER_TYPE driver_type_;                                                                       ///< ドライバー種別
+        D3D_FEATURE_LEVEL feature_level_;                                                                   ///< 機能レベル
       };
     };
 

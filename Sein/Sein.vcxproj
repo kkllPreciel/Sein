@@ -150,6 +150,7 @@
   <ItemGroup>
     <ClCompile Include="Sein\Direct3D11\direct3d11_buffer.cc" />
     <ClCompile Include="Sein\Direct3D11\direct3d11_device.cc" />
+    <ClCompile Include="Sein\Direct3D11\direct3d11_index_buffer.cc" />
     <ClCompile Include="Sein\Direct3D11\direct3d11_vertex_buffer.cc" />
     <ClCompile Include="Sein\Direct3D12\command_queue.cc" />
     <ClCompile Include="Sein\Direct3D12\buffer.cc" />
@@ -177,6 +178,7 @@
   <ItemGroup>
     <ClInclude Include="Sein\Direct3D11\direct3d11_buffer.h" />
     <ClInclude Include="Sein\Direct3D11\direct3d11_device.h" />
+    <ClInclude Include="Sein\Direct3D11\direct3d11_index_buffer.h" />
     <ClInclude Include="Sein\Direct3D11\direct3d11_vertex_buffer.h" />
     <ClInclude Include="Sein\Direct3D12\command_queue.h" />
     <ClInclude Include="Sein\Direct3D12\buffer.h" />

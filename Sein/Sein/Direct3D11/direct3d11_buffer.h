@@ -1,5 +1,5 @@
 /**
- *  @file     buffer.h
+ *  @file     direct3d11_buffer.h
  *  @brief    Direct3D11のバッファに関するヘッダファイル
  *  @author   kkllPreciel
  *  @date     2018/06/03

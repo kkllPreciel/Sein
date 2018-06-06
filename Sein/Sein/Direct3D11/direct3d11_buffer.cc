@@ -1,5 +1,5 @@
 /**
- *  @file     buffer.cc
+ *  @file     direct3d11_buffer.cc
  *  @brief    Direct3D11のバッファに関する処理を行うプログラムソース
  *  @author   kkllPreciel
  *  @date     2018/06/03

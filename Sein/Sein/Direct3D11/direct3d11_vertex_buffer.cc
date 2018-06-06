@@ -1,5 +1,5 @@
 /**
- *  @file     vertex_buffer.cc
+ *  @file     direct3d11_vertex_buffer.cc
  *  @brief    Direct3D11の頂点バッファに関する処理を行うプログラムソース
  *  @author   kkllPreciel
  *  @date     2018/06/03

@@ -1,5 +1,5 @@
 /**
- *  @file     index_buffer.h
+ *  @file     direct3d11_index_buffer.h
  *  @brief    Direct3D11のインデックスバッファに関するヘッダファイル
  *  @author   kkllPreciel
  *  @date     2018/06/05

@@ -98,6 +98,8 @@ namespace Sein
     {
       auto vertex_buffer = std::make_shared<VertexBuffer>();
 
+      vertex_buffer->Create(device, size_in_bytes);
+
       return vertex_buffer;
     }
   };

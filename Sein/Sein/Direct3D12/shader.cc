@@ -74,7 +74,7 @@ namespace Sein
       private:
         std::string file_path_;           ///< ファイルパス
         std::string shader_code_;         ///< シェーダーコード
-        D3D12_SHADER_BYTECODE bytecode_;  ///< シェーダーバイトコード        
+        D3D12_SHADER_BYTECODE bytecode_;  ///< シェーダーバイトコード
       };
     };
 

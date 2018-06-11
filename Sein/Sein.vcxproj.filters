@@ -99,6 +99,9 @@
     <ClCompile Include="Sein\Direct3D11\direct3d11_pipeline_state.cc">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Sein\Direct3D11\direct3d11_shader.cc">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sein\Direct3D12\constant_buffer.h">
@@ -192,6 +195,9 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Sein\Direct3D11\direct3d11_pipeline_state.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sein\Direct3D11\direct3d11_shader.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

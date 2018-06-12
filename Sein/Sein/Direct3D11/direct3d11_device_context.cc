@@ -44,7 +44,7 @@ namespace Sein
         void Create(ID3D11Device* const device, IDeviceContext::Type context_type)
         {
           ID3D11DeviceContext* context;
-          if (context_type == Type::DEFERRED)
+          if (context_type == Type::kDeferred)
           {
             device->CreateDeferredContext(0, &context);
           }

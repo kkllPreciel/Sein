@@ -26,12 +26,12 @@ namespace Sein
        *  @brief  シェーダー種別
        */
       enum class Type : std::uint32_t {
-        Vertex,   ///< 頂点シェーダー
-        Pixel,    ///< ピクセル(フラグメント)シェーダー
-        Geometry, ///< ジオメトリシェーダー
-        Hull,     ///< ハルシェーダー
-        Domain,   ///< ドメインシェーダー
-        Compute,  ///< コンピュートシェーダー
+        kVertex,    ///< 頂点シェーダー
+        kPixel,     ///< ピクセル(フラグメント)シェーダー
+        kGeometry,  ///< ジオメトリシェーダー
+        kHull,      ///< ハルシェーダー
+        kDomain,    ///< ドメインシェーダー
+        kCompute,   ///< コンピュートシェーダー
       };
 
       /**

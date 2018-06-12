@@ -59,22 +59,22 @@ namespace Sein
 
           switch (shader_desc.shader_type)
           {
-          case Type::Vertex:
+          case Type::kVertex:
             hr = device->CreateVertexShader(shader_desc.shader_bytecode, shader_desc.bytecode_size, nullptr, &vertex_shader);
             break;
-          case Type::Pixel:
+          case Type::kPixel:
             hr = device->CreatePixelShader(shader_desc.shader_bytecode, shader_desc.bytecode_size, nullptr, &pixel_shader);
             break;
-          case Type::Geometry:
+          case Type::kGeometry:
             hr = device->CreateGeometryShader(shader_desc.shader_bytecode, shader_desc.bytecode_size, nullptr, &geometry_shader);
             break;
-          case Type::Domain:
+          case Type::kDomain:
             hr = device->CreateDomainShader(shader_desc.shader_bytecode, shader_desc.bytecode_size, nullptr, &domain_shader);
             break;
-          case Type::Hull:
+          case Type::kHull:
             hr = device->CreateHullShader(shader_desc.shader_bytecode, shader_desc.bytecode_size, nullptr, &hull_shader);
             break;
-          case Type::Compute:
+          case Type::kCompute:
             hr = device->CreateComputeShader(shader_desc.shader_bytecode, shader_desc.bytecode_size, nullptr, &compute_shader);
             break;
           default:

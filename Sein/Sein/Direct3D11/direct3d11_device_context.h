@@ -26,8 +26,8 @@ namespace Sein
        *  @brief  コンテキストの種別
        */
       enum class Type : std::uint32_t {
-        IMMEDIATE,  ///< 即時
-        DEFERRED,   ///< 遅延
+        kImmediate, ///< 即時
+        kDeferred,  ///< 遅延
       };
 
       /**

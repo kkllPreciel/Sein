@@ -26,8 +26,8 @@ namespace Sein
        *  @brief  インデックスの型
        */
       enum class Type : std::uint32_t {
-        U_16BIT,
-        U_32BIT,
+        k16Bit,
+        k32Bit,
       };
 
       /**

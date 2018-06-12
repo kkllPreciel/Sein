@@ -78,15 +78,13 @@ namespace Sein
             hr = device->CreateComputeShader(shader_desc.shader_bytecode, shader_desc.bytecode_size, nullptr, &compute_shader);
             break;
           default:
-            // throw std::exception("違法なシェーダー種別です。:" + std::to_string(shader_desc.shader_type));
-            throw std::exception("違法なシェーダー種別です。");
+            throw std::exception(("違法なシェーダー種別です。:" + std::to_string(static_cast<std::uint32_t>(shader_desc.shader_type))).c_str());
             break;
           }
 
           if (FAILED(hr))
           {
-            // throw std::exception("シェーダーの作成に失敗しました。:" + std::to_string(shader_desc.shader_type));
-            throw std::exception("シェーダーの作成に失敗しました。");
+            throw std::exception(("シェーダーの作成に失敗しました。:" + std::to_string(static_cast<std::uint32_t>(shader_desc.shader_type))).c_str());
           }
 
           vertex_shader_.reset(vertex_shader);

@@ -200,5 +200,8 @@
     <ClInclude Include="Sein\Direct3D11\direct3d11_shader.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="Sein\Direct3D11\direct3d11_rasterizer_state.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

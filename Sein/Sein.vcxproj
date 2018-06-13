@@ -184,6 +184,7 @@
     <ClInclude Include="Sein\Direct3D11\direct3d11_device_context.h" />
     <ClInclude Include="Sein\Direct3D11\direct3d11_index_buffer.h" />
     <ClInclude Include="Sein\Direct3D11\direct3d11_pipeline_state.h" />
+    <ClInclude Include="Sein\Direct3D11\direct3d11_rasterizer_state.h" />
     <ClInclude Include="Sein\Direct3D11\direct3d11_shader.h" />
     <ClInclude Include="Sein\Direct3D11\direct3d11_vertex_buffer.h" />
     <ClInclude Include="Sein\Direct3D12\command_queue.h" />

@@ -47,16 +47,16 @@ namespace Sein
       class Desc
       {
       public:
-        FillMode fill_mode;             ///< 塗りつぶしの種別
-        CullMode cull_mode;             ///< カリングの種別
-        bool front_counter_clockwise;   ///< 反時計回り(左周り)の面を表とするフラグ
-        std::int32_t depth_bias;        ///< 指定のピクセルに加算するバイアス値
-        std::float_t depth_bias_clamp;
-        std::float_t slope_scaled_depth_bias;
-        bool depth_clip_enable;
-        bool scissor_enable;
-        bool multisample_enable;
-        bool antialiased_line_enable;
+        FillMode fill_mode = FillMode::kSolid;      ///< 塗りつぶしの種別
+        CullMode cull_mode = CullMode::kBack;       ///< カリングの種別
+        bool front_counter_clockwise = false;       ///< 反時計回り(左周り)の面を表とするフラグ
+        std::int32_t depth_bias = 0;                ///< 指定のピクセルに加算するバイアス値
+        std::float_t depth_bias_clamp = 0.f;        ///< ピクセルの最大深度バイアス値
+        std::float_t slope_scaled_depth_bias = 0.f; ///< 指定のピクセルのスロープに対するスカラ
+        bool depth_clip_enable = true;              ///< 距離に基づいたクリッピング有効フラグ
+        bool scissor_enable = false;                ///< シザーテスト有効フラグ
+        bool multisample_enable = false;            ///< マルチサンプリングのアンチエイリアシング有効フラグ
+        bool antialiased_line_enable = false;       ///< 線のアンチエイリアシング有効フラグ(multisample_enableが無効の場合のみ適用)
       };
 
       /**
@@ -94,7 +94,6 @@ namespace Sein
        *  @return ラスタライザステートへのシェアードポインタ
        */
       static std::shared_ptr<IRasterizerState> Create(ID3D11Device* const device, const Desc& desc);
-
     };
   };
 };

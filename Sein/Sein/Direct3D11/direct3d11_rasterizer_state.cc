@@ -102,7 +102,7 @@ namespace Sein
           direct3d11_rasterizer_desc.MultisampleEnable = desc.multisample_enable;
           direct3d11_rasterizer_desc.AntialiasedLineEnable = desc.antialiased_line_enable;
 
-          return direct3d11_rasterizer_desc;
+          return std::move(direct3d11_rasterizer_desc);
         }
 
         std::unique_ptr<ID3D11RasterizerState, std::function<void(ID3D11RasterizerState*)>> rasterizer_state_;  ///< ラスタライザステート

@@ -111,6 +111,9 @@
     <ClCompile Include="Sein\Direct3D11\direct3d11_depth_stencil_state.cc">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Sein\Direct3D11\direct3d11_input_layout.cc">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sein\Direct3D12\constant_buffer.h">
@@ -216,6 +219,9 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Sein\Direct3D11\direct3d11_depth_stencil_state.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sein\Direct3D11\direct3d11_input_layout.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

@@ -154,6 +154,7 @@
     <ClCompile Include="Sein\Direct3D11\direct3d11_device.cc" />
     <ClCompile Include="Sein\Direct3D11\direct3d11_device_context.cc" />
     <ClCompile Include="Sein\Direct3D11\direct3d11_index_buffer.cc" />
+    <ClCompile Include="Sein\Direct3D11\direct3d11_input_layout.cc" />
     <ClCompile Include="Sein\Direct3D11\direct3d11_pipeline_state.cc" />
     <ClCompile Include="Sein\Direct3D11\direct3d11_rasterizer_state.cc" />
     <ClCompile Include="Sein\Direct3D11\direct3d11_shader.cc" />
@@ -188,6 +189,7 @@
     <ClInclude Include="Sein\Direct3D11\direct3d11_device.h" />
     <ClInclude Include="Sein\Direct3D11\direct3d11_device_context.h" />
     <ClInclude Include="Sein\Direct3D11\direct3d11_index_buffer.h" />
+    <ClInclude Include="Sein\Direct3D11\direct3d11_input_layout.h" />
     <ClInclude Include="Sein\Direct3D11\direct3d11_pipeline_state.h" />
     <ClInclude Include="Sein\Direct3D11\direct3d11_rasterizer_state.h" />
     <ClInclude Include="Sein\Direct3D11\direct3d11_shader.h" />

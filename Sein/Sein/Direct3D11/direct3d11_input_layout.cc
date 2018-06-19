@@ -42,11 +42,12 @@ namespace Sein
          *  @brief  作成する
          *  @param  device:Direct3D11のデバイス
          *  @param  input_layout_desc_list:入力レイアウトの設定
+         *  @param  shader_desc:シェーダーの設定
          */
-        void Create(ID3D11Device* const device, const std::vector<D3D11_INPUT_ELEMENT_DESC>& input_layout_desc_list)
+        void Create(ID3D11Device* const device, const std::vector<D3D11_INPUT_ELEMENT_DESC>& input_layout_desc_list, const IShader::Desc& shader_desc)
         {
           ID3D11InputLayout* input_layout;
-          if (FAILED(device->CreateInputLayout(input_layout_desc_list.data(), input_layout_desc_list.size(), nullptr, nullptr, &input_layout)))
+          if (FAILED(device->CreateInputLayout(input_layout_desc_list.data(), static_cast<UINT>(input_layout_desc_list.size()), shader_desc.shader_bytecode, shader_desc.bytecode_size, &input_layout)))
           {
             throw std::exception("インプットレイアウトの作成に失敗しました。");
           }
@@ -73,13 +74,14 @@ namespace Sein
      *  @brief  入力レイアウトを作成する
      *  @param  device:Direct3D11のデバイス
      *  @param  input_layout_desc_list:入力レイアウトの設定
+     *  @param  shader_desc:シェーダーの設定
      *  @return 入力レイアウトへのシェアードポインタ
      */
-    std::shared_ptr<IInputLayout> IInputLayout::Create(ID3D11Device* const device, const std::vector<D3D11_INPUT_ELEMENT_DESC>& input_layout_desc_list)
+    std::shared_ptr<IInputLayout> IInputLayout::Create(ID3D11Device* const device, const std::vector<D3D11_INPUT_ELEMENT_DESC>& input_layout_desc_list, const IShader::Desc& shader_desc)
     {
       auto input_layout = std::make_shared<InputLayout>();
 
-      input_layout->Create(device, input_layout_desc_list);
+      input_layout->Create(device, input_layout_desc_list, shader_desc);
 
       return input_layout;
     }

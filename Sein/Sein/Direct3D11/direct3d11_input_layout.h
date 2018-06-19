@@ -13,6 +13,8 @@
 #include <vector>
 #include <d3d11.h>
 
+#include "direct3d11_shader.h"
+
 namespace Sein
 {
   namespace Direct3D11
@@ -55,9 +57,10 @@ namespace Sein
        *  @brief  入力レイアウトを作成する
        *  @param  device:Direct3D11のデバイス
        *  @param  input_layout_desc_list:入力レイアウトの設定
+       *  @param  shader_desc:シェーダーの設定
        *  @return 入力レイアウトへのシェアードポインタ
        */
-      static std::shared_ptr<IInputLayout> Create(ID3D11Device* const device, const std::vector<D3D11_INPUT_ELEMENT_DESC>& input_layout_desc_list);
+      static std::shared_ptr<IInputLayout> Create(ID3D11Device* const device, const std::vector<D3D11_INPUT_ELEMENT_DESC>& input_layout_desc_list, const IShader::Desc& shader_desc);
     };
   };
 };

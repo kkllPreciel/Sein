@@ -10,6 +10,8 @@
 #include "direct3d11_pipeline_state.h"
 #include <functional>
 
+#include "direct3d11_input_layout.h"
+
 namespace Sein
 {
   namespace Direct3D11
@@ -25,12 +27,7 @@ namespace Sein
         /**
          *  @brief  コンストラクタ
          */
-        PipelineState() :
-          blend_state_(nullptr, [](ID3D11BlendState* p) { p->Release(); }), rasterizer_state_(nullptr, [](ID3D11RasterizerState* p) { p->Release(); }),
-          depth_stencil_state_(nullptr, [](ID3D11DepthStencilState* p) { p->Release(); }), input_layout_(nullptr, [](ID3D11InputLayout* p) { p->Release(); }),
-          vertex_shader_(nullptr, [](ID3D11VertexShader* p) { p->Release(); }), pixel_shader_(nullptr, [](ID3D11PixelShader* p) { p->Release(); }),
-          geometry_shader_(nullptr, [](ID3D11GeometryShader* p) {p->Release(); }), domain_shader_(nullptr, [](ID3D11DomainShader* p) {p->Release(); }),
-          hull_shader_(nullptr, [](ID3D11HullShader* p) {p->Release(); }), compute_shader_(nullptr, [](ID3D11ComputeShader* p) {p->Release(); })
+        PipelineState()
         {
 
         }
@@ -41,6 +38,16 @@ namespace Sein
         ~PipelineState() override
         {
           Destroy();
+        }
+
+        /**
+         *  @brief  作成する
+         *  @param  device:Direct3D11のデバイス
+         *  @param  desc:パイプラインの設定
+         */
+        void Create(ID3D11Device* const device, const Desc& desc)
+        {
+
         }
         
         /**
@@ -61,29 +68,30 @@ namespace Sein
         }
 
       private:
-        std::unique_ptr<ID3D11BlendState, std::function<void(ID3D11BlendState*)>> blend_state_;                       ///< ブレンドステート
-        std::unique_ptr<ID3D11RasterizerState, std::function<void(ID3D11RasterizerState*)>> rasterizer_state_;        ///< ラスタライザーステート
-        std::unique_ptr<ID3D11DepthStencilState, std::function<void(ID3D11DepthStencilState*)>> depth_stencil_state_; ///< 深度ステンシルステート
-        std::unique_ptr<ID3D11InputLayout, std::function<void(ID3D11InputLayout*)>> input_layout_;                    ///< インプットレイアウト
-        std::unique_ptr<ID3D11VertexShader, std::function<void(ID3D11VertexShader*)>> vertex_shader_;                 ///< 頂点シェーダー
-        std::unique_ptr<ID3D11PixelShader, std::function<void(ID3D11PixelShader*)>> pixel_shader_;                    ///< ピクセルシェーダー
-        std::unique_ptr<ID3D11GeometryShader, std::function<void(ID3D11GeometryShader*)>> geometry_shader_;           ///< ジオメトリシェーダー
-        std::unique_ptr<ID3D11DomainShader, std::function<void(ID3D11DomainShader*)>> domain_shader_;                 ///< ドメインシェーダー
-        std::unique_ptr<ID3D11HullShader, std::function<void(ID3D11HullShader*)>> hull_shader_;                       ///< ハルシェーダー
-        std::unique_ptr<ID3D11ComputeShader, std::function<void(ID3D11ComputeShader*)>> compute_shader_;              ///< コンピュートシェーダー
+        std::shared_ptr<IBlendState> blend_state_ = nullptr;                ///< ブレンドステート
+        std::shared_ptr<IRasterizerState> rasterizer_state_ = nullptr;      ///< ラスタライザステート
+        std::shared_ptr<IDepthStencilState> depth_stencil_state_ = nullptr; ///< 深度ステンシルステート
+        std::shared_ptr<IInputLayout> input_layout_ = nullptr;              ///< 入力レイアウト
+        std::shared_ptr<IShader> vertex_shader_ = nullptr;                  ///< 頂点シェーダー
+        std::shared_ptr<IShader> pixel_shader_ = nullptr;                   ///< ピクセルシェーダー
+        std::shared_ptr<IShader> geometry_shader_ = nullptr;                ///< ジオメトリシェーダー
+        std::shared_ptr<IShader> domain_shader_ = nullptr;                  ///< ドメインシェーダー
+        std::shared_ptr<IShader> hull_shader_ = nullptr;                    ///< ハルシェーダー
+        std::shared_ptr<IShader> compute_shader_ = nullptr;                 ///< コンピュートシェーダー
       };
     };
 
     /**
      *  @brief  パイプラインステートを作成する
      *  @param  device:Direct3D11のデバイス
+     *  @param  desc:パイプラインの設定
      *  @return パイプラインステートへのシェアードポインタ
      */
-    std::shared_ptr<IPipelineState> IPipelineState::Create(ID3D11Device* const device)
+    std::shared_ptr<IPipelineState> IPipelineState::Create(ID3D11Device* const device, const Desc& desc)
     {
       auto pipeline_state = std::make_shared<PipelineState>();
 
-      // TODO:生成処理
+      pipeline_state->Create(device, desc);
 
       return pipeline_state;
     }

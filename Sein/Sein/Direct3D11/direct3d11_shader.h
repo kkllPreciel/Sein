@@ -67,6 +67,11 @@ namespace Sein
        *  @return 代入後のインスタンス
        */
       IShader& operator = (const IShader& other) = delete;
+
+      /**
+       *  @brief  シェーダーの設定を取得する
+       */
+      virtual const Desc& GetDesc() = 0;
       
       /**
        *  @brief  終了処理を行う

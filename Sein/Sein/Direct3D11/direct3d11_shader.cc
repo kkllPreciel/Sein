@@ -97,6 +97,14 @@ namespace Sein
         }
 
         /**
+         *  @brief  シェーダーの設定を取得する
+         */
+        const Desc& GetDesc() override
+        {
+          return desc_;
+        }
+
+        /**
          *  @brief  終了処理を行う
          */
         void Destroy() override

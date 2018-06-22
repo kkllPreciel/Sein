@@ -27,7 +27,7 @@ namespace Sein
         /**
          *  @brief  コンストラクタ
          */
-        PipelineState()
+        PipelineState() : desc_()
         {
 
         }
@@ -47,7 +47,30 @@ namespace Sein
          */
         void Create(ID3D11Device* const device, const Desc& desc)
         {
+          blend_state_ = IBlendState::Create(device, desc.blend_desc);
+          rasterizer_state_ = IRasterizerState::Create(device, desc.rasterizer_desc);
+          depth_stencil_state_ = IDepthStencilState::Create(device, desc.depth_stencil_desc);
 
+          if (desc.vertex_shader)
+          {
+            input_layout_ = IInputLayout::Create(device, desc.input_element_desc_list, desc.vertex_shader->GetDesc());
+          }
+          else if (desc.compute_shader)
+          {
+            input_layout_ = IInputLayout::Create(device, desc.input_element_desc_list, desc.compute_shader->GetDesc());
+          }
+          else
+          {
+            throw std::exception("頂点シェーダー、コンピュートシェーダーのどちらも設定されていません。");
+          }
+
+          vertex_shader_ = desc.vertex_shader;
+          pixel_shader_ = desc.pixel_shader;
+          geometry_shader_ = desc.geometry_shader;
+          domain_shader_ = desc.domain_shader;
+          hull_shader_ = desc.hull_shader;
+          compute_shader_ = desc.compute_shader;
+          desc_ = desc;
         }
         
         /**
@@ -78,6 +101,7 @@ namespace Sein
         std::shared_ptr<IShader> domain_shader_ = nullptr;                  ///< ドメインシェーダー
         std::shared_ptr<IShader> hull_shader_ = nullptr;                    ///< ハルシェーダー
         std::shared_ptr<IShader> compute_shader_ = nullptr;                 ///< コンピュートシェーダー
+        Desc desc_;                                                         ///< パイプラインの設定
       };
     };
 

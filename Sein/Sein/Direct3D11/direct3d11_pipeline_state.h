@@ -38,12 +38,12 @@ namespace Sein
         IBlendState::Desc blend_desc;                                   ///< ブレンドの設定
         D3D11_DEPTH_STENCIL_DESC depth_stencil_desc;                    ///< 深度ステンシルの設定
         std::vector<D3D11_INPUT_ELEMENT_DESC> input_element_desc_list;  ///< 入力レイアウトの設定
-        std::shared_ptr<IShader>& vertex_shader;                        ///< 頂点シェーダー
-        std::shared_ptr<IShader>& pixel_shader;                         ///< ピクセルシェーダー
-        std::shared_ptr<IShader>& geometry_shader;                      ///< ジオメトリシェーダー
-        std::shared_ptr<IShader>& domain_shader;                        ///< ドメインシェーダー
-        std::shared_ptr<IShader>& hull_shader;                          ///< ハルシェーダー
-        std::shared_ptr<IShader>& compute_shader;                       ///< コンピュートシェーダー
+        std::shared_ptr<IShader> vertex_shader;                         ///< 頂点シェーダー
+        std::shared_ptr<IShader> pixel_shader;                          ///< ピクセルシェーダー
+        std::shared_ptr<IShader> geometry_shader;                       ///< ジオメトリシェーダー
+        std::shared_ptr<IShader> domain_shader;                         ///< ドメインシェーダー
+        std::shared_ptr<IShader> hull_shader;                           ///< ハルシェーダー
+        std::shared_ptr<IShader> compute_shader;                        ///< コンピュートシェーダー
       };
 
       /**

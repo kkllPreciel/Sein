@@ -13,6 +13,8 @@
 #include <vector>
 #include <d3d11.h>
 
+#include "direct3d11_device_context.h"
+
 namespace Sein
 {
   namespace Direct3D11
@@ -50,6 +52,13 @@ namespace Sein
        *  @brief  終了処理を行う
        */
       virtual void Destroy() = 0;
+
+      /**
+       *  @brief  デバイスコンテキストを作成する
+       *  @param  context_type:デバイスコンテキストの種別
+       *  @return デバイスコンテキスト用インターフェースへのシェアードポインタ
+       */
+      virtual std::shared_ptr<IDeviceContext> CreateDeviceContext(IDeviceContext::Type context_type) = 0;
 
       /**
        *  @brief  デバイスを作成する

@@ -132,6 +132,16 @@ namespace Sein
           }
         }
 
+        /**
+         *  @brief  デバイスコンテキストを作成する
+         *  @param  context_type:デバイスコンテキストの種別
+         *  @return デバイスコンテキスト用インターフェースへのシェアードポインタ
+         */
+        std::shared_ptr<IDeviceContext> CreateDeviceContext(IDeviceContext::Type context_type) override
+        {
+          return IDeviceContext::Create(device_.get(), context_type);
+        }
+
       private:
         std::unique_ptr<ID3D11Device, std::function<void(ID3D11Device*)>> device_;                          ///< デバイス
         std::unique_ptr<ID3D11DeviceContext, std::function<void(ID3D11DeviceContext*)>> immediate_context_; ///< コンテキスト

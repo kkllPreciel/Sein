@@ -14,6 +14,7 @@
 #include <d3d11.h>
 
 #include "direct3d11_device_context.h"
+#include "direct3d11_pipeline_state.h"
 
 namespace Sein
 {
@@ -59,6 +60,13 @@ namespace Sein
        *  @return デバイスコンテキスト用インターフェースへのシェアードポインタ
        */
       virtual std::shared_ptr<IDeviceContext> CreateDeviceContext(IDeviceContext::Type context_type) = 0;
+
+      /**
+       *  @brief  パイプラインステートを作成する
+       *  @param  pipeline_desc:パイプラインの設定
+       *  @return パイプラインステート用インターフェースへのシェアードポインタ
+       */
+      virtual std::shared_ptr<IPipelineState> CreatePipelineState(IPipelineState::Desc pipeline_desc) = 0;
 
       /**
        *  @brief  デバイスを作成する

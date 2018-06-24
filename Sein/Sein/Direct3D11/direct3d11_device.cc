@@ -142,6 +142,16 @@ namespace Sein
           return IDeviceContext::Create(device_.get(), context_type);
         }
 
+        /**
+         *  @brief  パイプラインステートを作成する
+         *  @param  pipeline_desc:パイプラインの設定
+         *  @return パイプラインステート用インターフェースへのシェアードポインタ
+         */
+        std::shared_ptr<IPipelineState> CreatePipelineState(IPipelineState::Desc pipeline_desc) override
+        {
+          return IPipelineState::Create(device_.get(), pipeline_desc);
+        }
+
       private:
         std::unique_ptr<ID3D11Device, std::function<void(ID3D11Device*)>> device_;                          ///< デバイス
         std::unique_ptr<ID3D11DeviceContext, std::function<void(ID3D11DeviceContext*)>> immediate_context_; ///< コンテキスト

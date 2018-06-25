@@ -15,6 +15,7 @@
 
 #include "direct3d11_device_context.h"
 #include "direct3d11_pipeline_state.h"
+#include "direct3d11_shader.h"
 
 namespace Sein
 {
@@ -67,6 +68,13 @@ namespace Sein
        *  @return パイプラインステート用インターフェースへのシェアードポインタ
        */
       virtual std::shared_ptr<IPipelineState> CreatePipelineState(IPipelineState::Desc pipeline_desc) = 0;
+
+      /**
+       *  @brief  シェーダーを作成する
+       *  @param  shader_desc:シェーダーの設定
+       *  @return シェーダー用インターフェースへのシェアードポインタ
+       */
+      virtual std::shared_ptr<IShader> CreateShader(const IShader::Desc& shader_desc) = 0;
 
       /**
        *  @brief  デバイスを作成する

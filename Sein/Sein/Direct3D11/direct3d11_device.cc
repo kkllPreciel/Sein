@@ -152,6 +152,16 @@ namespace Sein
           return IPipelineState::Create(device_.get(), pipeline_desc);
         }
 
+        /**
+         *  @brief  シェーダーを作成する
+         *  @param  shader_desc:シェーダーの設定
+         *  @return シェーダー用インターフェースへのシェアードポインタ
+         */
+        std::shared_ptr<IShader> CreateShader(const IShader::Desc& shader_desc) override
+        {
+          return IShader::Create(device_.get(), shader_desc);
+        }
+
       private:
         std::unique_ptr<ID3D11Device, std::function<void(ID3D11Device*)>> device_;                          ///< デバイス
         std::unique_ptr<ID3D11DeviceContext, std::function<void(ID3D11DeviceContext*)>> immediate_context_; ///< コンテキスト

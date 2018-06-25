@@ -59,7 +59,7 @@ namespace Sein
          *  @param  width:ウィンドウの横幅
          *  @param  height:ウィンドウの縦幅
          */
-        void Create(const HWND handle, const std::uint32_t width, const std::uint32_t height)
+        void Create(const HWND& handle, const std::uint32_t& width, const std::uint32_t& height)
         {
           assert(device_ == nullptr);
 
@@ -137,7 +137,7 @@ namespace Sein
          *  @param  context_type:デバイスコンテキストの種別
          *  @return デバイスコンテキスト用インターフェースへのシェアードポインタ
          */
-        std::shared_ptr<IDeviceContext> CreateDeviceContext(IDeviceContext::Type context_type) override
+        std::shared_ptr<IDeviceContext> CreateDeviceContext(const IDeviceContext::Type& context_type) override
         {
           return IDeviceContext::Create(device_.get(), context_type);
         }
@@ -147,7 +147,7 @@ namespace Sein
          *  @param  pipeline_desc:パイプラインの設定
          *  @return パイプラインステート用インターフェースへのシェアードポインタ
          */
-        std::shared_ptr<IPipelineState> CreatePipelineState(IPipelineState::Desc pipeline_desc) override
+        std::shared_ptr<IPipelineState> CreatePipelineState(const IPipelineState::Desc& pipeline_desc) override
         {
           return IPipelineState::Create(device_.get(), pipeline_desc);
         }
@@ -177,7 +177,7 @@ namespace Sein
      *  @param  width:ウィンドウの横幅
      *  @param  height:ウィンドウの縦幅
      */
-    std::shared_ptr<IDevice> IDevice::Create(HWND handle, std::uint32_t width, std::uint32_t height)
+    std::shared_ptr<IDevice> IDevice::Create(const HWND& handle, const std::uint32_t& width, const std::uint32_t& height)
     {
       auto device = std::make_shared<Device>();
     

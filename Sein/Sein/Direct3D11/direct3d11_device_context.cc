@@ -41,7 +41,7 @@ namespace Sein
          *  @param  context_type:デバイスコンテキストの種別
          *  @param  type:インデックスの型
          */
-        void Create(ID3D11Device* const device, IDeviceContext::Type context_type)
+        void Create(ID3D11Device* const device, const IDeviceContext::Type& context_type)
         {
           ID3D11DeviceContext* context;
           if (context_type == Type::kDeferred)
@@ -78,7 +78,7 @@ namespace Sein
      *  @param  context_type:デバイスコンテキストの種別
      *  @return デバイスコンテキストへのシェアードポインタ
      */
-    std::shared_ptr<IDeviceContext> IDeviceContext::Create(ID3D11Device* const device, IDeviceContext::Type context_type)
+    std::shared_ptr<IDeviceContext> IDeviceContext::Create(ID3D11Device* const device, const IDeviceContext::Type& context_type)
     {
       auto device_context = std::make_shared<DeviceContext>();
 

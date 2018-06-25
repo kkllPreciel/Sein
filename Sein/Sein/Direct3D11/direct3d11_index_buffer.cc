@@ -45,7 +45,7 @@ namespace Sein
          *  @param  size_in_bytes:インデックス配列のサイズ
          *  @param  type:インデックスの型
          */
-        void Create(ID3D11Device* const device, const std::uint32_t size_in_bytes, Type type)
+        void Create(ID3D11Device* const device, const std::uint32_t& size_in_bytes, const Type& type)
         {
           D3D11_BUFFER_DESC buffer_desc = {};
           buffer_desc.ByteWidth = size_in_bytes;                ///< バッファのサイズ
@@ -66,7 +66,7 @@ namespace Sein
          *  @param  size_in_bytes:インデックス配列のサイズ
          *  @param  indices:インデックス配列へのポインタ
          */
-        void Map(ID3D11DeviceContext* const context, const std::uint32_t size_in_bytes, const void* const indices) override
+        void Map(ID3D11DeviceContext* const context, const std::uint32_t& size_in_bytes, const void* const indices) override
         {
           D3D11_MAPPED_SUBRESOURCE mapped_buffer = {};
           mapped_buffer.pData = nullptr;
@@ -99,7 +99,7 @@ namespace Sein
      *  @param  index_type:インデックスの型
      *  @return インデックスバッファへのシェアードポインタ
      */
-    std::shared_ptr<IIndexBuffer> IIndexBuffer::Create(ID3D11Device* const device, const std::uint32_t size_in_bytes, IIndexBuffer::Type index_type)
+    std::shared_ptr<IIndexBuffer> IIndexBuffer::Create(ID3D11Device* const device, const std::uint32_t& size_in_bytes, const IIndexBuffer::Type& index_type)
     {
       auto index_buffer = std::make_shared<IndexBuffer>();
 

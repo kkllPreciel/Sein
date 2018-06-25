@@ -59,7 +59,7 @@ namespace Sein
        *  @param  size_in_bytes:インデックス配列のサイズ
        *  @param  indices:インデックス配列へのポインタ
        */
-      virtual void Map(ID3D11DeviceContext* const context, const std::uint32_t size_in_bytes, const void* const indices) = 0;
+      virtual void Map(ID3D11DeviceContext* const context, const std::uint32_t& size_in_bytes, const void* const indices) = 0;
       
       /**
        *  @brief  終了処理を行う
@@ -73,7 +73,7 @@ namespace Sein
        *  @param  index_type:インデックスの型
        *  @return インデックスバッファへのシェアードポインタ
        */
-      static std::shared_ptr<IIndexBuffer> Create(ID3D11Device* const device, const std::uint32_t size_in_bytes, IIndexBuffer::Type index_type);
+      static std::shared_ptr<IIndexBuffer> Create(ID3D11Device* const device, const std::uint32_t& size_in_bytes, const IIndexBuffer::Type& index_type);
     };
   };
 };

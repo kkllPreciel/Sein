@@ -60,14 +60,14 @@ namespace Sein
        *  @param  context_type:デバイスコンテキストの種別
        *  @return デバイスコンテキスト用インターフェースへのシェアードポインタ
        */
-      virtual std::shared_ptr<IDeviceContext> CreateDeviceContext(IDeviceContext::Type context_type) = 0;
+      virtual std::shared_ptr<IDeviceContext> CreateDeviceContext(const IDeviceContext::Type& context_type) = 0;
 
       /**
        *  @brief  パイプラインステートを作成する
        *  @param  pipeline_desc:パイプラインの設定
        *  @return パイプラインステート用インターフェースへのシェアードポインタ
        */
-      virtual std::shared_ptr<IPipelineState> CreatePipelineState(IPipelineState::Desc pipeline_desc) = 0;
+      virtual std::shared_ptr<IPipelineState> CreatePipelineState(const IPipelineState::Desc& pipeline_desc) = 0;
 
       /**
        *  @brief  シェーダーを作成する
@@ -83,7 +83,7 @@ namespace Sein
        *  @param  height:ウィンドウの縦幅
        *  @return デバイス用インターフェイスへのシェアードポインタ
        */
-      static std::shared_ptr<IDevice> Create(const HWND handle, const std::uint32_t width, const std::uint32_t height);
+      static std::shared_ptr<IDevice> Create(const HWND& handle, const std::uint32_t& width, const std::uint32_t& height);
     };
   };
 };

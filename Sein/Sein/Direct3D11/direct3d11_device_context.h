@@ -64,7 +64,7 @@ namespace Sein
        *  @param  context_type:デバイスコンテキストの種別
        *  @return デバイスコンテキストへのシェアードポインタ
        */
-      static std::shared_ptr<IDeviceContext> Create(ID3D11Device* const device, IDeviceContext::Type context_type);
+      static std::shared_ptr<IDeviceContext> Create(ID3D11Device* const device, const IDeviceContext::Type& context_type);
     };
   };
 };

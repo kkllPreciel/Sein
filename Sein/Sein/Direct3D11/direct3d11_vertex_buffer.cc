@@ -63,7 +63,7 @@ namespace Sein
          *  @param  size_in_bytes:頂点配列のサイズ
          *  @param  vertices:頂点配列へのポインタ
          */
-        void Map(ID3D11DeviceContext* const context, const std::uint32_t size_in_bytes, const void* const vertices) override
+        void Map(ID3D11DeviceContext* const context, const std::uint32_t& size_in_bytes, const void* const vertices) override
         {
           D3D11_MAPPED_SUBRESOURCE mapped_buffer = {};
           mapped_buffer.pData = nullptr;
@@ -94,7 +94,7 @@ namespace Sein
      *  @param  size_in_bytes:頂点バッファのサイズ(頂点サイズ * 頂点数)
      *  @return 頂点バッファへのユニークポインタ
      */
-    std::shared_ptr<IVertexBuffer> IVertexBuffer::Create(ID3D11Device* const device, const std::uint32_t size_in_bytes)
+    std::shared_ptr<IVertexBuffer> IVertexBuffer::Create(ID3D11Device* const device, const std::uint32_t& size_in_bytes)
     {
       auto vertex_buffer = std::make_shared<VertexBuffer>();
 

@@ -17,6 +17,7 @@
 #include "direct3d11_pipeline_state.h"
 #include "direct3d11_shader.h"
 #include "direct3d11_vertex_buffer.h"
+#include "direct3d11_index_buffer.h"
 
 namespace Sein
 {
@@ -83,6 +84,14 @@ namespace Sein
        *  @return 頂点バッファへのスマートポインタ
        */
       virtual std::shared_ptr<IVertexBuffer> CreateVertexBuffer(const std::uint32_t& size_in_bytes) = 0;
+
+      /**
+       *  @brief  インデックスバッファを作成する
+       *  @param  size_in_bytes:インデックスバッファのサイズ(インデックスサイズ * インデックス数)
+       *  @param  index_type:インデックスの型
+       *  @return インデックスバッファへのスマートポインタ
+       */
+      virtual std::shared_ptr<IIndexBuffer> CreateIndexBuffer(const std::uint32_t& size_in_bytes, const IIndexBuffer::Type& index_type) = 0;
 
       /**
        *  @brief  デバイスを作成する

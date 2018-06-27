@@ -172,6 +172,17 @@ namespace Sein
           return IVertexBuffer::Create(device_.get(), size_in_bytes);
         }
 
+        /**
+         *  @brief  インデックスバッファを作成する
+         *  @param  size_in_bytes:インデックスバッファのサイズ(インデックスサイズ * インデックス数)
+         *  @param  index_type:インデックスの型
+         *  @return インデックスバッファへのスマートポインタ
+         */
+        std::shared_ptr<IIndexBuffer> CreateIndexBuffer(const std::uint32_t& size_in_bytes, const IIndexBuffer::Type& index_type) override
+        {
+          return IIndexBuffer::Create(device_.get(), size_in_bytes, index_type);
+        }
+
       private:
         std::unique_ptr<ID3D11Device, std::function<void(ID3D11Device*)>> device_;                          ///< デバイス
         std::unique_ptr<ID3D11DeviceContext, std::function<void(ID3D11DeviceContext*)>> immediate_context_; ///< コンテキスト

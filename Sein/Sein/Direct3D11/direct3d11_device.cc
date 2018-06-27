@@ -135,7 +135,7 @@ namespace Sein
         /**
          *  @brief  デバイスコンテキストを作成する
          *  @param  context_type:デバイスコンテキストの種別
-         *  @return デバイスコンテキスト用インターフェースへのシェアードポインタ
+         *  @return デバイスコンテキストへのスマートポインタ
          */
         std::shared_ptr<IDeviceContext> CreateDeviceContext(const IDeviceContext::Type& context_type) override
         {
@@ -145,7 +145,7 @@ namespace Sein
         /**
          *  @brief  パイプラインステートを作成する
          *  @param  pipeline_desc:パイプラインの設定
-         *  @return パイプラインステート用インターフェースへのシェアードポインタ
+         *  @return パイプラインステートへのスマートポインタ
          */
         std::shared_ptr<IPipelineState> CreatePipelineState(const IPipelineState::Desc& pipeline_desc) override
         {
@@ -155,7 +155,7 @@ namespace Sein
         /**
          *  @brief  シェーダーを作成する
          *  @param  shader_desc:シェーダーの設定
-         *  @return シェーダー用インターフェースへのシェアードポインタ
+         *  @return シェーダーへのスマートポインタ
          */
         std::shared_ptr<IShader> CreateShader(const IShader::Desc& shader_desc) override
         {
@@ -197,6 +197,7 @@ namespace Sein
      *  @param  handle:ウィンドウハンドル
      *  @param  width:ウィンドウの横幅
      *  @param  height:ウィンドウの縦幅
+     *  @return デバイスへのスマートポインタ
      */
     std::shared_ptr<IDevice> IDevice::Create(const HWND& handle, const std::uint32_t& width, const std::uint32_t& height)
     {

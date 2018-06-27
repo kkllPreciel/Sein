@@ -16,6 +16,7 @@
 #include "direct3d11_device_context.h"
 #include "direct3d11_pipeline_state.h"
 #include "direct3d11_shader.h"
+#include "direct3d11_vertex_buffer.h"
 
 namespace Sein
 {
@@ -75,6 +76,13 @@ namespace Sein
        *  @return シェーダー用インターフェースへのシェアードポインタ
        */
       virtual std::shared_ptr<IShader> CreateShader(const IShader::Desc& shader_desc) = 0;
+
+      /**
+       *  @brief  頂点バッファを作成する
+       *  @param  size_in_bytes:頂点バッファのサイズ(頂点サイズ * 頂点数)
+       *  @return 頂点バッファへのスマートポインタ
+       */
+      virtual std::shared_ptr<IVertexBuffer> CreateVertexBuffer(const std::uint32_t& size_in_bytes) = 0;
 
       /**
        *  @brief  デバイスを作成する

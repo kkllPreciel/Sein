@@ -162,6 +162,16 @@ namespace Sein
           return IShader::Create(device_.get(), shader_desc);
         }
 
+        /**
+         *  @brief  頂点バッファを作成する
+         *  @param  size_in_bytes:頂点バッファのサイズ(頂点サイズ * 頂点数)
+         *  @return 頂点バッファへのスマートポインタ
+         */
+        std::shared_ptr<IVertexBuffer> CreateVertexBuffer(const std::uint32_t& size_in_bytes) override
+        {
+          return IVertexBuffer::Create(device_.get(), size_in_bytes);
+        }
+
       private:
         std::unique_ptr<ID3D11Device, std::function<void(ID3D11Device*)>> device_;                          ///< デバイス
         std::unique_ptr<ID3D11DeviceContext, std::function<void(ID3D11DeviceContext*)>> immediate_context_; ///< コンテキスト

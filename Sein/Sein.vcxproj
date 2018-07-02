@@ -218,6 +218,8 @@
     <ClInclude Include="Sein\Direct3D12\vertex_buffer.h" />
     <ClInclude Include="Sein\PMX\loader.h" />
     <ClInclude Include="Sein\PNG\loader.h" />
+    <ClInclude Include="Sein\Renderer\device.h" />
+    <ClInclude Include="Sein\Renderer\device_context.h" />
     <ClInclude Include="Sein\Renderer\renderer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

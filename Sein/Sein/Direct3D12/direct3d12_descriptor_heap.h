@@ -11,8 +11,8 @@
 // include
 #include <memory>
 #include <d3d12.h>
-#include "descriptor.h"
-#include "command_list.h"
+#include "direct3d12_descriptor.h"
+#include "direct3d12_command_list.h"
 
 namespace Sein
 {

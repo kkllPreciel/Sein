@@ -7,7 +7,7 @@
  */
 
  // include
-#include "descriptor_heap.h"
+#include "direct3d12_descriptor_heap.h"
 #include <vector>
 #include <functional>
 

@@ -7,7 +7,7 @@
  */
 
  // include
-#include "swap_chain.h"
+#include "direct3d12_swap_chain.h"
 
 namespace Sein
 {

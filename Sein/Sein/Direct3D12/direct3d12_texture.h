@@ -13,7 +13,7 @@
 #include <string>
 #include <d3d12.h>
 #include "DirectXTK12/include/ResourceUploadBatch.h"
-#include "resource.h"
+#include "direct3d12_resource.h"
 
 namespace Sein
 {

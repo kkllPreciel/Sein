@@ -7,7 +7,7 @@
  */
 
  // include
-#include "rasterizer_desc.h"
+#include "direct3d12_rasterizer_desc.h"
 
 namespace Sein
 {

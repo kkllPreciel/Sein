@@ -7,7 +7,7 @@
  */
 
  // include
-#include "command_queue.h"
+#include "direct3d12_command_queue.h"
 
 namespace Sein
 {

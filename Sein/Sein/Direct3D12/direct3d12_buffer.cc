@@ -7,7 +7,7 @@
  */
 
  // include
-#include "buffer.h"
+#include "direct3d12_buffer.h"
 
 namespace Sein
 {

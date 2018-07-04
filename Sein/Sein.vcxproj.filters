@@ -15,70 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Sein\Direct3D12\constant_buffer.cc">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Sein\Direct3D12\depth_stencil_view.cc">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Sein\Direct3D12\direct3d12_device.cc">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Sein\Direct3D12\index_buffer.cc">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Sein\Direct3D12\shader_resource_buffer.cc">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Sein\Direct3D12\vertex_buffer.cc">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Sein\Direct3D12\buffer.cc">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Sein\Direct3D12\fence.cc">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Sein\PMX\loader.cc">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Sein\Direct3D12\descriptor_heap.cc">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Sein\Direct3D12\descriptor.cc">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Sein\Direct3D12\command_list.cc">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Sein\Direct3D12\texture.cc">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Sein\Direct3D12\texture_view.cc">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Sein\Direct3D12\descriptor_range.cc">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Sein\Direct3D12\root_parameter.cc">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Sein\Direct3D12\root_signature.cc">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Sein\Direct3D12\command_queue.cc">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Sein\Direct3D12\swap_chain.cc">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Sein\Direct3D12\shader.cc">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Sein\Direct3D12\graphics_pipeline_state.cc">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Sein\Direct3D12\rasterizer_desc.cc">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Sein\Direct3D11\direct3d11_buffer.cc">
@@ -114,24 +54,72 @@
     <ClCompile Include="Sein\Direct3D11\direct3d11_input_layout.cc">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Sein\Renderer\index_buffer.h">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Sein\Direct3D12\direct3d12_buffer.cc">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Sein\Direct3D12\direct3d12_command_list.cc">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Sein\Direct3D12\direct3d12_command_queue.cc">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Sein\Direct3D12\direct3d12_constant_buffer.cc">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Sein\Direct3D12\direct3d12_depth_stencil_view.cc">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Sein\Direct3D12\direct3d12_descriptor.cc">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Sein\Direct3D12\direct3d12_descriptor_heap.cc">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Sein\Direct3D12\direct3d12_descriptor_range.cc">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Sein\Direct3D12\direct3d12_fence.cc">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Sein\Direct3D12\direct3d12_graphics_pipeline_state.cc">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Sein\Direct3D12\direct3d12_index_buffer.cc">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Sein\Direct3D12\direct3d12_rasterizer_desc.cc">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Sein\Direct3D12\direct3d12_root_parameter.cc">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Sein\Direct3D12\direct3d12_root_signature.cc">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Sein\Direct3D12\direct3d12_shader.cc">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Sein\Direct3D12\direct3d12_shader_resource_buffer.cc">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Sein\Direct3D12\direct3d12_swap_chain.cc">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Sein\Direct3D12\direct3d12_texture.cc">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Sein\Direct3D12\direct3d12_texture_view.cc">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Sein\Direct3D12\direct3d12_vertex_buffer.cc">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Sein\Direct3D12\constant_buffer.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Sein\Direct3D12\depth_stencil_view.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Sein\Direct3D12\direct3d12_device.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Sein\Direct3D12\index_buffer.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Sein\Direct3D12\shader_resource_buffer.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Sein\Direct3D12\vertex_buffer.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Sein\PMX\loader.h">
@@ -140,55 +128,7 @@
     <ClInclude Include="Sein\PNG\loader.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Sein\Direct3D12\fence.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Sein\Direct3D12\buffer.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Sein\Direct3D12\descriptor_heap.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Sein\Direct3D12\descriptor.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Sein\Direct3D12\resource.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Sein\Direct3D12\command_list.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Sein\Direct3D12\texture.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Sein\Direct3D12\texture_view.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Sein\Renderer\renderer.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Sein\Direct3D12\descriptor_range.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Sein\Direct3D12\root_parameter.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Sein\Direct3D12\root_signature.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Sein\Direct3D12\command_queue.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Sein\Direct3D12\swap_chain.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Sein\Direct3D12\shader.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Sein\Direct3D12\graphics_pipeline_state.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Sein\Direct3D12\rasterizer_desc.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Sein\Direct3D11\direct3d11_buffer.h">
@@ -228,6 +168,75 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Sein\Renderer\device_context.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sein\Renderer\vertex_buffer.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sein\Renderer\shader.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sein\Direct3D12\direct3d12_buffer.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sein\Direct3D12\direct3d12_command_list.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sein\Direct3D12\direct3d12_command_queue.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sein\Direct3D12\direct3d12_constant_buffer.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sein\Direct3D12\direct3d12_depth_stencil_view.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sein\Direct3D12\direct3d12_descriptor.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sein\Direct3D12\direct3d12_descriptor_heap.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sein\Direct3D12\direct3d12_descriptor_range.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sein\Direct3D12\direct3d12_fence.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sein\Direct3D12\direct3d12_graphics_pipeline_state.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sein\Direct3D12\direct3d12_index_buffer.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sein\Direct3D12\direct3d12_rasterizer_desc.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sein\Direct3D12\direct3d12_resource.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sein\Direct3D12\direct3d12_root_parameter.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sein\Direct3D12\direct3d12_root_signature.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sein\Direct3D12\direct3d12_shader.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sein\Direct3D12\direct3d12_shader_resource_buffer.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sein\Direct3D12\direct3d12_swap_chain.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sein\Direct3D12\direct3d12_texture.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sein\Direct3D12\direct3d12_texture_view.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Sein\Direct3D12\direct3d12_vertex_buffer.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

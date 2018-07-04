@@ -11,8 +11,8 @@
  // include
 #include <d3d12.h>
 #include <memory>
-#include "texture.h"
-#include "descriptor_heap.h"
+#include "direct3d12_texture.h"
+#include "direct3d12_descriptor_heap.h"
 
 namespace Sein
 {

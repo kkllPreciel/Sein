@@ -7,8 +7,8 @@
  */
 
  // include
-#include "texture_view.h"
-#include "descriptor.h"
+#include "direct3d12_texture_view.h"
+#include "direct3d12_descriptor.h"
 
 namespace Sein
 {

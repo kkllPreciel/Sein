@@ -7,8 +7,8 @@
  */
 
  // include
-#include "buffer.h"
-#include "shader_resource_buffer.h"
+#include "direct3d12_buffer.h"
+#include "direct3d12_shader_resource_buffer.h"
 
 namespace Sein
 {

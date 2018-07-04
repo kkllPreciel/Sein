@@ -7,8 +7,8 @@
  */
 
  // include
-#include "constant_buffer.h"
-#include "buffer.h"
+#include "direct3d12_constant_buffer.h"
+#include "direct3d12_buffer.h"
 
 namespace Sein
 {

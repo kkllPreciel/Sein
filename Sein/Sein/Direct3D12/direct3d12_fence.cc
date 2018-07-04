@@ -6,7 +6,7 @@
  *  @version  1.0
  */
 
-#include "fence.h"
+#include "direct3d12_fence.h"
 
 namespace Sein
 {

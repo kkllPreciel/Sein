@@ -7,7 +7,7 @@
  */
 
  // include
-#include "depth_stencil_view.h"
+#include "direct3d12_depth_stencil_view.h"
 
 namespace Sein
 {

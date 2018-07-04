@@ -14,16 +14,16 @@
 
 #include "DirectXTK12/include/ResourceUploadBatch.h"
 
-#include "fence.h"
-#include "texture_view.h"
-#include "depth_stencil_view.h"
-#include "descriptor_range.h"
-#include "root_parameter.h"
-#include "root_signature.h"
-#include "rasterizer_desc.h"
-#include "graphics_pipeline_state.h"
-#include "command_queue.h"
-#include "swap_chain.h"
+#include "direct3d12_fence.h"
+#include "direct3d12_texture_view.h"
+#include "direct3d12_depth_stencil_view.h"
+#include "direct3d12_descriptor_range.h"
+#include "direct3d12_root_parameter.h"
+#include "direct3d12_root_signature.h"
+#include "direct3d12_rasterizer_desc.h"
+#include "direct3d12_graphics_pipeline_state.h"
+#include "direct3d12_command_queue.h"
+#include "direct3d12_swap_chain.h"
 
 namespace Sein
 {

@@ -8,7 +8,7 @@
 
  // include
 #include <functional>
-#include "graphics_pipeline_state.h"
+#include "direct3d12_graphics_pipeline_state.h"
 
 namespace Sein
 {

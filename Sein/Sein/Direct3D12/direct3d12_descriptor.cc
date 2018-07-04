@@ -7,7 +7,7 @@
  */
 
  // include
-#include "descriptor.h"
+#include "direct3d12_descriptor.h"
 
 namespace Sein
 {

@@ -8,7 +8,7 @@
 
  // include
 #include <fstream>
-#include "shader.h"
+#include "direct3d12_shader.h"
 
 namespace Sein
 {

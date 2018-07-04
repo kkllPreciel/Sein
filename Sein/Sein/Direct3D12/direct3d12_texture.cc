@@ -7,7 +7,7 @@
  */
 
  // include
-#include "texture.h"
+#include "direct3d12_texture.h"
 #include "DirectXTK12/include/WICTextureLoader.h"
 
 namespace Sein

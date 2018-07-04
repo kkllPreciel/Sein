@@ -7,7 +7,7 @@
  */
 
  // include
-#include "descriptor_range.h"
+#include "direct3d12_descriptor_range.h"
 
 namespace Sein
 {

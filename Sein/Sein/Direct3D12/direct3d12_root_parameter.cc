@@ -7,7 +7,7 @@
  */
 
  // include
-#include "root_parameter.h"
+#include "direct3d12_root_parameter.h"
 
 namespace Sein
 {

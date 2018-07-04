@@ -13,6 +13,9 @@
 #include <memory>
 
 #include "device_context.h"
+#include "vertex_buffer.h"
+#include "index_buffer.h"
+#include "shader.h"
 
 namespace Sein
 {
@@ -66,16 +69,28 @@ namespace Sein
        *  @return デバイスコンテキストへのスマートポインタ
        */
       virtual std::shared_ptr<IDeviceContext> CreateDeviceContext(const IDeviceContext::Type& context_type) = 0;
-    };
 
-    /**
-     *  @brief  デバイスを作成する
-     *  @param  type:デバイスの種別
-     *  @param  handle:ウィンドウハンドル
-     *  @param  width:ウィンドウの横幅
-     *  @param  height:ウィンドウの縦幅
-     *  @return デバイスへのスマートポインタ
-     */
-    std::shared_ptr<IDevice> CreateDevice(const IDevice::Type& type, const void* const handle, const std::uint32_t& width, const std::uint32_t& height);
+      /**
+       *  @brief  頂点バッファを作成する
+       *  @param  size_in_bytes:頂点バッファのサイズ(頂点サイズ * 頂点数)
+       *  @return 頂点バッファへのスマートポインタ
+       */
+      virtual std::shared_ptr<IVertexBuffer> CreateVertexBuffer(const std::uint32_t& size_in_bytes) = 0;
+
+      /**
+       *  @brief  インデックスバッファを作成する
+       *  @param  size_in_bytes:インデックスバッファのサイズ(インデックスサイズ * インデックス数)
+       *  @param  index_type:インデックスの型
+       *  @return インデックスバッファへのスマートポインタ
+       */
+      virtual std::shared_ptr<IIndexBuffer> CreateIndexBuffer(const std::uint32_t& size_in_bytes, const IIndexBuffer::Type& index_type) = 0;
+
+      /**
+       *  @brief  シェーダーを作成する
+       *  @param  shader_desc:シェーダーの設定
+       *  @return シェーダーへのスマートポインタ
+       */
+      virtual std::shared_ptr<IShader> CreateShader(const IShader::Desc& shader_desc) = 0;
+    };
   };
 };

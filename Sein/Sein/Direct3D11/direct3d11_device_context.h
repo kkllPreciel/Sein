@@ -9,7 +9,7 @@
 #pragma once
 
 // include
-#include <memory>
+#include "../Renderer/device_context.h"
 #include <d3d11.h>
 
 namespace Sein
@@ -19,17 +19,9 @@ namespace Sein
     /**
      *  @brief  Direct3D11のデバイスコンテキスト用インターフェース
      */
-    class IDeviceContext
+    class IDeviceContext : public Renderer::IDeviceContext
     {
     public:
-      /**
-       *  @brief  コンテキストの種別
-       */
-      enum class Type : std::uint32_t {
-        kImmediate, ///< 即時
-        kDeferred,  ///< 遅延
-      };
-
       /**
        *  @brief  コンストラクタ
        */
@@ -52,11 +44,12 @@ namespace Sein
        *  @return 代入後のインスタンス
        */
       IDeviceContext& operator = (const IDeviceContext& other) = delete;
-      
+
       /**
-       *  @brief  終了処理を行う
+       *  @brief  Direct3D11用デバイスコンテキストを取得する
+       *  @return Direct3D11用デバイスコンテキスト
        */
-      virtual void Destroy() = 0;
+      virtual const ID3D11DeviceContext& GetD3D11DeviceContext() = 0;
 
       /**
        *  @brief  デバイスコンテキストを作成する

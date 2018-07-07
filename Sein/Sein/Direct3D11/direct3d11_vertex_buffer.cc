@@ -9,6 +9,7 @@
  // include
 #include "direct3d11_vertex_buffer.h"
 #include <functional>
+#include "direct3d11_device_context.h"
 #include "direct3d11_buffer.h"
 
 namespace Sein
@@ -63,16 +64,18 @@ namespace Sein
          *  @param  size_in_bytes:頂点配列のサイズ
          *  @param  vertices:頂点配列へのポインタ
          */
-        void Map(ID3D11DeviceContext* const context, const std::uint32_t& size_in_bytes, const void* const vertices) override
+        void Map(Renderer::IDeviceContext* const context, const std::uint32_t& size_in_bytes, const void* const vertices) override
         {
+          auto& device_context = const_cast<ID3D11DeviceContext&>(static_cast<IDeviceContext*>(context)->GetD3D11DeviceContext());
+
           D3D11_MAPPED_SUBRESOURCE mapped_buffer = {};
           mapped_buffer.pData = nullptr;
 
-          buffer_->Map(context, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped_buffer);
+          buffer_->Map(&device_context, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped_buffer);
 
           std::memcpy(mapped_buffer.pData, vertices, size_in_bytes);
 
-          buffer_->Unmap(context, 0);
+          buffer_->Unmap(&device_context, 0);
         }
 
         /**

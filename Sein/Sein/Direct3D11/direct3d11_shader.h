@@ -9,7 +9,7 @@
 #pragma once
 
 // include
-#include <memory>
+#include "../Renderer/shader.h"
 #include <d3d11.h>
 
 namespace Sein
@@ -19,32 +19,9 @@ namespace Sein
     /**
      *  @brief  Direct3D11のシェーダー用インターフェース
      */
-    class IShader
+    class IShader : public Renderer::IShader
     {
     public:
-      /**
-       *  @brief  シェーダー種別
-       */
-      enum class Type : std::uint32_t {
-        kVertex,    ///< 頂点シェーダー
-        kPixel,     ///< ピクセル(フラグメント)シェーダー
-        kGeometry,  ///< ジオメトリシェーダー
-        kHull,      ///< ハルシェーダー
-        kDomain,    ///< ドメインシェーダー
-        kCompute,   ///< コンピュートシェーダー
-      };
-
-      /**
-       *  @brief  シェーダーの設定
-       */
-      class Desc
-      {
-      public:
-        const void* shader_bytecode;  ///< シェーダーバイトコード
-        std::uint32_t bytecode_size;  ///< シェーダーバイトコードのサイズ
-        Type shader_type;             ///< シェーダー種別
-      };
-
       /**
        *  @brief  コンストラクタ
        */
@@ -67,16 +44,6 @@ namespace Sein
        *  @return 代入後のインスタンス
        */
       IShader& operator = (const IShader& other) = delete;
-
-      /**
-       *  @brief  シェーダーの設定を取得する
-       */
-      virtual const Desc& GetDesc() = 0;
-      
-      /**
-       *  @brief  終了処理を行う
-       */
-      virtual void Destroy() = 0;
 
       /**
        *  @brief  シェーダーを作成する

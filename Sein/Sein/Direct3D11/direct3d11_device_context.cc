@@ -56,6 +56,15 @@ namespace Sein
           context_.reset(context);
           type_ = context_type;
         }
+
+        /**
+         *  @brief  Direct3D11用デバイスコンテキストを取得する
+         *  @return Direct3D11用デバイスコンテキスト
+         */
+        const ID3D11DeviceContext& GetD3D11DeviceContext() override
+        {
+          return *(context_);
+        }
         
         /**
          *  @brief  終了処理を行う

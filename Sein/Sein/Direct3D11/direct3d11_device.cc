@@ -12,6 +12,12 @@
 #include <array>
 #include <functional>
 
+#include "direct3d11_device_context.h"
+#include "direct3d11_pipeline_state.h"
+#include "direct3d11_shader.h"
+#include "direct3d11_vertex_buffer.h"
+#include "direct3d11_index_buffer.h"
+
 namespace Sein
 {
   namespace Direct3D11
@@ -137,7 +143,7 @@ namespace Sein
          *  @param  context_type:デバイスコンテキストの種別
          *  @return デバイスコンテキストへのスマートポインタ
          */
-        std::shared_ptr<IDeviceContext> CreateDeviceContext(const IDeviceContext::Type& context_type) override
+        std::shared_ptr<Renderer::IDeviceContext> CreateDeviceContext(const IDeviceContext::Type& context_type) override
         {
           return IDeviceContext::Create(device_.get(), context_type);
         }
@@ -147,17 +153,17 @@ namespace Sein
          *  @param  pipeline_desc:パイプラインの設定
          *  @return パイプラインステートへのスマートポインタ
          */
-        std::shared_ptr<IPipelineState> CreatePipelineState(const IPipelineState::Desc& pipeline_desc) override
-        {
-          return IPipelineState::Create(device_.get(), pipeline_desc);
-        }
+        //std::shared_ptr<Renderer::IPipelineState> CreatePipelineState(const IPipelineState::Desc& pipeline_desc) override
+        //{
+        //  return IPipelineState::Create(device_.get(), pipeline_desc);
+        //}
 
         /**
          *  @brief  シェーダーを作成する
          *  @param  shader_desc:シェーダーの設定
          *  @return シェーダーへのスマートポインタ
          */
-        std::shared_ptr<IShader> CreateShader(const IShader::Desc& shader_desc) override
+        std::shared_ptr<Renderer::IShader> CreateShader(const IShader::Desc& shader_desc) override
         {
           return IShader::Create(device_.get(), shader_desc);
         }
@@ -167,7 +173,7 @@ namespace Sein
          *  @param  size_in_bytes:頂点バッファのサイズ(頂点サイズ * 頂点数)
          *  @return 頂点バッファへのスマートポインタ
          */
-        std::shared_ptr<IVertexBuffer> CreateVertexBuffer(const std::uint32_t& size_in_bytes) override
+        std::shared_ptr<Renderer::IVertexBuffer> CreateVertexBuffer(const std::uint32_t& size_in_bytes) override
         {
           return IVertexBuffer::Create(device_.get(), size_in_bytes);
         }
@@ -178,7 +184,7 @@ namespace Sein
          *  @param  index_type:インデックスの型
          *  @return インデックスバッファへのスマートポインタ
          */
-        std::shared_ptr<IIndexBuffer> CreateIndexBuffer(const std::uint32_t& size_in_bytes, const IIndexBuffer::Type& index_type) override
+        std::shared_ptr<Renderer::IIndexBuffer> CreateIndexBuffer(const std::uint32_t& size_in_bytes, const IIndexBuffer::Type& index_type) override
         {
           return IIndexBuffer::Create(device_.get(), size_in_bytes, index_type);
         }

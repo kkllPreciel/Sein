@@ -9,7 +9,7 @@
 #pragma once
 
 // include
-#include <memory>
+#include "../Renderer/index_buffer.h"
 #include <d3d11.h>
 
 namespace Sein
@@ -17,19 +17,11 @@ namespace Sein
   namespace Direct3D11
   {
     /**
-     *  @brief  Direct3D11のインデックスバッファ用インターフェイス
+     *  @brief  Direct3D11のインデックスバッファ用インターフェース
      */
-    class IIndexBuffer
+    class IIndexBuffer : public Renderer::IIndexBuffer
     {
     public:
-      /**
-       *  @brief  インデックスの型
-       */
-      enum class Type : std::uint32_t {
-        k16Bit,
-        k32Bit,
-      };
-
       /**
        *  @brief  コンストラクタ
        */
@@ -52,19 +44,6 @@ namespace Sein
        *  @return 代入後のインスタンス
        */
       IIndexBuffer& operator = (const IIndexBuffer& other) = delete;
-
-      /**
-       *  @brief  マップする
-       *  @param  context:コンテキスト
-       *  @param  size_in_bytes:インデックス配列のサイズ
-       *  @param  indices:インデックス配列へのポインタ
-       */
-      virtual void Map(ID3D11DeviceContext* const context, const std::uint32_t& size_in_bytes, const void* const indices) = 0;
-      
-      /**
-       *  @brief  終了処理を行う
-       */
-      virtual void Destroy() = 0;
 
       /**
        *  @brief  インデックスバッファを作成する

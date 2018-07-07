@@ -9,7 +9,7 @@
 #pragma once
 
 // include
-#include <memory>
+#include "../Renderer/vertex_buffer.h"
 #include <d3d11.h>
 
 namespace Sein
@@ -17,9 +17,9 @@ namespace Sein
   namespace Direct3D11
   {
     /**
-     *  @brief  Direct3D11の頂点バッファ用インターフェイス
+     *  @brief  Direct3D11の頂点バッファ用インターフェース
      */
-    class IVertexBuffer
+    class IVertexBuffer : public Renderer::IVertexBuffer
     {
     public:
       /**
@@ -44,19 +44,6 @@ namespace Sein
        *  @return 代入後のインスタンス
        */
       IVertexBuffer& operator = (const IVertexBuffer& other) = delete;
-
-      /**
-       *  @brief  マップする
-       *  @param  context:コンテキスト
-       *  @param  size_in_bytes:頂点配列のサイズ
-       *  @param  vertices:頂点配列へのポインタ
-       */
-      virtual void Map(ID3D11DeviceContext* const context, const std::uint32_t& size_in_bytes, const void* const vertices) = 0;
-      
-      /**
-       *  @brief  終了処理を行う
-       */
-      virtual void Destroy() = 0;
 
       /**
        *  @brief  頂点バッファを作成する
